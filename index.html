@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -8,23 +9,71 @@
   <header>
     <h1>SL Skills Hub</h1>
     <p>Find skilled people near you in Sierra Leone</p>
-    <button>Add Your Skill</button>
+    <button onclick="toggleForm()">Add Your Skill</button>
   </header>
 
-  <section class="skills">
-    <div class="skill-card">
+  <!-- Skill Form -->
+  <div id="skillForm" class="form-container" style="display: none;">
+    <input type="text" id="name" placeholder="Your Name">
+    <input type="text" id="skill" placeholder="Your Skill">
+    <input type="text" id="location" placeholder="Your Location">
+    <input type="text" id="contact" placeholder="WhatsApp Link">
+    <button onclick="addSkill()">Submit</button>
+  </div>
+
+  <!-- Skill Cards -->
+  <div id="skillCards" class="card-container">
+    <div class="card">
       <h3>Abu Kamara</h3>
       <p><strong>Skill:</strong> Phone Repair</p>
       <p><strong>Location:</strong> Bo Town</p>
-      <p><strong>Contact:</strong> <a href="https://wa.me/23276123456">WhatsApp</a></p>
+      <p><strong>Contact:</strong> <a href="https://wa.me/23270000000" target="_blank">WhatsApp</a></p>
     </div>
-
-    <div class="skill-card">
+    <div class="card">
       <h3>Fatmata Sesay</h3>
       <p><strong>Skill:</strong> Hair Braiding</p>
       <p><strong>Location:</strong> Kenema</p>
-      <p><strong>Contact:</strong> <a href="https://wa.me/23276345678">WhatsApp</a></p>
+      <p><strong>Contact:</strong> <a href="https://wa.me/23270000001" target="_blank">WhatsApp</a></p>
     </div>
-  </section>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    function toggleForm() {
+      const form = document.getElementById("skillForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    function addSkill() {
+      const name = document.getElementById("name").value;
+      const skill = document.getElementById("skill").value;
+      const location = document.getElementById("location").value;
+      const contact = document.getElementById("contact").value;
+
+      if (!name || !skill || !location || !contact) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h3>${name}</h3>
+        <p><strong>Skill:</strong> ${skill}</p>
+        <p><strong>Location:</strong> ${location}</p>
+        <p><strong>Contact:</strong> <a href="${contact}" target="_blank">WhatsApp</a></p>
+      `;
+
+      document.getElementById("skillCards").appendChild(card);
+
+      // Clear form
+      document.getElementById("name").value = '';
+      document.getElementById("skill").value = '';
+      document.getElementById("location").value = '';
+      document.getElementById("contact").value = '';
+
+      toggleForm(); // hide form
+    }
+  </script>
 </body>
 </html>
