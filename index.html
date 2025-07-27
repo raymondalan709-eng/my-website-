@@ -61,5 +61,58 @@
       toggleForm(); // hide form
     }
   </script>
-</body>
+</body><script>
+  function toggleForm() {
+    const form = document.getElementById("skillForm");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  function addSkill() {
+    const name = document.getElementById("name").value;
+    const skill = document.getElementById("skill").value;
+    const location = document.getElementById("location").value;
+    const contact = document.getElementById("contact").value;
+
+    if (!name || !skill || !location || !contact) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const newSkill = { name, skill, location, contact };
+
+    // Save to localStorage
+    let skills = JSON.parse(localStorage.getItem("skills")) || [];
+    skills.push(newSkill);
+    localStorage.setItem("skills", JSON.stringify(skills));
+
+    createSkillCard(newSkill);
+
+    // Clear form
+    document.getElementById("name").value = '';
+    document.getElementById("skill").value = '';
+    document.getElementById("location").value = '';
+    document.getElementById("contact").value = '';
+
+    toggleForm();
+  }
+
+  function createSkillCard(data) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${data.name}</h3>
+      <p><strong>Skill:</strong> ${data.skill}</p>
+      <p><strong>Location:</strong> ${data.location}</p>
+      <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
+    `;
+    document.getElementById("skillCards").appendChild(card);
+  }
+
+  // Show saved skills on page load
+  window.onload = function () {
+    const savedSkills = JSON.parse(localStorage.getItem("skills")) || [];
+    savedSkills.forEach(skill => createSkillCard(skill));
+  };
+</script>
+
 </html>
