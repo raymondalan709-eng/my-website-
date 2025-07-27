@@ -20,22 +20,7 @@
     <input type="text" id="contact" placeholder="WhatsApp Link">
     <button onclick="addSkill()">Submit</button>
   </div>
-
-  <!-- Skill Cards -->
-  <div id="skillCards" class="card-container">
-    <div class="card">
-      <h3>Abu Kamara</h3>
-      <p><strong>Skill:</strong> Phone Repair</p>
-      <p><strong>Location:</strong> Bo Town</p>
-      <p><strong>Contact:</strong> <a href="https://wa.me/23270000000" target="_blank">WhatsApp</a></p>
-    </div>
-    <div class="card">
-      <h3>Fatmata Sesay</h3>
-      <p><strong>Skill:</strong> Hair Braiding</p>
-      <p><strong>Location:</strong> Kenema</p>
-      <p><strong>Contact:</strong> <a href="https://wa.me/23270000001" target="_blank">WhatsApp</a></p>
-    </div>
-  </div>
+   <div id="skillCards" class="card-container"></div>
 
   <!-- JavaScript -->
   <script>
@@ -49,6 +34,7 @@
       const skill = document.getElementById("skill").value;
       const location = document.getElementById("location").value;
       const contact = document.getElementById("contact").value;
+<div id="skillCards" class="card-container"></div>
 
       if (!name || !skill || !location || !contact) {
         alert("Please fill all fields.");
