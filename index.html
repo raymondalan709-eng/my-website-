@@ -60,11 +60,9 @@
 
   <!-- JavaScript -->
 <script type="module">
-  // Firebase imports
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
     authDomain: "sl-skills-hub.firebaseapp.com",
@@ -74,18 +72,9 @@
     appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Toggle form
-  function toggleForm() {
-    const form = document.getElementById("skillForm");
-    form.style.display = form.style.display === "none" ? "block" : "none";
-  }
-  window.toggleForm = toggleForm;
-
-  // Add skill to Firestore
   async function addSkill() {
     const name = document.getElementById("name").value;
     const skill = document.getElementById("skill").value;
@@ -102,27 +91,30 @@
         name,
         skill,
         location,
-        contact
+        contact,
+        timestamp: new Date()
       });
-      alert("Skill added successfully!");
-      location.reload();
+      alert("Skill added!");
     } catch (e) {
-      console.error("Error adding skill:", e);
+      alert("Error adding skill: " + e);
     }
-  }
-  window.addSkill = addSkill;
 
-  // Load skills from Firestore
+    document.getElementById("name").value = '';
+    document.getElementById("skill").value = '';
+    document.getElementById("location").value = '';
+    document.getElementById("contact").value = '';
+  }
+
+  // Load and display skills
   async function loadSkills() {
     const querySnapshot = await getDocs(collection(db, "skills"));
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      createSkillCard(data, docSnap.id);
+    querySnapshot.forEach((doc) => {
+      const skillData = doc.data();
+      createSkillCard(skillData);
     });
   }
 
-  // Create skill card
-  function createSkillCard(data, id) {
+  function createSkillCard(data) {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
@@ -130,54 +122,12 @@
       <p><strong>Skill:</strong> ${data.skill}</p>
       <p><strong>Location:</strong> ${data.location}</p>
       <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-      <button onclick="deleteSkill('${id}')">Delete</button>
+      <p><em>Posted on: ${new Date(data.timestamp.seconds * 1000).toDateString()}</em></p>
     `;
     document.getElementById("skillCards").appendChild(card);
   }
 
-  // Delete skill
-  async function deleteSkill(id) {
-    try {
-      await deleteDoc(doc(db, "skills", id));
-      location.reload();
-    } catch (e) {
-      console.error("Error deleting skill:", e);
-    }
-  }
-  window.deleteSkill = deleteSkill;
-
-  // Filter search
-  function filterSkills() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const cards = document.querySelectorAll(".card");
-
-    cards.forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(input) ? "block" : "none";
-    });
-  }
-  window.filterSkills = filterSkills;
-
-  // Filter by category
-  function filterByCategory() {
-    const category = document.getElementById("categoryFilter").value.toLowerCase();
-    const cards = document.querySelectorAll(".card");
-
-    cards.forEach(card => {
-      const skillText = card.querySelector("p").innerText.toLowerCase();
-      card.style.display = category === "all" || skillText.includes(category) ? "block" : "none";
-    });
-  }
-  window.filterByCategory = filterByCategory;
-
-  // Dark mode toggle
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-  }
-  window.toggleDarkMode = toggleDarkMode;
-
-  // Load skills on page load
-  window.onload = loadSkills;
+  window.onload = function () {
+    loadSkills();
+  };
 </script>
-
- 
