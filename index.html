@@ -1,3 +1,22 @@
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+    authDomain: "sl-skills-hub.firebaseapp.com",
+    projectId: "sl-skills-hub",
+    storageBucket: "sl-skills-hub.firebasestorage.app",
+    messagingSenderId: "125049368940",
+    appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,13 +59,28 @@
    <div id="skillCards" class="card-container"></div>
 
   <!-- JavaScript -->
-  <script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+    authDomain: "sl-skills-hub.firebaseapp.com",
+    projectId: "sl-skills-hub",
+    storageBucket: "sl-skills-hub.appspot.com",
+    messagingSenderId: "125049368940",
+    appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
   function toggleForm() {
     const form = document.getElementById("skillForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
   }
 
-  function addSkill() {
+  async function addSkill() {
     const name = document.getElementById("name").value;
     const skill = document.getElementById("skill").value;
     const location = document.getElementById("location").value;
@@ -58,75 +92,68 @@
     }
 
     const newSkill = { name, skill, location, contact };
-
-    // Save to localStorage
-    let skills = JSON.parse(localStorage.getItem("skills")) || [];
-    skills.push(newSkill);
-    localStorage.setItem("skills", JSON.stringify(skills));
-
-    createSkillCard(newSkill, skills.length - 1);
+    const docRef = await addDoc(collection(db, "skills"), newSkill);
+    createSkillCard({ ...newSkill, id: docRef.id });
 
     // Clear form
     document.getElementById("name").value = '';
     document.getElementById("skill").value = '';
     document.getElementById("location").value = '';
     document.getElementById("contact").value = '';
-
     toggleForm();
   }
 
-  function createSkillCard(data, index) {
+  function createSkillCard(data) {
     const card = document.createElement("div");
     card.className = "card";
-
     card.innerHTML = `
       <h3>${data.name}</h3>
       <p><strong>Skill:</strong> ${data.skill}</p>
       <p><strong>Location:</strong> ${data.location}</p>
       <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-      <button class="delete-btn" onclick="deleteSkill(${index})">Delete</button>
+      <button class="delete-btn" onclick="deleteSkill('${data.id}')">Delete</button>
     `;
-
     document.getElementById("skillCards").appendChild(card);
   }
 
-  function deleteSkill(index) {
-    let skills = JSON.parse(localStorage.getItem("skills")) || [];
-    skills.splice(index, 1);
-    localStorage.setItem("skills", JSON.stringify(skills));
-    location.reload();
+  async function deleteSkill(id) {
+    await deleteDoc(doc(db, "skills", id));
+    location.reload(); // Refresh to show updated list
   }
-function filterSkills() {
-  const input = document.getElementById("searchInput").value.toLowerCase();
-  const cards = document.querySelectorAll(".card");
 
-  cards.forEach(card => {
-    const text = card.innerText.toLowerCase();
-    if (text.includes(input)) {
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
-  });
-}
-    function filterByCategory() {
-  const category = document.getElementById("categoryFilter").value.toLowerCase();
-  const cards = document.querySelectorAll(".card");
-
-  cards.forEach(card => {
-    const skillText = card.querySelector("p").innerText.toLowerCase();
-    if (category === "all" || skillText.includes(category)) {
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
-  });
-}
-    function toggleDarkMode() {
-  document.body.classList.toggle("dark-mode");
-}
-  window.onload = function () {
-    const savedSkills = JSON.parse(localStorage.getItem("skills")) || [];
-    savedSkills.forEach((skill, index) => createSkillCard(skill, index));
+  // Load all skills on page load
+  window.onload = async function () {
+    const querySnapshot = await getDocs(collection(db, "skills"));
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      createSkillCard({ ...data, id: docSnap.id });
+    });
   };
+
+  // Search and filter (same as before)
+  window.filterSkills = function () {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(input) ? "block" : "none";
+    });
+  };
+
+  window.filterByCategory = function () {
+    const category = document.getElementById("categoryFilter").value.toLowerCase();
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card => {
+      const skillText = card.querySelector("p").innerText.toLowerCase();
+      card.style.display = category === "all" || skillText.includes(category) ? "block" : "none";
+    });
+  };
+
+  window.toggleDarkMode = function () {
+    document.body.classList.toggle("dark-mode");
+  };
+
+  window.toggleForm = toggleForm;
+  window.addSkill = addSkill;
 </script>
+ 
