@@ -136,3 +136,14 @@ header button {
 .dark-mode a {
   color: #88f;
 }
+.filter-container {
+  text-align: center;
+  margin: 10px 0;
+}
+
+#categoryFilter {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
