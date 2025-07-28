@@ -1,18 +1,20 @@
 <script type="module">
-  // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
     authDomain: "sl-skills-hub.firebaseapp.com",
     projectId: "sl-skills-hub",
-    storageBucket: "sl-skills-hub.firebasestorage.app",
+    storageBucket: "sl-skills-hub.appspot.com",
     messagingSenderId: "125049368940",
     appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
   };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db; // make Firestore available globally
+</script>
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
@@ -59,21 +61,15 @@
    <div id="skillCards" class="card-container"></div>
 
   <!-- JavaScript -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+<script>
+  function toggleForm() {
+    const form = document.getElementById("skillForm");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-    authDomain: "sl-skills-hub.firebaseapp.com",
-    projectId: "sl-skills-hub",
-    storageBucket: "sl-skills-hub.appspot.com",
-    messagingSenderId: "125049368940",
-    appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+  }
 
   async function addSkill() {
     const name = document.getElementById("name").value;
@@ -86,45 +82,41 @@
       return;
     }
 
+    const newSkill = { name, skill, location, contact };
+
     try {
-      await addDoc(collection(db, "skills"), {
-        name,
-        skill,
-        location,
-        contact,
-        timestamp: new Date()
-      });
-      alert("Skill added!");
+      await addDoc(collection(window.db, "skills"), newSkill);
+      alert("Skill added successfully!");
+      location.reload();
     } catch (e) {
-      alert("Error adding skill: " + e);
+      console.error("Error adding document: ", e);
+      alert("Failed to add skill.");
     }
-
-    document.getElementById("name").value = '';
-    document.getElementById("skill").value = '';
-    document.getElementById("location").value = '';
-    document.getElementById("contact").value = '';
-  }
-
-  // Load and display skills
-  async function loadSkills() {
-    const querySnapshot = await getDocs(collection(db, "skills"));
-    querySnapshot.forEach((doc) => {
-      const skillData = doc.data();
-      createSkillCard(skillData);
-    });
   }
 
   function createSkillCard(data) {
     const card = document.createElement("div");
     card.className = "card";
+
     card.innerHTML = `
       <h3>${data.name}</h3>
       <p><strong>Skill:</strong> ${data.skill}</p>
       <p><strong>Location:</strong> ${data.location}</p>
       <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-      <p><em>Posted on: ${new Date(data.timestamp.seconds * 1000).toDateString()}</em></p>
     `;
+
     document.getElementById("skillCards").appendChild(card);
+  }
+
+  async function loadSkills() {
+    try {
+      const querySnapshot = await getDocs(collection(window.db, "skills"));
+      querySnapshot.forEach((doc) => {
+        createSkillCard(doc.data());
+      });
+    } catch (e) {
+      console.error("Error loading skills: ", e);
+    }
   }
 
   window.onload = function () {
