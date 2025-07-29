@@ -26,6 +26,9 @@
     <!-- Add Skill Button -->
     <button onclick="toggleForm()">Add Your Skill</button>
     <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+    <!-- Search Bar -->
+    <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterSkills()">
   </header>
 
   <!-- Skill Form -->
@@ -37,13 +40,10 @@
     <button onclick="addSkill()">Submit</button>
   </div>
 
-  <!-- Search Bar -->
-  <input type="text" id="searchInput" oninput="filterSkills()" placeholder="Search skills..." />
-
   <!-- Skills List -->
   <div id="skillCards"></div>
 
-  <!-- Firebase Setup and Google Auth -->
+  <!-- Firebase App & Firestore SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import {
@@ -56,9 +56,10 @@
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
     import {
       getAuth,
-      signInWithPopup,
       GoogleAuthProvider,
-      signOut
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -74,42 +75,37 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-
     window.db = db;
 
-    window.googleLogin = async () => {
+    window.googleLogin = async function () {
       try {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
-        document.getElementById("userEmail").textContent = "Signed in as: " + user.email;
+        document.getElementById("userEmail").innerText = user.email;
       } catch (error) {
         alert("Login failed: " + error.message);
       }
-    };
+    }
 
-    window.googleLogout = async () => {
+    window.googleLogout = async function () {
       try {
         await signOut(auth);
-        document.getElementById("userEmail").textContent = "";
-        alert("Logged out.");
+        document.getElementById("userEmail").innerText = "";
       } catch (error) {
         alert("Logout failed: " + error.message);
       }
-    };
-  </script>
+    }
 
-  <!-- App Logic -->
-  <script>
-    function toggleForm() {
+    window.toggleForm = function () {
       const form = document.getElementById("skillForm");
       form.style.display = form.style.display === "none" ? "block" : "none";
     }
 
-    function toggleDarkMode() {
+    window.toggleDarkMode = function () {
       document.body.classList.toggle("dark-mode");
     }
 
-    async function addSkill() {
+    window.addSkill = async function () {
       const name = document.getElementById("name").value;
       const skill = document.getElementById("skill").value;
       const location = document.getElementById("location").value;
@@ -123,7 +119,7 @@
       const newSkill = { name, skill, location, contact };
 
       try {
-        await addDoc(collection(window.db, "skills"), newSkill);
+        await addDoc(collection(db, "skills"), newSkill);
         alert("Skill added successfully!");
         location.reload();
       } catch (e) {
@@ -132,7 +128,7 @@
       }
     }
 
-    function createSkillCard(data, id) {
+    window.createSkillCard = function (data, id) {
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
@@ -145,20 +141,20 @@
       document.getElementById("skillCards").appendChild(card);
     }
 
-    async function loadSkills() {
+    window.loadSkills = async function () {
       try {
-        const querySnapshot = await getDocs(collection(window.db, "skills"));
+        const querySnapshot = await getDocs(collection(db, "skills"));
         querySnapshot.forEach((doc) => {
           createSkillCard(doc.data(), doc.id);
         });
       } catch (e) {
-        console.error("Error loading skills: ", e.message);
+        console.error("Error loading skills:", e.message);
       }
     }
 
-    async function deleteSkill(id) {
+    window.deleteSkill = async function (id) {
       try {
-        await deleteDoc(doc(window.db, "skills", id));
+        await deleteDoc(doc(db, "skills", id));
         alert("Skill deleted.");
         location.reload();
       } catch (e) {
@@ -166,9 +162,10 @@
       }
     }
 
-    function filterSkills() {
+    window.filterSkills = function () {
       const searchValue = document.getElementById("searchInput").value.toLowerCase();
       const cards = document.querySelectorAll(".card");
+
       cards.forEach((card) => {
         const content = card.textContent.toLowerCase();
         card.style.display = content.includes(searchValue) ? "block" : "none";
@@ -177,7 +174,12 @@
 
     window.onload = () => {
       loadSkills();
-    };
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          document.getElementById("userEmail").innerText = user.email;
+        }
+      });
+    }
   </script>
 </body>
 </html>
