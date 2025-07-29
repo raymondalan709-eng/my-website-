@@ -1,49 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SL Skills Hub</title>
-  <link rel="stylesheet" href="style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body.dark-mode {
+      background-color: #121212;
+      color: white;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px;
+      background: #f9f9f9;
+    }
+    body.dark-mode .card {
+      background: #1e1e1e;
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>SL Skills Hub</h1>
     <p>Find skilled people near you in Sierra Leone</p>
     <button onclick="toggleForm()">Add Your Skill</button>
+    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
   </header>
 
-  <!-- Toggle Dark Mode -->
-  <div class="toggle-container">
-    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-  </div>
-
-  <!-- Filter by Category -->
-  <div class="filter-container">
-    <select id="categoryFilter" onchange="filterByCategory()">
-      <option value="all">All Skills</option>
-      <option value="Phone Repair">Phone Repair</option>
-      <option value="Hair Braiding">Hair Braiding</option>
-      <option value="Plumbing">Plumbing</option>
-      <option value="Carpentry">Carpentry</option>
-    </select>
-  </div>
-
-  <!-- Search -->
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search by name, skill, or location..." onkeyup="filterSkills()">
-  </div>
-
-  <!-- Skill Form -->
   <div id="skillForm" class="form-container" style="display: none;">
-    <input type="text" id="name" placeholder="Your Name">
-    <input type="text" id="skill" placeholder="Your Skill">
-    <input type="text" id="location" placeholder="Your Location">
-    <input type="text" id="contact" placeholder="WhatsApp Link">
+    <input type="text" id="name" placeholder="Your Name" />
+    <input type="text" id="skill" placeholder="Your Skill" />
+    <input type="text" id="location" placeholder="Your Location" />
+    <input type="text" id="contact" placeholder="WhatsApp Link" />
     <button onclick="addSkill()">Submit</button>
   </div>
 
-  <!-- Skill Cards -->
   <div id="skillCards" class="card-container"></div>
 
   <!-- Firebase SDK -->
@@ -63,20 +57,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
+  </script>
 
-    // Toggle Form
-    window.toggleForm = function () {
+  <!-- App Logic -->
+  <script>
+    function toggleForm() {
       const form = document.getElementById("skillForm");
       form.style.display = form.style.display === "none" ? "block" : "none";
-    };
+    }
 
-    // Dark Mode
-    window.toggleDarkMode = function () {
+    function toggleDarkMode() {
       document.body.classList.toggle("dark-mode");
-    };
+    }
 
-    // Add Skill
-    window.addSkill = async function () {
+    async function addSkill() {
       const name = document.getElementById("name").value;
       const skill = document.getElementById("skill").value;
       const location = document.getElementById("location").value;
@@ -90,16 +84,15 @@
       const newSkill = { name, skill, location, contact };
 
       try {
-        await addDoc(collection(db, "skills"), newSkill);
+        await addDoc(collection(window.db, "skills"), newSkill);
         alert("Skill added successfully!");
         location.reload();
       } catch (e) {
-        console.error("Error adding document: ", e);
+        console.error("Error adding document:", e);
         alert("Failed to add skill.");
       }
-    };
+    }
 
-    // Create Skill Card
     function createSkillCard(data) {
       const card = document.createElement("div");
       card.className = "card";
@@ -112,39 +105,18 @@
       document.getElementById("skillCards").appendChild(card);
     }
 
-    // Load Skills
     async function loadSkills() {
       try {
-        const querySnapshot = await getDocs(collection(db, "skills"));
+        const querySnapshot = await getDocs(collection(window.db, "skills"));
         querySnapshot.forEach((doc) => {
           createSkillCard(doc.data());
         });
       } catch (e) {
-        console.error("Error loading skills: ", e);
+        console.error("Error loading skills:", e);
       }
     }
 
-    // Search
-    window.filterSkills = function () {
-      const input = document.getElementById("searchInput").value.toLowerCase();
-      const cards = document.querySelectorAll(".card");
-      cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-        card.style.display = text.includes(input) ? "block" : "none";
-      });
-    };
-
-    // Category Filter
-    window.filterByCategory = function () {
-      const category = document.getElementById("categoryFilter").value.toLowerCase();
-      const cards = document.querySelectorAll(".card");
-      cards.forEach(card => {
-        const skillText = card.querySelector("p").innerText.toLowerCase();
-        card.style.display = category === "all" || skillText.includes(category) ? "block" : "none";
-      });
-    };
-
-    window.onload = loadSkills;
+    window.onload = () => loadSkills();
   </script>
 </body>
 </html>
