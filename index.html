@@ -15,7 +15,7 @@
 
   <!-- Toggle Dark Mode -->
   <div class="toggle-container">
-    <button id="darkModeToggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
   </div>
 
   <!-- Filter by Category -->
@@ -26,11 +26,10 @@
       <option value="Hair Braiding">Hair Braiding</option>
       <option value="Plumbing">Plumbing</option>
       <option value="Carpentry">Carpentry</option>
-      <!-- Add more options here -->
     </select>
   </div>
 
-  <!-- Search Bar -->
+  <!-- Search -->
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="Search by name, skill, or location..." onkeyup="filterSkills()">
   </div>
@@ -47,7 +46,7 @@
   <!-- Skill Cards -->
   <div id="skillCards" class="card-container"></div>
 
-  <!-- Firebase Setup -->
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
@@ -64,20 +63,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
-  </script>
 
-  <!-- Main JavaScript -->
-  <script>
-    function toggleForm() {
+    // Toggle Form
+    window.toggleForm = function () {
       const form = document.getElementById("skillForm");
       form.style.display = form.style.display === "none" ? "block" : "none";
-    }
+    };
 
-    function toggleDarkMode() {
+    // Dark Mode
+    window.toggleDarkMode = function () {
       document.body.classList.toggle("dark-mode");
-    }
+    };
 
-    async function addSkill() {
+    // Add Skill
+    window.addSkill = async function () {
       const name = document.getElementById("name").value;
       const skill = document.getElementById("skill").value;
       const location = document.getElementById("location").value;
@@ -91,32 +90,32 @@
       const newSkill = { name, skill, location, contact };
 
       try {
-        await addDoc(collection(window.db, "skills"), newSkill);
+        await addDoc(collection(db, "skills"), newSkill);
         alert("Skill added successfully!");
         location.reload();
       } catch (e) {
         console.error("Error adding document: ", e);
         alert("Failed to add skill.");
       }
-    }
+    };
 
+    // Create Skill Card
     function createSkillCard(data) {
       const card = document.createElement("div");
       card.className = "card";
-
       card.innerHTML = `
         <h3>${data.name}</h3>
         <p><strong>Skill:</strong> ${data.skill}</p>
         <p><strong>Location:</strong> ${data.location}</p>
         <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
       `;
-
       document.getElementById("skillCards").appendChild(card);
     }
 
+    // Load Skills
     async function loadSkills() {
       try {
-        const querySnapshot = await getDocs(collection(window.db, "skills"));
+        const querySnapshot = await getDocs(collection(db, "skills"));
         querySnapshot.forEach((doc) => {
           createSkillCard(doc.data());
         });
@@ -125,36 +124,27 @@
       }
     }
 
-    function filterSkills() {
+    // Search
+    window.filterSkills = function () {
       const input = document.getElementById("searchInput").value.toLowerCase();
       const cards = document.querySelectorAll(".card");
-
       cards.forEach(card => {
-        const name = card.querySelector("h3").innerText.toLowerCase();
-        const skill = card.querySelector("p:nth-child(2)").innerText.toLowerCase();
-        const location = card.querySelector("p:nth-child(3)").innerText.toLowerCase();
-        const isVisible = name.includes(input) || skill.includes(input) || location.includes(input);
-        card.style.display = isVisible ? "block" : "none";
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(input) ? "block" : "none";
       });
-    }
-
-    function filterByCategory() {
-      const selectedCategory = document.getElementById("categoryFilter").value;
-      const cards = document.querySelectorAll(".card");
-
-      cards.forEach(card => {
-        const skillText = card.querySelector("p:nth-child(2)").innerText;
-        if (selectedCategory === "all" || skillText.includes(selectedCategory)) {
-          card.style.display = "block";
-        } else {
-          card.style.display = "none";
-        }
-      });
-    }
-
-    window.onload = function () {
-      loadSkills();
     };
+
+    // Category Filter
+    window.filterByCategory = function () {
+      const category = document.getElementById("categoryFilter").value.toLowerCase();
+      const cards = document.querySelectorAll(".card");
+      cards.forEach(card => {
+        const skillText = card.querySelector("p").innerText.toLowerCase();
+        card.style.display = category === "all" || skillText.includes(category) ? "block" : "none";
+      });
+    };
+
+    window.onload = loadSkills;
   </script>
 </body>
 </html>
