@@ -2,35 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SL Skills Hub</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
-    body.dark-mode {
-      background-color: #121212;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      background-color: #0078e7;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .btn {
+      margin: 10px 5px;
+      padding: 10px 20px;
+      border: none;
+      background-color: white;
+      color: #0078e7;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .form-container {
+      display: none;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 400px;
+    }
+    .form-container input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .form-container button {
+      padding: 10px;
+      background-color: #0078e7;
+      color: white;
+      border: none;
+      width: 100%;
+    }
+    .dark-mode {
+      background: #111;
       color: white;
     }
-    .card {
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 10px;
-      background: #f9f9f9;
+    .dark-mode input {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
     }
-    body.dark-mode .card {
-      background: #1e1e1e;
+    #searchInput {
+      margin: 20px auto;
+      display: block;
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .card {
+      background: white;
+      margin: 10px auto;
+      padding: 15px;
+      border-radius: 5px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .dark-mode .card {
+      background: #222;
+      color: white;
     }
   </style>
 </head>
 <body>
+
   <header>
     <h1>SL Skills Hub</h1>
     <p>Find skilled people near you in Sierra Leone</p>
-    <button onclick="toggleForm()">Add Your Skill</button>
-    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    <button class="btn" onclick="toggleForm()">Add Your Skill</button>
+    <button class="btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
   </header>
 
-  <div id="skillForm" class="form-container" style="display: none;">
+  <input type="text" id="searchInput" placeholder="Search by skill..." onkeyup="searchSkills()" />
+
+  <div class="form-container" id="skillForm">
     <input type="text" id="name" placeholder="Your Name" />
     <input type="text" id="skill" placeholder="Your Skill" />
     <input type="text" id="location" placeholder="Your Location" />
@@ -38,9 +97,9 @@
     <button onclick="addSkill()">Submit</button>
   </div>
 
-  <div id="skillCards" class="card-container"></div>
+  <div id="skillCards"></div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
@@ -56,11 +115,9 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    window.db = db;
-  </script>
 
-  <!-- App Logic -->
-  <script>
+    window.db = db;
+
     function toggleForm() {
       const form = document.getElementById("skillForm");
       form.style.display = form.style.display === "none" ? "block" : "none";
@@ -71,10 +128,10 @@
     }
 
     async function addSkill() {
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const contact = document.getElementById("contact").value;
+      const name = document.getElementById("name").value.trim();
+      const skill = document.getElementById("skill").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const contact = document.getElementById("contact").value.trim();
 
       if (!name || !skill || !location || !contact) {
         alert("Please fill all fields.");
@@ -84,12 +141,12 @@
       const newSkill = { name, skill, location, contact };
 
       try {
-        await addDoc(collection(window.db, "skills"), newSkill);
+        await addDoc(collection(db, "skills"), newSkill);
         alert("Skill added successfully!");
         location.reload();
       } catch (e) {
-        console.error("Error adding document:", e);
-        alert("Failed to add skill.");
+        console.error("Error adding document:", e.message);
+        alert("Failed to add skill: " + e.message);
       }
     }
 
@@ -107,13 +164,23 @@
 
     async function loadSkills() {
       try {
-        const querySnapshot = await getDocs(collection(window.db, "skills"));
+        const querySnapshot = await getDocs(collection(db, "skills"));
         querySnapshot.forEach((doc) => {
           createSkillCard(doc.data());
         });
       } catch (e) {
-        console.error("Error loading skills:", e);
+        console.error("Error loading skills:", e.message);
       }
+    }
+
+    function searchSkills() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const cards = document.querySelectorAll(".card");
+
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(input) ? "block" : "none";
+      });
     }
 
     window.onload = () => loadSkills();
