@@ -41,148 +41,96 @@
   <div id="skillCards"></div>
 
   <!-- Firebase Scripts -->
-  <script type="module">
-<script type="module">
-  // Firebase SDKs
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    deleteDoc,
-    doc
-  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  const skillsRef = collection(db, "skills");
-
-  // GLOBAL: Login with Google
-  window.googleLogin = async function () {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      alert("Welcome " + result.user.displayName);
-    } catch (error) {
-      alert("Login failed: " + error.message);
-    }
-  };
-
-  // GLOBAL: Logout
-  window.googleLogout = async function () {
-    await signOut(auth);
-    alert("Logged out.");
-  };
-
-  // Show/hide user info
-  onAuthStateChanged(auth, (user) => {
-    const emailDisplay = document.getElementById("userEmail");
-    if (user) {
-      emailDisplay.textContent = "Logged in as: " + user.email;
-    } else {
-      emailDisplay.textContent = "";
-    }
-  });
-
-  // Toggle Form
-  window.toggleForm = function () {
+  <script>
+  // Toggle form display
+  function toggleForm() {
     const form = document.getElementById("skillForm");
     form.style.display = form.style.display === "none" ? "block" : "none";
-  };
-
-  // Toggle Dark Mode
-  window.toggleDarkMode = function () {
-    document.body.classList.toggle("dark-mode");
-  };
-
-  // Handle Form Submit
-  document.getElementById("skillForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("nameInput").value.trim();
-    const skill = document.getElementById("skillInput").value.trim();
-    const location = document.getElementById("locationInput").value.trim();
-    const whatsapp = document.getElementById("whatsappInput").value.trim();
-
-    if (!name || !skill || !location || !whatsapp) {
-      return alert("Fill in all fields!");
-    }
-
-    try {
-      await addDoc(skillsRef, { name, skill, location, whatsapp });
-      alert("Skill added.");
-      document.getElementById("skillForm").reset();
-      loadSkills();
-    } catch (err) {
-      alert("Failed to add: " + err.message);
-    }
-  });
-
-  // Load Skills
-  async function loadSkills() {
-    const container = document.getElementById("skillsContainer");
-    container.innerHTML = "";
-    const querySnapshot = await getDocs(skillsRef);
-    querySnapshot.forEach((docSnap) => {
-      createSkillCard(docSnap.id, docSnap.data());
-    });
   }
 
-  // Create Card
-  function createSkillCard(id, data) {
+  // Toggle dark mode
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  // Add skill
+  async function addSkill() {
+    const name = document.getElementById("name").value;
+    const skill = document.getElementById("skill").value;
+    const location = document.getElementById("location").value;
+    const contact = document.getElementById("contact").value;
+
+    if (!name || !skill || !location || !contact) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const newSkill = { name, skill, location, contact };
+
+    try {
+      await addDoc(collection(window.db, "skills"), newSkill);
+      alert("Skill added successfully!");
+      location.reload();
+    } catch (e) {
+      console.error("Error adding document:", e.message);
+      alert("Failed to add skill: " + e.message);
+    }
+  }
+
+  // Create skill card
+  function createSkillCard(data, id) {
     const card = document.createElement("div");
-    card.className = "skill-card";
+    card.className = "card";
+
     card.innerHTML = `
       <h3>${data.name}</h3>
       <p><strong>Skill:</strong> ${data.skill}</p>
       <p><strong>Location:</strong> ${data.location}</p>
-      <p><strong>Contact:</strong> <a href="${data.whatsapp}" target="_blank">WhatsApp</a></p>
-      <button class="delete-btn" data-id="${id}">Delete</button>
+      <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
+      <button onclick="deleteSkill('${id}')">Delete</button>
     `;
-    document.getElementById("skillsContainer").appendChild(card);
+
+    document.getElementById("skillCards").appendChild(card);
   }
 
-  // Delete Skill
-  document.addEventListener("click", async (e) => {
-    if (e.target.classList.contains("delete-btn")) {
-      const id = e.target.getAttribute("data-id");
-      await deleteDoc(doc(db, "skills", id));
-      alert("Deleted");
-      loadSkills();
+  // Load skills from Firestore
+  async function loadSkills() {
+    try {
+      const querySnapshot = await getDocs(collection(window.db, "skills"));
+      querySnapshot.forEach((doc) => {
+        createSkillCard(doc.data(), doc.id);
+      });
+    } catch (e) {
+      console.error("Error loading skills: ", e.message);
     }
-  });
+  }
 
-  // Search Filter
-  document.getElementById("searchInput").addEventListener("input", function () {
-    const query = this.value.toLowerCase();
-    document.querySelectorAll(".skill-card").forEach(card => {
-      const match = card.innerText.toLowerCase().includes(query);
-      card.style.display = match ? "block" : "none";
+  // Delete skill
+  async function deleteSkill(id) {
+    try {
+      await deleteDoc(doc(window.db, "skills", id));
+      alert("Skill deleted.");
+      location.reload();
+    } catch (e) {
+      alert("Failed to delete skill: " + e.message);
+    }
+  }
+
+  // Filter/search skills
+  function filterSkills() {
+    const searchValue = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".card");
+
+    cards.forEach((card) => {
+      const content = card.textContent.toLowerCase();
+      card.style.display = content.includes(searchValue) ? "block" : "none";
     });
-  });
+  }
 
-  // Load on page start
-  window.onload = () => loadSkills();
+  // Load on page load
+  window.onload = () => {
+    loadSkills();
+  };
 </script>
 
 
