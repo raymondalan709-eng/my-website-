@@ -152,7 +152,13 @@
         return;
       }
 
-      const newSkill = { name, skill, location, contact };
+      const newSkill = {
+  name,
+  skill,
+  location,
+  contact,
+  createdAt: new Date().toISOString()  // add current date & time
+};
 
       try {
         await addDoc(collection(db, "skills"), newSkill);
@@ -164,18 +170,25 @@
       }
     }
 
-    window.createSkillCard = function (data, id) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>${data.name}</h3>
-        <p><strong>Skill:</strong> ${data.skill}</p>
-        <p><strong>Location:</strong> ${data.location}</p>
-        <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-        <button onclick="deleteSkill('${id}')">Delete</button>
-      `;
-      document.getElementById("skillCards").appendChild(card);
-    }
+window.createSkillCard = function (data, id) {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const date = data.createdAt
+    ? new Date(data.createdAt).toLocaleString()
+    : "Date not available";
+
+  card.innerHTML = `
+    <h3>${data.name}</h3>
+    <p><strong>Skill:</strong> ${data.skill}</p>
+    <p><strong>Location:</strong> ${data.location}</p>
+    <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
+    <p><em>Posted on: ${date}</em></p>
+    <button onclick="deleteSkill('${id}')">Delete</button>
+  `;
+
+  document.getElementById("skillCards").appendChild(card);
+}
 
     window.loadSkills = async function () {
       try {
