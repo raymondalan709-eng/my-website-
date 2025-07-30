@@ -1,27 +1,3 @@
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SL Skills Hub</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body.dark-mode { background-color: #111; color: white; }
-    .card { border: 1px solid #ccc; padding: 1rem; margin: 1rem 0; border-radius: 8px; }
-
-    /* 🔽 Add these styles here */
-    .auth-buttons {
-      margin-bottom: 20px;
-    }
-
-    .auth-info {
-      font-size: 14px;
-      color: green;
-    }
-  </style>
-</head><div class="auth-buttons">
-  <button onclick="googleLogin()">Login with Google</button>
-  <button onclick="googleLogout()">Logout</button>
-  <p id="userEmail" class="auth-info"></p>
-</div>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,9 +6,41 @@
   <title>SL Skills Hub</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    body.dark-mode { background-color: #111; color: white; }
-    .card { border: 1px solid #ccc; padding: 1rem; margin: 1rem 0; border-radius: 8px; }
-    .auth-info { margin-top: 10px; font-weight: bold; }
+    body.dark-mode {
+      background-color: #111;
+      color: white;
+    }
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+    }
+
+    .auth-info {
+      margin-top: 10px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #userPhoto {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: none;
+    }
+
+    input, button {
+      padding: 8px;
+      margin: 5px;
+    }
+
+    #skillForm {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -44,15 +52,16 @@
     <div class="auth-buttons">
       <button onclick="googleLogin()">Login with Google</button>
       <button onclick="googleLogout()">Logout</button>
-      <p id="userEmail" class="auth-info"></p>
+      <div id="userInfo" class="auth-info">
+        <img id="userPhoto" src="" alt="Profile" />
+        <p id="userEmail"></p>
+      </div>
     </div>
 
     <!-- Add Skill Button -->
     <button onclick="toggleForm()">Add Your Skill</button>
     <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-
-    <!-- Search Bar -->
-    <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterSkills()">
+    <input type="text" id="searchInput" oninput="filterSkills()" placeholder="Search skills..." />
   </header>
 
   <!-- Skill Form -->
@@ -67,144 +76,151 @@
   <!-- Skills List -->
   <div id="skillCards"></div>
 
-  <!-- Firebase App & Firestore SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    deleteDoc,
-    doc
-  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+  <!-- Firebase App & Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-    authDomain: "sl-skills-hub.firebaseapp.com",
-    projectId: "sl-skills-hub",
-    storageBucket: "sl-skills-hub.appspot.com",
-    messagingSenderId: "125049368940",
-    appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+      authDomain: "sl-skills-hub.firebaseapp.com",
+      projectId: "sl-skills-hub",
+      storageBucket: "sl-skills-hub.appspot.com",
+      messagingSenderId: "125049368940",
+      appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  window.db = db;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    window.db = db;
 
-  window.googleLogin = async function () {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      document.getElementById("userEmail").innerText = user.email;
-    } catch (error) {
-      alert("Login failed: " + error.message);
-    }
-  }
-
-  window.googleLogout = async function () {
-    try {
-      await signOut(auth);
-      document.getElementById("userEmail").innerText = "";
-    } catch (error) {
-      alert("Logout failed: " + error.message);
-    }
-  }
-
-  window.toggleForm = function () {
-    const form = document.getElementById("skillForm");
-    form.style.display = form.style.display === "none" ? "block" : "none";
-  }
-
-  window.toggleDarkMode = function () {
-    document.body.classList.toggle("dark-mode");
-  }
-
-  window.addSkill = async function () {
-    const name = document.getElementById("name").value;
-    const skill = document.getElementById("skill").value;
-    const location = document.getElementById("location").value;
-    const contact = document.getElementById("contact").value;
-
-    if (!name || !skill || !location || !contact) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    const newSkill = { name, skill, location, contact };
-
-    try {
-      await addDoc(collection(db, "skills"), newSkill);
-      alert("Skill added successfully!");
-      location.reload();
-    } catch (e) {
-      console.error("Error adding document:", e.message);
-      alert("Failed to add skill: " + e.message);
-    }
-  }
-
-  window.createSkillCard = function (data, id) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>${data.name}</h3>
-      <p><strong>Skill:</strong> ${data.skill}</p>
-      <p><strong>Location:</strong> ${data.location}</p>
-      <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-      <button onclick="deleteSkill('${id}')">Delete</button>
-    `;
-    document.getElementById("skillCards").appendChild(card);
-  }
-
-  window.loadSkills = async function () {
-    try {
-      const querySnapshot = await getDocs(collection(db, "skills"));
-      querySnapshot.forEach((doc) => {
-        createSkillCard(doc.data(), doc.id);
-      });
-    } catch (e) {
-      console.error("Error loading skills:", e.message);
-    }
-  }
-
-  window.deleteSkill = async function (id) {
-    try {
-      await deleteDoc(doc(db, "skills", id));
-      alert("Skill deleted.");
-      location.reload();
-    } catch (e) {
-      alert("Failed to delete skill: " + e.message);
-    }
-  }
-
-  window.filterSkills = function () {
-    const searchValue = document.getElementById("searchInput").value.toLowerCase();
-    const cards = document.querySelectorAll(".card");
-
-    cards.forEach((card) => {
-      const content = card.textContent.toLowerCase();
-      card.style.display = content.includes(searchValue) ? "block" : "none";
-    });
-  }
-
-  window.onload = () => {
-    loadSkills();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("userEmail").innerText = user.email;
+    window.googleLogin = async function () {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        document.getElementById("userEmail").innerText = user.displayName || user.email;
+        document.getElementById("userPhoto").src = user.photoURL;
+        document.getElementById("userPhoto").style.display = "inline";
+      } catch (error) {
+        alert("Login failed: " + error.message);
       }
-    });
-  }
-</script>
+    }
+
+    window.googleLogout = async function () {
+      try {
+        await signOut(auth);
+        document.getElementById("userEmail").innerText = "";
+        document.getElementById("userPhoto").style.display = "none";
+      } catch (error) {
+        alert("Logout failed: " + error.message);
+      }
+    }
+
+    window.toggleForm = function () {
+      const form = document.getElementById("skillForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    window.toggleDarkMode = function () {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    window.addSkill = async function () {
+      const name = document.getElementById("name").value;
+      const skill = document.getElementById("skill").value;
+      const location = document.getElementById("location").value;
+      const contact = document.getElementById("contact").value;
+
+      if (!name || !skill || !location || !contact) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const newSkill = { name, skill, location, contact };
+
+      try {
+        await addDoc(collection(db, "skills"), newSkill);
+        alert("Skill added successfully!");
+        location.reload();
+      } catch (e) {
+        console.error("Error adding document:", e.message);
+        alert("Failed to add skill: " + e.message);
+      }
+    }
+
+    window.createSkillCard = function (data, id) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h3>${data.name}</h3>
+        <p><strong>Skill:</strong> ${data.skill}</p>
+        <p><strong>Location:</strong> ${data.location}</p>
+        <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
+        <button onclick="deleteSkill('${id}')">Delete</button>
+      `;
+      document.getElementById("skillCards").appendChild(card);
+    }
+
+    window.loadSkills = async function () {
+      try {
+        const querySnapshot = await getDocs(collection(db, "skills"));
+        querySnapshot.forEach((doc) => {
+          createSkillCard(doc.data(), doc.id);
+        });
+      } catch (e) {
+        console.error("Error loading skills: ", e.message);
+      }
+    }
+
+    window.deleteSkill = async function (id) {
+      try {
+        await deleteDoc(doc(db, "skills", id));
+        alert("Skill deleted.");
+        location.reload();
+      } catch (e) {
+        alert("Failed to delete skill: " + e.message);
+      }
+    }
+
+    window.filterSkills = function () {
+      const searchValue = document.getElementById("searchInput").value.toLowerCase();
+      const cards = document.querySelectorAll(".card");
+
+      cards.forEach((card) => {
+        const content = card.textContent.toLowerCase();
+        card.style.display = content.includes(searchValue) ? "block" : "none";
+      });
+    }
+
+    window.onload = () => {
+      loadSkills();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          document.getElementById("userEmail").innerText = user.displayName || user.email;
+          document.getElementById("userPhoto").src = user.photoURL;
+          document.getElementById("userPhoto").style.display = "inline";
+        } else {
+          document.getElementById("userEmail").innerText = "";
+          document.getElementById("userPhoto").style.display = "none";
+        }
+      });
+    };
   </script>
 </body>
 </html>
