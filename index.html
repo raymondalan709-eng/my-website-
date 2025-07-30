@@ -140,34 +140,35 @@
     window.toggleDarkMode = function () {
       document.body.classList.toggle("dark-mode");
     }
+<script>
+  window.addSkill = async function () {
+    const name = document.getElementById("name").value;
+    const skill = document.getElementById("skill").value;
+    const userLocation = document.getElementById("location").value; // Renamed this
+    const contact = document.getElementById("contact").value;
 
-    window.addSkill = async function () {
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const userLocation = document.getElementById("location").value;
-      const contact = document.getElementById("contact").value;
-
-      if (!name || !skill || !location || !contact) {
-        alert("Please fill all fields.");
-        return;
-      }
+    if (!name || !skill || !userLocation || !contact) {
+      alert("Please fill all fields.");
+      return;
+    }
 
     const newSkill = {
-  name,
-  skill,
-  location: userLocation,
-  contact,
-  createdAt: new Date().toISOString()
-};  
-      try {
-        await addDoc(collection(db, "skills"), newSkill);
-        alert("Skill added successfully!");
-        location.reload();
-      } catch (e) {
-        console.error("Error adding document:", e.message);
-        alert("Failed to add skill: " + e.message);
-      }
+      name,
+      skill,
+      location: userLocation, // Use the renamed variable here
+      contact
+    };
+
+    try {
+      await addDoc(collection(db, "skills"), newSkill);
+      alert("Skill added successfully!");
+      location.reload(); // This will now work correctly
+    } catch (e) {
+      console.error("Error adding document:", e.message);
+      alert("Failed to add skill: " + e.message);
     }
+  };
+</script>
 
 window.createSkillCard = function (data, id) {
   const card = document.createElement("div");
