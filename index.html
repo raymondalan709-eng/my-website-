@@ -4,141 +4,177 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SL Skills Hub</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Firebase 8.x compat SDKs -->
+
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <style>
+    * { box-sizing:border-box; }
     body {
+      margin:0;
       font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-      margin: 0;
-      padding: 0 16px;
-      background: #f5f5f5;
+      background: #f0f2f7;
+      color: #222;
     }
     body.dark-mode {
-      background-color: #111;
-      color: #f2f2f2;
+      background: #0f1119;
+      color: #eee;
     }
     header {
-      padding: 16px 0;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
+      background: #0f80e6;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
     }
-    h1 {
+    header h1 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 2.5rem;
     }
-    .auth-buttons {
-      display: flex;
-      gap: 8px;
-      align-items: center;
+    header p {
+      margin: 4px 0 16px;
+    }
+    .top-controls {
+      display: inline-flex;
+      gap: 10px;
       flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .top-controls button {
+      background: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .auth-section {
+      margin-top: 8px;
+      display: inline-flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    .auth-section button {
+      background: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius:6px;
+      cursor:pointer;
     }
     .auth-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
     }
     #userPhoto {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: none;
-      object-fit: cover;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      display:none;
+      object-fit:cover;
     }
-    input, button {
-      padding: 8px 12px;
-      margin: 4px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 0.9rem;
+    .search-wrapper {
+      margin-top:16px;
     }
-    button {
-      cursor: pointer;
+    #searchInput {
+      width:100%;
+      max-width:600px;
+      padding:12px 16px;
+      border-radius:8px;
+      border:none;
+      font-size:1rem;
     }
     #skillForm {
-      margin: 16px 0;
-      max-width: 500px;
-      display: none;
-      background: white;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.07);
+      display:none;
+      max-width:600px;
+      margin:16px auto;
+      background:#fff;
+      padding:16px;
+      border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    }
+    #skillForm input {
+      width:100%;
+      padding:10px;
+      margin-bottom:10px;
+      border:1px solid #ccc;
+      border-radius:6px;
+    }
+    #skillForm button {
+      padding:10px 18px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
     }
     .card {
-      background: white;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      background:#fff;
+      border-radius:8px;
+      padding:16px;
+      margin:16px auto;
+      max-width:600px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .card h3 {
+      margin:0 0 8px;
+      color:#0058c9;
+    }
+    .card p {
+      margin:6px 0;
     }
     .card button {
-      margin-right: 6px;
+      background:#f0f0f0;
+      border:1px solid #ccc;
+      padding:6px 12px;
+      border-radius:6px;
+      cursor:pointer;
+      margin-right:8px;
     }
-    #skillCards {
-      margin-bottom: 40px;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-    .small {
-      font-size: 0.8rem;
-      color: #555;
-    }
+    .small { font-size:0.75rem; color:#555; margin-top:6px; }
   </style>
 </head>
 <body>
   <header>
-    <div style="flex:1; min-width:200px;">
+    <div style="max-width:1000px; margin:0 auto;">
       <h1>SL Skills Hub</h1>
-      <p style="margin:4px 0;">Find skilled people near you in Sierra Leone</p>
-    </div>
+      <p>Find skilled people near you in Sierra Leone</p>
 
-    <div class="auth-buttons">
-      <button onclick="googleLogin()">Login with Google</button>
-      <button onclick="googleLogout()">Logout</button>
-      <div class="auth-info">
-        <img id="userPhoto" alt="profile" />
-        <div>
-          <div id="userEmail"></div>
+      <div class="top-controls">
+        <div class="auth-section">
+          <button onclick="googleLogin()">Login with Google</button>
+          <button onclick="googleLogout()">Logout</button>
+          <div class="auth-info">
+            <img id="userPhoto" alt="profile" />
+            <div id="userEmail"></div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="controls" style="flex:1; justify-content:flex-end;">
-      <button onclick="toggleForm()">Add Your Skill</button>
-      <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-      <input type="text" id="searchInput" oninput="filterSkills()" placeholder="Search skills..." />
+        <button onclick="toggleForm()">Add Your Skill</button>
+        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+      </div>
+
+      <div class="search-wrapper">
+        <input id="searchInput" oninput="filterSkills()" placeholder="Search skills..." />
+      </div>
     </div>
   </header>
 
   <!-- Skill Form -->
   <form id="skillForm" onsubmit="addSkill(event)">
     <input type="hidden" id="skillId" />
-    <div>
-      <input type="text" id="name" placeholder="Name" required />
-    </div>
-    <div>
-      <input type="text" id="skill" placeholder="Skill" required />
-    </div>
-    <div>
-      <input type="text" id="location" placeholder="Location" required />
-    </div>
-    <div>
-      <input type="text" id="contact" placeholder="WhatsApp Link" required />
-    </div>
-    <div>
-      <button type="submit" id="submitBtn">Submit Skill</button>
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="text" id="skill" placeholder="Skill" required />
+    <input type="text" id="location" placeholder="Location" required />
+    <input type="text" id="contact" placeholder="WhatsApp Link" required />
+    <div style="margin-top:8px;">
+      <button id="submitBtn" type="submit">Submit Skill</button>
       <button type="button" onclick="resetForm()">Cancel</button>
     </div>
     <div class="small">You must be logged in to add or edit skills.</div>
@@ -147,9 +183,9 @@
   <!-- Skills List -->
   <div id="skillCards"></div>
 
-  <!-- JS -->
+  <!-- Script -->
   <script>
-    // Firebase config (your real config)
+    // Firebase config (your existing working config)
     const firebaseConfig = {
       apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
       authDomain: "sl-skills-hub.firebaseapp.com",
@@ -159,13 +195,13 @@
       appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
     };
 
-    // Initialize Firebase
+    // Initialize
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    // Login
+    // Google login
     function googleLogin() {
       auth.signInWithPopup(provider)
         .then(result => {
@@ -175,9 +211,9 @@
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
         })
-        .catch(error => {
-          alert("Login failed: " + error.message);
-          console.error(error);
+        .catch(e => {
+          alert("Login failed: " + e.message);
+          console.error(e);
         });
     }
 
@@ -190,10 +226,10 @@
       });
     }
 
-    // Toggle form visibility
+    // Toggle form
     function toggleForm() {
-      const form = document.getElementById("skillForm");
-      form.style.display = form.style.display === "none" ? "block" : "none";
+      const f = document.getElementById("skillForm");
+      f.style.display = f.style.display === "none" ? "block" : "none";
     }
 
     // Dark mode
@@ -201,7 +237,7 @@
       document.body.classList.toggle("dark-mode");
     }
 
-    // Reset form (clear edit state)
+    // Reset form
     function resetForm() {
       document.getElementById("skillForm").reset();
       document.getElementById("skillId").value = "";
@@ -209,7 +245,7 @@
       document.getElementById("skillForm").style.display = "none";
     }
 
-    // Add or update skill
+    // Add / update skill
     function addSkill(event) {
       event.preventDefault();
       const name = document.getElementById("name").value.trim();
@@ -250,7 +286,7 @@
       }
     }
 
-    // Load all skills
+    // Load skills
     function loadSkills() {
       const container = document.getElementById("skillCards");
       container.innerHTML = "";
@@ -263,7 +299,7 @@
         .catch(e => console.error("Load error:", e));
     }
 
-    // Create a single card
+    // Create card
     function createSkillCard(data, id) {
       const card = document.createElement("div");
       card.className = "card";
@@ -278,7 +314,8 @@
         <button onclick="editSkill('${id}', \`${data.name}\`, \`${data.skill}\`, \`${data.location}\`, \`${data.contact}\`)">Edit</button>
         <button onclick="deleteSkill('${id}')">Delete</button>
       `;
-      document.getElementById("skillCards").appendChild(card);
+      container = document.getElementById("skillCards");
+      container.appendChild(card);
     }
 
     // Edit
@@ -303,7 +340,7 @@
         .catch(e => alert("Delete failed: " + e.message));
     }
 
-    // Search/filter
+    // Search
     function filterSkills() {
       const q = document.getElementById("searchInput").value.toLowerCase();
       document.querySelectorAll(".card").forEach(card => {
@@ -313,7 +350,7 @@
     }
 
     // On load
-    window.onload = () => {
+    window.onload = function () {
       loadSkills();
       auth.onAuthStateChanged(user => {
         if (user) {
