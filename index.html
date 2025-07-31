@@ -52,7 +52,7 @@
       font-weight: 600;
     }
     .auth-section {
-      margin-top:8px;
+      margin-top: 8px;
       display: inline-flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -185,7 +185,7 @@
 
   <!-- Script -->
   <script>
-    // Firebase config (your working config)
+    // Firebase config (your existing working config)
     const firebaseConfig = {
       apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
       authDomain: "sl-skills-hub.firebaseapp.com",
@@ -210,7 +210,6 @@
           document.getElementById("userPhoto").src = user.photoURL;
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
-          loadSkills(); // reload to get owner-specific buttons
         })
         .catch(e => {
           alert("Login failed: " + e.message);
@@ -224,7 +223,6 @@
         document.getElementById("userEmail").innerText = "";
         document.getElementById("userPhoto").style.display = "none";
         resetForm();
-        loadSkills(); // reload so edit/delete disappear if not owner
       });
     }
 
@@ -247,7 +245,7 @@
       document.getElementById("skillForm").style.display = "none";
     }
 
-    // Add / update skill with UID
+    // Add / update skill
     function addSkill(event) {
       event.preventDefault();
       const name = document.getElementById("name").value.trim();
@@ -261,19 +259,12 @@
         return;
       }
 
-      const user = auth.currentUser;
-      if (!user) {
-        alert("You must be logged in to add/edit a skill.");
-        return;
-      }
-
       const payload = {
         name,
         skill,
         location,
         contact,
-        createdAt: new Date().toISOString(),
-        uid: user.uid
+        createdAt: new Date().toISOString()
       };
 
       if (skillId) {
@@ -308,22 +299,11 @@
         .catch(e => console.error("Load error:", e));
     }
 
-    // Create card with owner check
+    // Create card
     function createSkillCard(data, id) {
       const card = document.createElement("div");
       card.className = "card";
       const date = data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown";
-
-      const currentUser = auth.currentUser;
-      const isOwner = currentUser && data.uid && data.uid === currentUser.uid;
-
-      let buttons = "";
-      if (isOwner) {
-        buttons = `
-          <button onclick="editSkill('${id}', \`${data.name}\`, \`${data.skill}\`, \`${data.location}\`, \`${data.contact}\`)">Edit</button>
-          <button onclick="deleteSkill('${id}')">Delete</button>
-        `;
-      }
 
       card.innerHTML = `
         <h3>${data.name}</h3>
@@ -331,10 +311,11 @@
         <p><strong>Location:</strong> ${data.location}</p>
         <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
         <p><em>Posted on:</em> ${date}</p>
-        ${buttons}
+        <button onclick="editSkill('${id}', \`${data.name}\`, \`${data.skill}\`, \`${data.location}\`, \`${data.contact}\`)">Edit</button>
+        <button onclick="deleteSkill('${id}')">Delete</button>
       `;
-
-      document.getElementById("skillCards").appendChild(card);
+      container = document.getElementById("skillCards");
+      container.appendChild(card);
     }
 
     // Edit
@@ -382,8 +363,6 @@
           document.getElementById("userPhoto").style.display = "none";
           resetForm();
         }
-        // reload so owner-permissions reflect current user
-        loadSkills();
       });
     };
   </script>
