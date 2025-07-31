@@ -78,151 +78,160 @@
 
   <!-- Skills List -->
   <div id="skillCards"></div>
+<!-- Firebase SDKs (v8.x) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <script>
-    // 🔥 Replace this with your Firebase config
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+<script>
+  // ✅ Your Correct Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+    authDomain: "sl-skills-hub.firebaseapp.com",
+    projectId: "sl-skills-hub",
+    storageBucket: "sl-skills-hub.appspot.com",
+    messagingSenderId: "125049368940",
+    appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const provider = new firebase.auth.GoogleAuthProvider();
+  // ✅ Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const provider = new firebase.auth.GoogleAuthProvider();
 
-    function login() {
-      auth.signInWithPopup(provider)
-        .then(result => {
-          const user = result.user;
-          document.getElementById("userEmail").innerText = user.email;
-          document.getElementById("userPhoto").src = user.photoURL;
-          document.getElementById("userPhoto").style.display = "inline";
-        })
-        .catch(error => {
-          alert("Login failed: " + error.message);
-        });
-    }
-
-    function logout() {
-      auth.signOut()
-        .then(() => {
-          document.getElementById("userEmail").innerText = "";
-          document.getElementById("userPhoto").style.display = "none";
-        });
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
-    }
-
-    function toggleForm() {
-      const form = document.getElementById("skillForm");
-      form.style.display = form.style.display === "none" ? "block" : "none";
-    }
-
-    function addSkill(event) {
-      event.preventDefault();
-
-      const name = document.getElementById("name").value.trim();
-      const skill = document.getElementById("skill").value.trim();
-      const location = document.getElementById("location").value.trim();
-      const contact = document.getElementById("contact").value.trim();
-
-      if (!name || !skill || !location || !contact) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      db.collection("skills").add({
-        name,
-        skill,
-        location,
-        contact,
-        createdAt: new Date().toISOString()
+  // ✅ Google Login
+  function googleLogin() {
+    auth.signInWithPopup(provider)
+      .then(result => {
+        const user = result.user;
+        document.getElementById("userEmail").innerText = user.email;
+        document.getElementById("userPhoto").src = user.photoURL;
+        document.getElementById("userPhoto").style.display = "inline";
+        document.getElementById("skillForm").style.display = "block";
       })
+      .catch(error => {
+        alert("Login failed: " + error.message);
+      });
+  }
+
+  // ✅ Google Logout
+  function googleLogout() {
+    auth.signOut().then(() => {
+      document.getElementById("userEmail").innerText = "";
+      document.getElementById("userPhoto").style.display = "none";
+      document.getElementById("skillForm").style.display = "none";
+    });
+  }
+
+  // ✅ Toggle Form Display
+  function toggleForm() {
+    const form = document.getElementById("skillForm");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  // ✅ Toggle Dark Mode
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  // ✅ Add Skill
+  function addSkill(event) {
+    event.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const skill = document.getElementById("skill").value.trim();
+    const location = document.getElementById("location").value.trim();
+    const contact = document.getElementById("contact").value.trim();
+
+    if (!name || !skill || !location || !contact) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    db.collection("skills").add({
+      name,
+      skill,
+      location,
+      contact,
+      createdAt: new Date().toISOString()
+    })
+    .then(() => {
+      alert("Skill added!");
+      document.getElementById("skillForm").reset();
+      document.getElementById("skillForm").style.display = "none";
+      loadSkills();
+    })
+    .catch(error => {
+      alert("Error adding skill: " + error.message);
+    });
+  }
+
+  // ✅ Load Skills
+  function loadSkills() {
+    db.collection("skills").get()
+      .then(snapshot => {
+        const skillCards = document.getElementById("skillCards");
+        skillCards.innerHTML = "";
+        snapshot.forEach(doc => {
+          createSkillCard(doc.data(), doc.id);
+        });
+      });
+  }
+
+  // ✅ Create Skill Card
+  function createSkillCard(data, id) {
+    const card = document.createElement("div");
+    card.className = "card";
+    const date = data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown";
+
+    card.innerHTML = `
+      <h3>${data.name}</h3>
+      <p><strong>Skill:</strong> ${data.skill}</p>
+      <p><strong>Location:</strong> ${data.location}</p>
+      <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
+      <p><em>Posted on:</em> ${date}</p>
+      <button onclick="deleteSkill('${id}')">Delete</button>
+    `;
+
+    document.getElementById("skillCards").appendChild(card);
+  }
+
+  // ✅ Delete Skill
+  function deleteSkill(id) {
+    db.collection("skills").doc(id).delete()
       .then(() => {
-        alert("Skill added!");
-        document.getElementById("skillForm").reset();
-        document.getElementById("skillForm").style.display = "none";
+        alert("Skill deleted!");
         loadSkills();
       })
       .catch(error => {
-        alert("Error adding skill: " + error.message);
+        alert("Failed to delete skill: " + error.message);
       });
-    }
+  }
 
-    function loadSkills() {
-      db.collection("skills").get()
-        .then(snapshot => {
-          const skillCards = document.getElementById("skillCards");
-          skillCards.innerHTML = "";
-          snapshot.forEach(doc => {
-            createSkillCard(doc.data(), doc.id);
-          });
-        });
-    }
+  // ✅ Search Filter
+  function filterSkills() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = text.includes(query) ? "block" : "none";
+    });
+  }
 
-    function createSkillCard(data, id) {
-      const card = document.createElement("div");
-      card.className = "card";
-      const date = data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown";
-
-      card.innerHTML = `
-        <h3>${data.name}</h3>
-        <p><strong>Skill:</strong> ${data.skill}</p>
-        <p><strong>Location:</strong> ${data.location}</p>
-        <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-        <p><em>Posted on:</em> ${date}</p>
-        <button onclick="editSkill('${id}')">Edit</button>
-        <button onclick="deleteSkill('${id}')">Delete</button>
-      `;
-
-      document.getElementById("skillCards").appendChild(card);
-    }
-
-    function deleteSkill(id) {
-      db.collection("skills").doc(id).delete()
-        .then(() => {
-          alert("Skill deleted!");
-          loadSkills();
-        })
-        .catch(error => {
-          alert("Failed to delete skill: " + error.message);
-        });
-    }
-
-    function filterSkills() {
-      const query = document.getElementById("searchInput").value.toLowerCase();
-      const cards = document.querySelectorAll(".card");
-      cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? "block" : "none";
-      });
-    }
-
-    function editSkill(id) {
-      alert("Edit feature coming soon!");
-    }
-
-    window.onload = () => {
-      loadSkills();
-
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          document.getElementById("userEmail").innerText = user.email;
-          document.getElementById("userPhoto").src = user.photoURL;
-          document.getElementById("userPhoto").style.display = "inline";
-        } else {
-          document.getElementById("userEmail").innerText = "";
-          document.getElementById("userPhoto").style.display = "none";
-        }
-      });
-    };
-  </script>
-</body>
-</html>
+  // ✅ Auto Login State Checker
+  window.onload = () => {
+    loadSkills();
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("userEmail").innerText = user.email;
+        document.getElementById("userPhoto").src = user.photoURL;
+        document.getElementById("userPhoto").style.display = "inline";
+        document.getElementById("skillForm").style.display = "block";
+      } else {
+        document.getElementById("userEmail").innerText = "";
+        document.getElementById("userPhoto").style.display = "none";
+        document.getElementById("skillForm").style.display = "none";
+      }
+    });
+  };
+</script>
