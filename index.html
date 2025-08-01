@@ -129,6 +129,19 @@
     .card p {
       margin:6px 0;
     }
+    .card .poster {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:4px 0;
+      font-size:0.85rem;
+    }
+    .card .poster img {
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      object-fit:cover;
+    }
     .card button {
       background:#f0f0f0;
       border:1px solid #ccc;
@@ -138,6 +151,10 @@
       margin-right:8px;
     }
     .small { font-size:0.75rem; color:#555; margin-top:6px; }
+    .disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -156,7 +173,7 @@
           </div>
         </div>
 
-        <button onclick="toggleForm()">Add Your Skill</button>
+        <button id="addSkillBtn" onclick="toggleForm()">Add Your Skill</button>
         <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
       </div>
 
@@ -183,7 +200,6 @@
   <!-- Skills List -->
   <div id="skillCards"></div>
 
-  <!-- Script -->
   <script>
     // Firebase config (your working config)
     const firebaseConfig = {
@@ -195,7 +211,7 @@
       appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
     };
 
-    // Initialize
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -210,7 +226,8 @@
           document.getElementById("userPhoto").src = user.photoURL;
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
-          loadSkills(); // reload to get owner-specific buttons
+          document.getElementById("addSkillBtn").disabled = false;
+          loadSkills(); // refresh to show owner buttons
         })
         .catch(e => {
           alert("Login failed: " + e.message);
@@ -224,12 +241,17 @@
         document.getElementById("userEmail").innerText = "";
         document.getElementById("userPhoto").style.display = "none";
         resetForm();
-        loadSkills(); // reload so edit/delete disappear if not owner
+        document.getElementById("addSkillBtn").disabled = true;
+        loadSkills(); // refresh so edit/delete hidden
       });
     }
 
-    // Toggle form
+    // Toggle form (only if logged in)
     function toggleForm() {
+      if (!auth.currentUser) {
+        alert("You must be logged in to add a skill.");
+        return;
+      }
       const f = document.getElementById("skillForm");
       f.style.display = f.style.display === "none" ? "block" : "none";
     }
@@ -247,7 +269,7 @@
       document.getElementById("skillForm").style.display = "none";
     }
 
-    // Add / update skill with UID
+    // Add or update skill with user attribution
     function addSkill(event) {
       event.preventDefault();
       const name = document.getElementById("name").value.trim();
@@ -273,7 +295,9 @@
         location,
         contact,
         createdAt: new Date().toISOString(),
-        uid: user.uid
+        uid: user.uid,
+        posterName: user.displayName || user.email,
+        posterPhoto: user.photoURL || ""
       };
 
       if (skillId) {
@@ -308,7 +332,7 @@
         .catch(e => console.error("Load error:", e));
     }
 
-    // Create card with owner check
+    // Create card with owner check and poster info
     function createSkillCard(data, id) {
       const card = document.createElement("div");
       card.className = "card";
@@ -316,6 +340,25 @@
 
       const currentUser = auth.currentUser;
       const isOwner = currentUser && data.uid && data.uid === currentUser.uid;
+
+      // Build poster display
+      let posterHTML = `<p><em>Posted on:</em> ${date}</p>`;
+      if (data.posterName || data.posterPhoto) {
+        posterHTML = `
+          <div class="poster">
+            <div>
+              <strong>Posted by:</strong> ${data.posterName}
+            </div>
+            ${data.posterPhoto ? `<img src="${data.posterPhoto}" alt="poster">` : ''}
+          </div>
+          <p><em>Posted on:</em> ${date}</p>
+        `;
+      } else if (data.uid) {
+        posterHTML = `
+          <p><strong>Posted by:</strong> ${data.uid.slice(0,6)}... </p>
+          <p><em>Posted on:</em> ${date}</p>
+        `;
+      }
 
       let buttons = "";
       if (isOwner) {
@@ -330,10 +373,9 @@
         <p><strong>Skill:</strong> ${data.skill}</p>
         <p><strong>Location:</strong> ${data.location}</p>
         <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
-        <p><em>Posted on:</em> ${date}</p>
+        ${posterHTML}
         ${buttons}
       `;
-
       document.getElementById("skillCards").appendChild(card);
     }
 
@@ -377,13 +419,14 @@
           document.getElementById("userPhoto").src = user.photoURL;
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
+          document.getElementById("addSkillBtn").disabled = false;
         } else {
           document.getElementById("userEmail").innerText = "";
           document.getElementById("userPhoto").style.display = "none";
           resetForm();
+          document.getElementById("addSkillBtn").disabled = true;
         }
-        // reload so owner-permissions reflect current user
-        loadSkills();
+        loadSkills(); // refresh cards so owner buttons reflect current user
       });
     };
   </script>
