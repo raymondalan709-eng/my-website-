@@ -43,13 +43,17 @@
       margin-bottom: 12px;
       align-items: center;
     }
-    .top-controls button {
+    .top-controls button, .top-controls select {
       background: #fff;
       border: none;
       padding: 10px 18px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .top-controls select {
+      padding: 8px 12px;
     }
     .auth-section {
       margin-top:8px;
@@ -65,6 +69,8 @@
       padding: 8px 16px;
       border-radius:6px;
       cursor:pointer;
+      font-weight:600;
+      font-size:0.9rem;
     }
     .auth-info {
       display:flex;
@@ -84,7 +90,7 @@
     }
     #searchInput {
       width:100%;
-      max-width:600px;
+      max-width:300px;
       padding:12px 16px;
       border-radius:8px;
       border:none;
@@ -99,12 +105,13 @@
       border-radius:8px;
       box-shadow:0 4px 12px rgba(0,0,0,0.08);
     }
-    #skillForm input {
+    #skillForm input, #skillForm select {
       width:100%;
       padding:10px;
       margin-bottom:10px;
       border:1px solid #ccc;
       border-radius:6px;
+      font-size:0.9rem;
     }
     #skillForm button {
       padding:10px 18px;
@@ -112,6 +119,7 @@
       border-radius:6px;
       cursor:pointer;
       font-weight:600;
+      font-size:0.9rem;
     }
     .card {
       background:#fff;
@@ -149,6 +157,7 @@
       border-radius:6px;
       cursor:pointer;
       margin-right:8px;
+      font-size:0.85rem;
     }
     .small { font-size:0.75rem; color:#555; margin-top:6px; }
     .disabled {
@@ -175,10 +184,16 @@
 
         <button id="addSkillBtn" onclick="toggleForm()">Add Your Skill</button>
         <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+        <select id="categoryFilter" onchange="applyFilters()">
+          <option value="all">All Categories</option>
+        </select>
+
+        <button onclick="promptNewCategory()">+ Add Category</button>
       </div>
 
       <div class="search-wrapper">
-        <input id="searchInput" oninput="filterSkills()" placeholder="Search skills..." />
+        <input id="searchInput" oninput="applyFilters()" placeholder="Search skills..." />
       </div>
     </div>
   </header>
@@ -188,6 +203,9 @@
     <input type="hidden" id="skillId" />
     <input type="text" id="name" placeholder="Name" required />
     <input type="text" id="skill" placeholder="Skill" required />
+    <select id="category" required>
+      <option value="">Select category</option>
+    </select>
     <input type="text" id="location" placeholder="Location" required />
     <input type="text" id="contact" placeholder="WhatsApp Link" required />
     <div style="margin-top:8px;">
@@ -224,13 +242,59 @@
       if (input.startsWith("https://wa.me/") || input.startsWith("http://wa.me/")) {
         return input;
       }
-      // Strip non-digit characters
       let digits = input.replace(/\D/g, "");
-      // Default to Sierra Leone code if missing (232)
       if (!digits.startsWith("232")) {
         digits = "232" + digits;
       }
       return `https://wa.me/${digits}`;
+    }
+
+    // Load categories into the filter and form selects
+    async function loadCategories() {
+      const filter = document.getElementById("categoryFilter");
+      const formSelect = document.getElementById("category");
+
+      // reset
+      filter.innerHTML = '<option value="all">All Categories</option>';
+      formSelect.innerHTML = '<option value="">Select category</option>';
+
+      try {
+        const snapshot = await db.collection("categories").orderBy("name").get();
+        snapshot.forEach(doc => {
+          const cat = doc.data().name;
+
+          const opt = document.createElement("option");
+          opt.value = cat;
+          opt.textContent = cat;
+          filter.appendChild(opt);
+
+          const opt2 = document.createElement("option");
+          opt2.value = cat;
+          opt2.textContent = cat;
+          formSelect.appendChild(opt2);
+        });
+      } catch (e) {
+        console.error("Failed to load categories:", e);
+      }
+    }
+
+    // Prompt to add a new category
+    async function promptNewCategory() {
+      const name = prompt("New category name (e.g., Carpentry):");
+      if (!name) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      try {
+        const existing = await db.collection("categories").where("name", "==", trimmed).get();
+        if (!existing.empty) {
+          alert("Category already exists.");
+          return;
+        }
+        await db.collection("categories").add({ name: trimmed });
+        await loadCategories();
+      } catch (e) {
+        alert("Failed to add category: " + e.message);
+      }
     }
 
     // Google login
@@ -243,7 +307,8 @@
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
           document.getElementById("addSkillBtn").disabled = false;
-          loadSkills(); // refresh to show correct owner buttons
+          loadCategories();
+          loadSkills();
         })
         .catch(e => {
           alert("Login failed: " + e.message);
@@ -258,7 +323,8 @@
         document.getElementById("userPhoto").style.display = "none";
         resetForm();
         document.getElementById("addSkillBtn").disabled = true;
-        loadSkills(); // refresh so owner buttons disappear
+        loadCategories();
+        loadSkills();
       });
     }
 
@@ -285,17 +351,18 @@
       document.getElementById("skillForm").style.display = "none";
     }
 
-    // Add or update skill with user attribution and normalized WhatsApp
+    // Add or update skill with category and owner info
     function addSkill(event) {
       event.preventDefault();
       const name = document.getElementById("name").value.trim();
       const skill = document.getElementById("skill").value.trim();
+      const categoryValue = document.getElementById("category").value;
       const location = document.getElementById("location").value.trim();
       const rawContact = document.getElementById("contact").value.trim();
       const contact = normalizeWhatsApp(rawContact);
       const skillId = document.getElementById("skillId").value;
 
-      if (!name || !skill || !location || !rawContact) {
+      if (!name || !skill || !categoryValue || !location || !rawContact) {
         alert("Please fill all fields.");
         return;
       }
@@ -309,6 +376,7 @@
       const payload = {
         name,
         skill,
+        category: categoryValue,
         location,
         contact,
         createdAt: new Date().toISOString(),
@@ -322,7 +390,7 @@
           .then(() => {
             alert("Skill updated!");
             resetForm();
-            loadSkills();
+            applyFilters(); // refresh with filters
           })
           .catch(e => alert("Update failed: " + e.message));
       } else {
@@ -330,7 +398,7 @@
           .then(() => {
             alert("Skill added!");
             resetForm();
-            loadSkills();
+            applyFilters();
           })
           .catch(e => alert("Add failed: " + e.message));
       }
@@ -345,6 +413,7 @@
           snapshot.forEach(doc => {
             createSkillCard(doc.data(), doc.id);
           });
+          applyFilters(); // apply current filter after loading
         })
         .catch(e => console.error("Load error:", e));
     }
@@ -386,7 +455,7 @@
       let buttons = "";
       if (isOwner) {
         buttons = `
-          <button onclick="editSkill('${id}', \`${data.name}\`, \`${data.skill}\`, \`${data.location}\`, \`${data.contact}\`)">Edit</button>
+          <button onclick="editSkill('${id}', \`${data.name}\`, \`${data.skill}\`, \`${data.category || ""}\`, \`${data.location}\`, \`${data.contact}\`)">Edit</button>
           <button onclick="deleteSkill('${id}')">Delete</button>
         `;
       }
@@ -394,6 +463,7 @@
       card.innerHTML = `
         <h3>${data.name}</h3>
         <p><strong>Skill:</strong> ${data.skill}</p>
+        <p><strong>Category:</strong> ${data.category || "Uncategorized"}</p>
         <p><strong>Location:</strong> ${data.location}</p>
         <p><strong>Contact:</strong> <a href="${contactHref}" target="_blank">WhatsApp</a></p>
         ${posterHTML}
@@ -403,11 +473,11 @@
     }
 
     // Edit
-    function editSkill(id, name, skill, location, contact) {
+    function editSkill(id, name, skill, category, location, contact) {
       document.getElementById("name").value = name;
       document.getElementById("skill").value = skill;
+      document.getElementById("category").value = category;
       document.getElementById("location").value = location;
-      // put raw input (we store normalized) — show as user entered
       document.getElementById("contact").value = contact;
       document.getElementById("skillId").value = id;
       document.getElementById("submitBtn").innerText = "Update Skill";
@@ -425,17 +495,21 @@
         .catch(e => alert("Delete failed: " + e.message));
     }
 
-    // Search
-    function filterSkills() {
+    // Combined filtering: text + category
+    function applyFilters() {
       const q = document.getElementById("searchInput").value.toLowerCase();
+      const category = document.getElementById("categoryFilter").value.toLowerCase();
       document.querySelectorAll(".card").forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(q) ? "block" : "none";
+        const content = card.textContent.toLowerCase();
+        const matchesText = content.includes(q);
+        const matchesCategory = category === "all" || content.includes(category);
+        card.style.display = (matchesText && matchesCategory) ? "block" : "none";
       });
     }
 
     // On load
     window.onload = function () {
+      loadCategories();
       loadSkills();
       auth.onAuthStateChanged(user => {
         if (user) {
@@ -450,7 +524,8 @@
           resetForm();
           document.getElementById("addSkillBtn").disabled = true;
         }
-        loadSkills(); // refresh so owner perms update
+        loadCategories();
+        loadSkills();
       });
     };
   </script>
