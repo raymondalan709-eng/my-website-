@@ -217,6 +217,22 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
+    // Normalize WhatsApp input to full wa.me URL
+    function normalizeWhatsApp(input) {
+      if (!input) return "";
+      input = input.trim();
+      if (input.startsWith("https://wa.me/") || input.startsWith("http://wa.me/")) {
+        return input;
+      }
+      // Strip non-digit characters
+      let digits = input.replace(/\D/g, "");
+      // Default to Sierra Leone code if missing (232)
+      if (!digits.startsWith("232")) {
+        digits = "232" + digits;
+      }
+      return `https://wa.me/${digits}`;
+    }
+
     // Google login
     function googleLogin() {
       auth.signInWithPopup(provider)
@@ -227,7 +243,7 @@
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
           document.getElementById("addSkillBtn").disabled = false;
-          loadSkills(); // refresh to show owner buttons
+          loadSkills(); // refresh to show correct owner buttons
         })
         .catch(e => {
           alert("Login failed: " + e.message);
@@ -242,7 +258,7 @@
         document.getElementById("userPhoto").style.display = "none";
         resetForm();
         document.getElementById("addSkillBtn").disabled = true;
-        loadSkills(); // refresh so edit/delete hidden
+        loadSkills(); // refresh so owner buttons disappear
       });
     }
 
@@ -269,16 +285,17 @@
       document.getElementById("skillForm").style.display = "none";
     }
 
-    // Add or update skill with user attribution
+    // Add or update skill with user attribution and normalized WhatsApp
     function addSkill(event) {
       event.preventDefault();
       const name = document.getElementById("name").value.trim();
       const skill = document.getElementById("skill").value.trim();
       const location = document.getElementById("location").value.trim();
-      const contact = document.getElementById("contact").value.trim();
+      const rawContact = document.getElementById("contact").value.trim();
+      const contact = normalizeWhatsApp(rawContact);
       const skillId = document.getElementById("skillId").value;
 
-      if (!name || !skill || !location || !contact) {
+      if (!name || !skill || !location || !rawContact) {
         alert("Please fill all fields.");
         return;
       }
@@ -341,7 +358,7 @@
       const currentUser = auth.currentUser;
       const isOwner = currentUser && data.uid && data.uid === currentUser.uid;
 
-      // Build poster display
+      // Poster section
       let posterHTML = `<p><em>Posted on:</em> ${date}</p>`;
       if (data.posterName || data.posterPhoto) {
         posterHTML = `
@@ -360,6 +377,12 @@
         `;
       }
 
+      // Normalize contact fallback if somehow missing formatting
+      let contactHref = data.contact || "";
+      if (!contactHref.startsWith("http")) {
+        contactHref = normalizeWhatsApp(contactHref);
+      }
+
       let buttons = "";
       if (isOwner) {
         buttons = `
@@ -372,7 +395,7 @@
         <h3>${data.name}</h3>
         <p><strong>Skill:</strong> ${data.skill}</p>
         <p><strong>Location:</strong> ${data.location}</p>
-        <p><strong>Contact:</strong> <a href="${data.contact}" target="_blank">WhatsApp</a></p>
+        <p><strong>Contact:</strong> <a href="${contactHref}" target="_blank">WhatsApp</a></p>
         ${posterHTML}
         ${buttons}
       `;
@@ -384,6 +407,7 @@
       document.getElementById("name").value = name;
       document.getElementById("skill").value = skill;
       document.getElementById("location").value = location;
+      // put raw input (we store normalized) — show as user entered
       document.getElementById("contact").value = contact;
       document.getElementById("skillId").value = id;
       document.getElementById("submitBtn").innerText = "Update Skill";
@@ -426,7 +450,7 @@
           resetForm();
           document.getElementById("addSkillBtn").disabled = true;
         }
-        loadSkills(); // refresh cards so owner buttons reflect current user
+        loadSkills(); // refresh so owner perms update
       });
     };
   </script>
