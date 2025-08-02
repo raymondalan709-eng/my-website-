@@ -189,7 +189,7 @@
           <option value="all">All Categories</option>
         </select>
 
-        <button onclick="promptNewCategory()">+ Add Category</button>
+        <button id="addCategoryBtn" onclick="promptNewCategory()">+ Add Category</button>
       </div>
 
       <div class="search-wrapper">
@@ -235,6 +235,8 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
+    let isAdmin = false;
+
     // Normalize WhatsApp input to full wa.me URL
     function normalizeWhatsApp(input) {
       if (!input) return "";
@@ -249,12 +251,27 @@
       return `https://wa.me/${digits}`;
     }
 
+    // Check if current user is admin
+    async function checkAdmin() {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        const doc = await db.collection("meta").doc("admins").get();
+        const admins = doc.exists ? doc.data().uids || [] : [];
+        isAdmin = admins.includes(user.uid);
+        document.getElementById("addCategoryBtn").style.display = isAdmin ? "inline-block" : "none";
+      } catch (e) {
+        console.error("Admin check failed:", e);
+        isAdmin = false;
+        document.getElementById("addCategoryBtn").style.display = "none";
+      }
+    }
+
     // Load categories into the filter and form selects
     async function loadCategories() {
       const filter = document.getElementById("categoryFilter");
       const formSelect = document.getElementById("category");
 
-      // reset
       filter.innerHTML = '<option value="all">All Categories</option>';
       formSelect.innerHTML = '<option value="">Select category</option>';
 
@@ -278,8 +295,12 @@
       }
     }
 
-    // Prompt to add a new category
+    // Prompt to add a new category (admins only)
     async function promptNewCategory() {
+      if (!isAdmin) {
+        alert("Only admins can add categories.");
+        return;
+      }
       const name = prompt("New category name (e.g., Carpentry):");
       if (!name) return;
       const trimmed = name.trim();
@@ -309,6 +330,7 @@
           document.getElementById("addSkillBtn").disabled = false;
           loadCategories();
           loadSkills();
+          checkAdmin();
         })
         .catch(e => {
           alert("Login failed: " + e.message);
@@ -323,6 +345,8 @@
         document.getElementById("userPhoto").style.display = "none";
         resetForm();
         document.getElementById("addSkillBtn").disabled = true;
+        isAdmin = false;
+        document.getElementById("addCategoryBtn").style.display = "none";
         loadCategories();
         loadSkills();
       });
@@ -390,7 +414,7 @@
           .then(() => {
             alert("Skill updated!");
             resetForm();
-            applyFilters(); // refresh with filters
+            applyFilters();
           })
           .catch(e => alert("Update failed: " + e.message));
       } else {
@@ -413,7 +437,7 @@
           snapshot.forEach(doc => {
             createSkillCard(doc.data(), doc.id);
           });
-          applyFilters(); // apply current filter after loading
+          applyFilters();
         })
         .catch(e => console.error("Load error:", e));
     }
@@ -518,11 +542,14 @@
           document.getElementById("userPhoto").style.display = "inline";
           document.getElementById("skillForm").style.display = "block";
           document.getElementById("addSkillBtn").disabled = false;
+          checkAdmin();
         } else {
           document.getElementById("userEmail").innerText = "";
           document.getElementById("userPhoto").style.display = "none";
           resetForm();
           document.getElementById("addSkillBtn").disabled = true;
+          isAdmin = false;
+          document.getElementById("addCategoryBtn").style.display = "none";
         }
         loadCategories();
         loadSkills();
