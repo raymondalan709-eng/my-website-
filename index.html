@@ -1,128 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SL Skills Hub</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
-    header { background: #333; color: #fff; padding: 20px; text-align: center; }
-    .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .skill { border-bottom: 1px solid #ddd; padding: 10px 0; }
-    .skill:last-child { border-bottom: none; }
-    button { margin-left: 10px; }
-    .dark-mode { background: #121212; color: #e0e0e0; }
-    .dark-mode header { background: #1f1f1f; }
-    .dark-mode .container { background: #1e1e1e; }
-    .dark-mode input, .dark-mode button { background: #333; color: #e0e0e0; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SL Skills Hub</title>
+<style>
+  /* Your original CSS exactly as before */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    color: black;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background-color: #4CAF50;
+    padding: 10px;
+    color: white;
+    text-align: center;
+  }
+  #skillForm {
+    margin: 20px;
+  }
+  input, button, select {
+    padding: 8px;
+    margin: 5px 0;
+    font-size: 1rem;
+  }
+  #skillsList {
+    margin: 20px;
+    list-style-type: none;
+    padding: 0;
+  }
+  #skillsList li {
+    background-color: #f4f4f4;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  .skill-header {
+    font-weight: bold;
+  }
+  .skill-buttons button {
+    margin-left: 10px;
+  }
+  /* Dark mode button style */
+  #darkModeToggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>SL Skills Hub</h1>
-    <button id="loginBtn">Login with Google</button>
-    <button id="logoutBtn" style="display:none;">Logout</button>
-  </header>
-  <div class="container">
-    <input type="text" id="skillInput" placeholder="Enter a skill">
-    <button id="addSkillBtn">Add Skill</button>
-    <button id="toggleDarkModeBtn">Toggle Dark Mode</button>
-    <h2>Skills</h2>
-    <input type="text" id="searchInput" placeholder="Search skills">
-    <div id="skillsList"></div>
-  </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBlv9yfEDL3OugOpRHrvDjGbQ3rKPGUAY",
-      authDomain: "sl-skills-hub.firebaseapp.com",
-      projectId: "sl-skills-hub",
-      storageBucket: "sl-skills-hub.appspot.com",
-      messagingSenderId: "125049368940",
-      appId: "1:125049368940:web:76d4a47aa9eb7c34913449"
-    };
+<header>
+  <h1>SL Skills Hub</h1>
+</header>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+<button id="darkModeToggle">Toggle Dark Mode</button>
+
+<form id="skillForm">
+  <input type="text" id="skillName" placeholder="Skill name" required />
+  <select id="skillCategory" required>
+    <option value="">Select category</option>
+    <option value="Web Development">Web Development</option>
+    <option value="Mobile Apps">Mobile Apps</option>
+    <option value="Data Science">Data Science</option>
+    <option value="Other">Other</option>
+  </select>
+  <button type="submit">Add Skill</button>
+</form>
+
+<input type="text" id="searchInput" placeholder="Search skills..." />
+
+<ul id="skillsList"></ul>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // Firebase config (replace with your actual config)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // Admin UID - ONLY this UID can edit/delete all skills
+  const ADMIN_UID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
+
+  // DOM Elements
+  const skillForm = document.getElementById('skillForm');
+  const skillNameInput = document.getElementById('skillName');
+  const skillCategorySelect = document.getElementById('skillCategory');
+  const skillsList = document.getElementById('skillsList');
+  const searchInput = document.getElementById('searchInput');
+  const darkModeToggle = document.getElementById('darkModeToggle');
+
+  let currentUser = null;
+  let skillsData = [];
+
+  // Dark mode toggle
+  darkModeToggle.addEventListener('click', () => {
+    document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
+    document.body.style.color = document.body.style.color === 'white' ? 'black' : 'white';
+  });
+
+  // User Login via Google
+  function signIn() {
     const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(console.error);
+  }
 
-    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
+  function signOut() {
+    auth.signOut();
+  }
 
-    let currentUser = null;
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      console.log("Logged in as:", user.displayName);
+      loadSkills();
+    } else {
+      currentUser = null;
+      console.log("Not logged in");
+      skillsList.innerHTML = "<li>Please log in to see skills.</li>";
+      signIn();
+    }
+  });
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("loginBtn").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "inline";
+  // Add skill to Firestore
+  skillForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("Please log in first.");
+      return;
+    }
+    const name = skillNameInput.value.trim();
+    const category = skillCategorySelect.value;
+    if (!name || !category) return;
+
+    const newSkill = {
+      name,
+      category,
+      userId: currentUser.uid,
+      userName: currentUser.displayName || "Anonymous",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    db.collection('skills').add(newSkill)
+      .then(() => {
+        skillNameInput.value = '';
+        skillCategorySelect.value = '';
         loadSkills();
-      } else {
-        currentUser = null;
-        document.getElementById("loginBtn").style.display = "inline";
-        document.getElementById("logoutBtn").style.display = "none";
-        document.getElementById("skillsList").innerHTML = "";
-      }
-    });
+      })
+      .catch(console.error);
+  });
 
-    document.getElementById("loginBtn").onclick = () => auth.signInWithPopup(provider);
-    document.getElementById("logoutBtn").onclick = () => auth.signOut();
-
-    document.getElementById("addSkillBtn").onclick = async () => {
-      const skill = document.getElementById("skillInput").value.trim();
-      if (skill && currentUser) {
-        await db.collection("skills").add({
-          text: skill,
-          userId: currentUser.uid,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        document.getElementById("skillInput").value = "";
-      }
-    };
-
-    function loadSkills() {
-      db.collection("skills").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-        const skillsList = document.getElementById("skillsList");
-        skillsList.innerHTML = "";
+  // Load skills from Firestore
+  function loadSkills() {
+    db.collection('skills').orderBy('createdAt', 'desc').get()
+      .then(snapshot => {
+        skillsData = [];
         snapshot.forEach(doc => {
-          const data = doc.data();
-          const div = document.createElement("div");
-          div.className = "skill";
-          div.innerHTML = `
-            <span>${data.text}</span>
-            ${(currentUser.uid === data.userId || currentUser.uid === adminUID) ? `
-              <button onclick="editSkill('${doc.id}', '${data.text}')">Edit</button>
-              <button onclick="deleteSkill('${doc.id}')">Delete</button>
-            ` : ""}
-          `;
-          skillsList.appendChild(div);
+          let skill = doc.data();
+          skill.id = doc.id;
+          skillsData.push(skill);
         });
-      });
-    }
+        displaySkills(skillsData);
+      })
+      .catch(console.error);
+  }
 
-    async function deleteSkill(id) {
-      await db.collection("skills").doc(id).delete();
-    }
+  // Display skills filtered by search
+  function displaySkills(skills) {
+    const filterText = searchInput.value.toLowerCase();
+    skillsList.innerHTML = '';
 
-    function editSkill(id, oldText) {
-      const newText = prompt("Edit skill:", oldText);
-      if (newText !== null && newText.trim() !== "") {
-        db.collection("skills").doc(id).update({ text: newText.trim() });
+    skills.filter(skill => 
+      skill.name.toLowerCase().includes(filterText) ||
+      skill.category.toLowerCase().includes(filterText) ||
+      (skill.userName && skill.userName.toLowerCase().includes(filterText))
+    ).forEach(skill => {
+      const li = document.createElement('li');
+
+      // Skill info
+      let dateStr = '';
+      if (skill.createdAt && skill.createdAt.toDate) {
+        dateStr = ' - ' + skill.createdAt.toDate().toLocaleString();
       }
+
+      li.innerHTML = `
+        <span class="skill-header">${skill.name}</span> (${skill.category}) by ${skill.userName || 'Unknown'}${dateStr}
+        <span class="skill-buttons"></span>
+      `;
+
+      // Buttons container
+      const btns = li.querySelector('.skill-buttons');
+
+      // Only admin or skill owner can edit/delete
+      if (currentUser && (currentUser.uid === ADMIN_UID || currentUser.uid === skill.userId)) {
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => {
+          editSkill(skill);
+        });
+        btns.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => {
+          if (confirm(`Delete skill "${skill.name}"?`)) {
+            db.collection('skills').doc(skill.id).delete().then(loadSkills);
+          }
+        });
+        btns.appendChild(deleteBtn);
+      }
+
+      skillsList.appendChild(li);
+    });
+  }
+
+  // Edit skill
+  function editSkill(skill) {
+    const newName = prompt("Edit skill name:", skill.name);
+    if (newName === null) return; // cancelled
+    const newCategory = prompt("Edit category:", skill.category);
+    if (newCategory === null) return; // cancelled
+
+    if (newName.trim() === '' || newCategory.trim() === '') {
+      alert("Name and category cannot be empty.");
+      return;
     }
 
-    document.getElementById("searchInput").addEventListener("input", e => {
-      const filter = e.target.value.toLowerCase();
-      const skills = document.querySelectorAll(".skill span");
-      skills.forEach(skill => {
-        skill.parentElement.style.display = skill.textContent.toLowerCase().includes(filter) ? "" : "none";
-      });
-    });
+    db.collection('skills').doc(skill.id).update({
+      name: newName.trim(),
+      category: newCategory.trim()
+    }).then(loadSkills)
+      .catch(console.error);
+  }
 
-    document.getElementById("toggleDarkModeBtn").onclick = () => {
-      document.body.classList.toggle("dark-mode");
-    };
-  </script>
+  // Search input listener
+  searchInput.addEventListener('input', () => {
+    displaySkills(skillsData);
+  });
+
+</script>
+
 </body>
 </html>
