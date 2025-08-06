@@ -1,225 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SL Skills Hub</title>
-
-  <!-- Firebase (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
   <style>
-    * { box-sizing:border-box; }
     body {
-      margin:0;
-      font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-      background: #f0f2f7;
-      color: #222;
-    }
-    body.dark-mode {
-      background: #0f1119;
-      color: #eee;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
     }
     header {
-      background: #0f80e6;
+      background-color: #333;
       color: white;
-      padding: 1.5rem;
+      padding: 10px;
       text-align: center;
     }
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
     }
-    header p {
-      margin: 4px 0 16px;
-    }
-    .top-controls {
-      display: inline-flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 12px;
-      align-items: center;
-    }
-    .top-controls button, .top-controls select {
-      background: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 6px;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
     }
-    .top-controls select {
-      padding: 8px 12px;
-    }
-    .auth-section {
-      margin-top:8px;
-      display: inline-flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-    }
-    .auth-section button {
-      background: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius:6px;
-      cursor:pointer;
-      font-weight:600;
-      font-size:0.9rem;
-    }
-    .auth-info {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:600;
-    }
-    #userPhoto {
-      width:36px;
-      height:36px;
-      border-radius:50%;
-      display:none;
-      object-fit:cover;
-    }
-    .search-wrapper {
-      margin-top:16px;
-    }
-    #searchInput {
-      width:100%;
-      max-width:300px;
-      padding:12px 16px;
-      border-radius:8px;
-      border:none;
-      font-size:1rem;
-    }
-    #skillForm {
-      display:none;
-      max-width:600px;
-      margin:16px auto;
-      background:#fff;
-      padding:16px;
-      border-radius:8px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.08);
-    }
-    #skillForm input, #skillForm select {
-      width:100%;
-      padding:10px;
-      margin-bottom:10px;
-      border:1px solid #ccc;
-      border-radius:6px;
-      font-size:0.9rem;
-    }
-    #skillForm button {
-      padding:10px 18px;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
-      font-weight:600;
-      font-size:0.9rem;
-    }
-    .card {
-      background:#fff;
-      border-radius:8px;
-      padding:16px;
-      margin:16px auto;
-      max-width:600px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.08);
-      position: relative;
-    }
-    .card h3 {
-      margin:0 0 8px;
-      color:#0058c9;
-    }
-    .card p {
-      margin:6px 0;
-    }
-    .card .poster {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin:4px 0;
-      font-size:0.85rem;
-    }
-    .card .poster img {
-      width:24px;
-      height:24px;
-      border-radius:50%;
-      object-fit:cover;
-    }
-    .card button {
-      background:#f0f0f0;
-      border:1px solid #ccc;
-      padding:6px 12px;
-      border-radius:6px;
-      cursor:pointer;
-      margin-right:8px;
-      font-size:0.85rem;
-    }
-    .small { font-size:0.75rem; color:#555; margin-top:6px; }
-    .disabled {
-      opacity: 0.6;
-      pointer-events: none;
+    .skill {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
   <header>
-    <div style="max-width:1000px; margin:0 auto;">
-      <h1>SL Skills Hub</h1>
-      <p>Find skilled people near you in Sierra Leone</p>
-
-      <div class="top-controls">
-        <div class="auth-section">
-          <button onclick="googleLogin()">Login with Google</button>
-          <button onclick="googleLogout()">Logout</button>
-          <div class="auth-info">
-            <img id="userPhoto" alt="profile" />
-            <div id="userEmail"></div>
-          </div>
-        </div>
-
-        <button id="addSkillBtn" onclick="toggleForm()">Add Your Skill</button>
-        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-
-        <select id="categoryFilter" onchange="applyFilters()">
-          <option value="all">All Categories</option>
-        </select>
-
-        <button id="addCategoryBtn" onclick="promptNewCategory()">+ Add Category</button>
-      </div>
-
-      <div class="search-wrapper">
-        <input id="searchInput" oninput="applyFilters()" placeholder="Search skills..." />
-      </div>
-    </div>
+    <h1>SL Skills Hub</h1>
+    <button id="loginBtn">Login with Google</button>
+    <span id="userInfo"></span>
   </header>
 
-  <!-- Skill Form -->
-  <form id="skillForm" onsubmit="addSkill(event)">
-    <input type="hidden" id="skillId" />
-    <input type="text" id="name" placeholder="Name" required />
-    <input type="text" id="skill" placeholder="Skill" required />
-    <select id="category" required>
-      <option value="">Select category</option>
-    </select>
-    <input type="text" id="location" placeholder="Location" required />
-    <input type="text" id="contact" placeholder="WhatsApp Link" required />
-    <div style="margin-top:8px;">
-      <button id="submitBtn" type="submit">Submit Skill</button>
-      <button type="button" onclick="resetForm()">Cancel</button>
-    </div>
-    <div class="small">You must be logged in to add or edit skills.</div>
-  </form>
+  <div class="container" id="skillsList">
+    <!-- Skills will show here -->
+  </div>
 
-  <!-- Skills List -->
-  <div id="skillCards"></div>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
 
   <script>
-    // Firebase config (your working config)
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
       authDomain: "sl-skills-hub.firebaseapp.com",
@@ -235,326 +69,71 @@
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
 
-    let isAdmin = false;
-
-    // Normalize WhatsApp input to full wa.me URL
-    function normalizeWhatsApp(input) {
-      if (!input) return "";
-      input = input.trim();
-      if (input.startsWith("https://wa.me/") || input.startsWith("http://wa.me/")) {
-        return input;
-      }
-      let digits = input.replace(/\D/g, "");
-      if (!digits.startsWith("232")) {
-        digits = "232" + digits;
-      }
-      return `https://wa.me/${digits}`;
-    }
-
-    // Check if current user is admin
-    async function checkAdmin() {
-      const user = auth.currentUser;
-      if (!user) return;
-      try {
-        const doc = await db.collection("meta").doc("admins").get();
-        const admins = doc.exists ? doc.data().uids || [] : [];
-        isAdmin = admins.includes(user.uid);
-        document.getElementById("addCategoryBtn").style.display = isAdmin ? "inline-block" : "none";
-      } catch (e) {
-        console.error("Admin check failed:", e);
-        isAdmin = false;
-        document.getElementById("addCategoryBtn").style.display = "none";
-      }
-    }
-
-    // Load categories into the filter and form selects
-    async function loadCategories() {
-      const filter = document.getElementById("categoryFilter");
-      const formSelect = document.getElementById("category");
-
-      filter.innerHTML = '<option value="all">All Categories</option>';
-      formSelect.innerHTML = '<option value="">Select category</option>';
-
-      try {
-        const snapshot = await db.collection("categories").orderBy("name").get();
-        snapshot.forEach(doc => {
-          const cat = doc.data().name;
-
-          const opt = document.createElement("option");
-          opt.value = cat;
-          opt.textContent = cat;
-          filter.appendChild(opt);
-
-          const opt2 = document.createElement("option");
-          opt2.value = cat;
-          opt2.textContent = cat;
-          formSelect.appendChild(opt2);
-        });
-      } catch (e) {
-        console.error("Failed to load categories:", e);
-      }
-    }
-
-    // Prompt to add a new category (admins only)
-    async function promptNewCategory() {
-      if (!isAdmin) {
-        alert("Only admins can add categories.");
-        return;
-      }
-      const name = prompt("New category name (e.g., Carpentry):");
-      if (!name) return;
-      const trimmed = name.trim();
-      if (!trimmed) return;
-      try {
-        const existing = await db.collection("categories").where("name", "==", trimmed).get();
-        if (!existing.empty) {
-          alert("Category already exists.");
-          return;
-        }
-        await db.collection("categories").add({ name: trimmed });
-        await loadCategories();
-      } catch (e) {
-        alert("Failed to add category: " + e.message);
-      }
-    }
-
-    // Google login
-    function googleLogin() {
-      auth.signInWithPopup(provider)
-        .then(result => {
-          const user = result.user;
-          document.getElementById("userEmail").innerText = user.displayName || user.email;
-          document.getElementById("userPhoto").src = user.photoURL;
-          document.getElementById("userPhoto").style.display = "inline";
-          document.getElementById("skillForm").style.display = "block";
-          document.getElementById("addSkillBtn").disabled = false;
-          loadCategories();
-          loadSkills();
-          checkAdmin();
-        })
-        .catch(e => {
-          alert("Login failed: " + e.message);
-          console.error(e);
-        });
-    }
-
-    // Logout
-    function googleLogout() {
-      auth.signOut().then(() => {
-        document.getElementById("userEmail").innerText = "";
-        document.getElementById("userPhoto").style.display = "none";
-        resetForm();
-        document.getElementById("addSkillBtn").disabled = true;
-        isAdmin = false;
-        document.getElementById("addCategoryBtn").style.display = "none";
-        loadCategories();
-        loadSkills();
+    // Login button
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      auth.signInWithPopup(provider).catch(error => {
+        console.error("Login Error:", error);
       });
-    }
+    });
 
-    // Toggle form (only if logged in)
-    function toggleForm() {
-      if (!auth.currentUser) {
-        alert("You must be logged in to add a skill.");
-        return;
-      }
-      const f = document.getElementById("skillForm");
-      f.style.display = f.style.display === "none" ? "block" : "none";
-    }
+    // Auth state
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        console.log("Logged in as:", user.displayName || user.email);
+        console.log("Your UID:", user.uid);
+        document.getElementById('userInfo').textContent = `Hello, ${user.displayName}`;
 
-    // Dark mode
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
-    }
+        // Check if user is admin
+        const metaDoc = await db.collection('meta').doc('admins').get();
+        const adminUIDs = metaDoc.exists ? metaDoc.data().uids : [];
 
-    // Reset form
-    function resetForm() {
-      document.getElementById("skillForm").reset();
-      document.getElementById("skillId").value = "";
-      document.getElementById("submitBtn").innerText = "Submit Skill";
-      document.getElementById("skillForm").style.display = "none";
-    }
+        const isAdmin = adminUIDs.includes(user.uid);
+        console.log("Is Admin:", isAdmin);
 
-    // Add or update skill with category and owner info
-    function addSkill(event) {
-      event.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const skill = document.getElementById("skill").value.trim();
-      const categoryValue = document.getElementById("category").value;
-      const location = document.getElementById("location").value.trim();
-      const rawContact = document.getElementById("contact").value.trim();
-      const contact = normalizeWhatsApp(rawContact);
-      const skillId = document.getElementById("skillId").value;
-
-      if (!name || !skill || !categoryValue || !location || !rawContact) {
-        alert("Please fill all fields.");
-        return;
-      }
-
-      const user = auth.currentUser;
-      if (!user) {
-        alert("You must be logged in to add/edit a skill.");
-        return;
-      }
-
-      const payload = {
-        name,
-        skill,
-        category: categoryValue,
-        location,
-        contact,
-        createdAt: new Date().toISOString(),
-        uid: user.uid,
-        posterName: user.displayName || user.email,
-        posterPhoto: user.photoURL || ""
-      };
-
-      if (skillId) {
-        db.collection("skills").doc(skillId).update(payload)
-          .then(() => {
-            alert("Skill updated!");
-            resetForm();
-            applyFilters();
-          })
-          .catch(e => alert("Update failed: " + e.message));
+        loadSkills(isAdmin);
       } else {
-        db.collection("skills").add(payload)
-          .then(() => {
-            alert("Skill added!");
-            resetForm();
-            applyFilters();
-          })
-          .catch(e => alert("Add failed: " + e.message));
+        console.log("Not logged in");
+        document.getElementById('userInfo').textContent = '';
+        document.getElementById('skillsList').innerHTML = '';
       }
-    }
+    });
 
     // Load skills
-    function loadSkills() {
-      const container = document.getElementById("skillCards");
-      container.innerHTML = "";
-      db.collection("skills").orderBy("createdAt", "desc").get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            createSkillCard(doc.data(), doc.id);
-          });
-          applyFilters();
-        })
-        .catch(e => console.error("Load error:", e));
-    }
+    async function loadSkills(isAdmin) {
+      const skillsSnapshot = await db.collection('skills').get();
+      const skillsList = document.getElementById('skillsList');
+      skillsList.innerHTML = '';
 
-    // Create card with owner check and poster info
-    function createSkillCard(data, id) {
-      const card = document.createElement("div");
-      card.className = "card";
-      const date = data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown";
-
-      const currentUser = auth.currentUser;
-      const isOwner = currentUser && data.uid && data.uid === currentUser.uid;
-
-      // Poster section
-      let posterHTML = `<p><em>Posted on:</em> ${date}</p>`;
-      if (data.posterName || data.posterPhoto) {
-        posterHTML = `
-          <div class="poster">
-            <div>
-              <strong>Posted by:</strong> ${data.posterName}
-            </div>
-            ${data.posterPhoto ? `<img src="${data.posterPhoto}" alt="poster">` : ''}
-          </div>
-          <p><em>Posted on:</em> ${date}</p>
+      skillsSnapshot.forEach(doc => {
+        const skill = doc.data();
+        const skillDiv = document.createElement('div');
+        skillDiv.className = 'skill';
+        skillDiv.innerHTML = `
+          <h3>${skill.title}</h3>
+          <p>${skill.description}</p>
+          <small>By: ${skill.userName}</small>
         `;
-      } else if (data.uid) {
-        posterHTML = `
-          <p><strong>Posted by:</strong> ${data.uid.slice(0,6)}... </p>
-          <p><em>Posted on:</em> ${date}</p>
-        `;
-      }
 
-      // Normalize contact fallback if somehow missing formatting
-      let contactHref = data.contact || "";
-      if (!contactHref.startsWith("http")) {
-        contactHref = normalizeWhatsApp(contactHref);
-      }
-
-      let buttons = "";
-      if (isOwner) {
-        buttons = `
-          <button onclick="editSkill('${id}', \`${data.name}\`, \`${data.skill}\`, \`${data.category || ""}\`, \`${data.location}\`, \`${data.contact}\`)">Edit</button>
-          <button onclick="deleteSkill('${id}')">Delete</button>
-        `;
-      }
-
-      card.innerHTML = `
-        <h3>${data.name}</h3>
-        <p><strong>Skill:</strong> ${data.skill}</p>
-        <p><strong>Category:</strong> ${data.category || "Uncategorized"}</p>
-        <p><strong>Location:</strong> ${data.location}</p>
-        <p><strong>Contact:</strong> <a href="${contactHref}" target="_blank">WhatsApp</a></p>
-        ${posterHTML}
-        ${buttons}
-      `;
-      document.getElementById("skillCards").appendChild(card);
-    }
-
-    // Edit
-    function editSkill(id, name, skill, category, location, contact) {
-      document.getElementById("name").value = name;
-      document.getElementById("skill").value = skill;
-      document.getElementById("category").value = category;
-      document.getElementById("location").value = location;
-      document.getElementById("contact").value = contact;
-      document.getElementById("skillId").value = id;
-      document.getElementById("submitBtn").innerText = "Update Skill";
-      document.getElementById("skillForm").style.display = "block";
-    }
-
-    // Delete
-    function deleteSkill(id) {
-      if (!confirm("Delete this skill?")) return;
-      db.collection("skills").doc(id).delete()
-        .then(() => {
-          alert("Skill deleted.");
-          loadSkills();
-        })
-        .catch(e => alert("Delete failed: " + e.message));
-    }
-
-    // Combined filtering: text + category
-    function applyFilters() {
-      const q = document.getElementById("searchInput").value.toLowerCase();
-      const category = document.getElementById("categoryFilter").value.toLowerCase();
-      document.querySelectorAll(".card").forEach(card => {
-        const content = card.textContent.toLowerCase();
-        const matchesText = content.includes(q);
-        const matchesCategory = category === "all" || content.includes(category);
-        card.style.display = (matchesText && matchesCategory) ? "block" : "none";
-      });
-    }
-
-    // On load
-    window.onload = function () {
-      loadCategories();
-      loadSkills();
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          document.getElementById("userEmail").innerText = user.displayName || user.email;
-          document.getElementById("userPhoto").src = user.photoURL;
-          document.getElementById("userPhoto").style.display = "inline";
-          document.getElementById("skillForm").style.display = "block";
-          document.getElementById("addSkillBtn").disabled = false;
-          checkAdmin();
-        } else {
-          document.getElementById("userEmail").innerText = "";
-          document.getElementById("userPhoto").style.display = "none";
-          resetForm();
-          document.getElementById("addSkillBtn").disabled = true;
-          isAdmin = false;
-          document.getElementById("addCategoryBtn").style.display = "none";
+        if (isAdmin) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.onclick = () => deleteSkill(doc.id);
+          skillDiv.appendChild(deleteBtn);
         }
-        loadCategories();
-        loadSkills();
+
+        skillsList.appendChild(skillDiv);
       });
-    };
+    }
+
+    // Delete skill
+    function deleteSkill(id) {
+      if (confirm('Are you sure you want to delete this skill?')) {
+        db.collection('skills').doc(id).delete().then(() => {
+          console.log('Skill deleted:', id);
+          loadSkills(true);
+        }).catch(err => console.error('Delete Error:', err));
+      }
+    }
   </script>
 </body>
 </html>
