@@ -9,278 +9,243 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
       background: white;
+      margin: 0;
+      padding: 0;
     }
-
     header {
-      background: #007bff;
+      background-color: #007BFF;
       color: white;
       padding: 20px;
       text-align: center;
-      position: relative;
     }
-
-    #userInfo {
+    #intro {
+      color: #333;
+      text-align: center;
+      margin: 10px 0;
+      font-style: italic;
+    }
+    #auth-section {
       position: absolute;
       top: 10px;
       left: 10px;
       text-align: left;
     }
-
-    #userInfo img {
+    #auth-section img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      vertical-align: middle;
     }
-
-    #userName {
+    #auth-section span {
       display: block;
-      color: white;
-      font-size: 14px;
-      margin-top: 5px;
+      color: black;
     }
-
-    #authButtons {
-      margin-top: 5px;
-    }
-
-    #authButtons button {
-      margin: 2px;
-      background: white;
-      color: #007bff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    #controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+    #header-buttons {
       margin-top: 10px;
     }
-
-    #controls button, #searchInput {
+    #header-buttons input, #header-buttons button {
+      margin: 5px;
       padding: 10px;
-      border-radius: 5px;
       border: none;
+      border-radius: 4px;
     }
-
-    #controls button {
-      background: white;
-      color: #007bff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
     #searchInput {
-      width: 80%;
-      max-width: 300px;
+      width: 200px;
     }
-
     #addSkillForm {
       margin: 20px auto;
-      max-width: 400px;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
     }
-
-    #addSkillForm input {
+    #addSkillForm input, #addSkillForm button {
       display: block;
-      margin: 10px 0;
+      margin: 10px auto;
       padding: 10px;
       width: 100%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
     }
-
     .skill-card {
       border: 1px solid #ccc;
-      border-radius: 10px;
       padding: 15px;
-      margin: 20px;
-      max-width: 400px;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+      position: relative;
     }
-
     .skill-card img {
-      width: 40px;
-      height: 40px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
     }
-
-    .skill-card .actions {
+    .skill-actions {
       margin-top: 10px;
     }
-
-    .skill-card .actions button {
-      margin-right: 10px;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    #skillsContainer {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+    .skill-actions button {
+      margin: 2px;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div id="userInfo">
-    <img id="userPic" src="" alt="Profile" style="display: none;">
-    <span id="userName"></span>
-    <div id="authButtons">
-      <button id="loginBtn">Login with Google</button>
-      <button id="logoutBtn" style="display: none;">Logout</button>
+  <header>
+    <h1>SL Skills Hub</h1>
+    <div id="intro">find talented people near you</div>
+    <div id="header-buttons">
+      <button onclick="toggleAddSkill()">Add Skill</button>
+      <input type="text" id="searchInput" placeholder="Search skills..." oninput="searchSkills()">
     </div>
+  </header>
+
+  <div id="auth-section">
+    <div id="user-info"></div>
+    <button onclick="login()">Login with Google</button>
+    <button onclick="logout()">Logout</button>
   </div>
-  <h1>SL Skills Hub</h1>
-  <div id="controls">
-    <button onclick="toggleAddSkill()">Add a Skill</button>
-    <input type="text" id="searchInput" placeholder="Search skills..." oninput="searchSkills()">
+
+  <div id="addSkillForm" style="display:none;">
+    <input type="text" id="nameInput" placeholder="Your Name">
+    <input type="text" id="skillInput" placeholder="Skill">
+    <input type="text" id="locationInput" placeholder="Location">
+    <input type="text" id="whatsappInput" placeholder="WhatsApp Number">
+    <input type="date" id="dateInput">
+    <input type="text" id="pictureInput" placeholder="Google Profile Picture URL">
+    <button onclick="submitSkill()">Submit Skill</button>
   </div>
-</header>
 
-<div id="addSkillForm" style="display: none;">
-  <input type="text" id="nameInput" placeholder="Your Name">
-  <input type="text" id="skillInput" placeholder="Your Skill">
-  <input type="text" id="locationInput" placeholder="Location">
-  <input type="text" id="whatsappInput" placeholder="WhatsApp Contact">
-  <button onclick="submitSkill()">Submit</button>
-</div>
+  <div id="skillsContainer"></div>
 
-<div id="skillsContainer"></div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+      authDomain: "sl-skills-hub.firebaseapp.com",
+      projectId: "sl-skills-hub",
+      storageBucket: "sl-skills-hub.appspot.com",
+      messagingSenderId: "30111857054",
+      appId: "1:30111857054:web:c67df8f19798020d7f1605"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-    authDomain: "sl-skills-hub.firebaseapp.com",
-    projectId: "sl-skills-hub",
-    storageBucket: "sl-skills-hub.appspot.com",
-    messagingSenderId: "1033166112639",
-    appId: "1:1033166112639:web:264401b2f0e801b842c32c"
-  };
+    let currentUser = null;
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  let currentUser = null;
-
-  auth.onAuthStateChanged(user => {
-    currentUser = user;
-    if (user) {
-      document.getElementById('logoutBtn').style.display = 'inline-block';
-      document.getElementById('loginBtn').style.display = 'none';
-      document.getElementById('userPic').src = user.photoURL;
-      document.getElementById('userPic').style.display = 'inline-block';
-      document.getElementById('userName').innerText = user.displayName;
-      loadSkills();
-    } else {
-      document.getElementById('logoutBtn').style.display = 'none';
-      document.getElementById('loginBtn').style.display = 'inline-block';
-      document.getElementById('userPic').style.display = 'none';
-      document.getElementById('userName').innerText = '';
-    }
-  });
-
-  document.getElementById('loginBtn').addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider);
-  });
-
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    auth.signOut();
-  });
-
-  function toggleAddSkill() {
-    const form = document.getElementById('addSkillForm');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  }
-
-  function submitSkill() {
-    if (!currentUser) return alert("Please login first.");
-
-    const name = document.getElementById('nameInput').value;
-    const skill = document.getElementById('skillInput').value;
-    const location = document.getElementById('locationInput').value;
-    const whatsapp = document.getElementById('whatsappInput').value;
-    const photoURL = currentUser.photoURL;
-    const uid = currentUser.uid;
-    const date = new Date().toLocaleString();
-
-    db.collection("skills").add({
-      name, skill, location, whatsapp, photoURL, uid, date
-    }).then(() => {
-      document.getElementById('addSkillForm').reset();
-      toggleAddSkill();
-      loadSkills();
-    });
-  }
-
-  function loadSkills() {
-    db.collection("skills").get().then(snapshot => {
-      const container = document.getElementById('skillsContainer');
-      container.innerHTML = "";
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const card = document.createElement('div');
-        card.className = "skill-card";
-        card.innerHTML = `
-          <img src="${data.photoURL || ''}" alt="User">
-          <h3>${data.name}</h3>
-          <p><strong>Skill:</strong> ${data.skill}</p>
-          <p><strong>Location:</strong> ${data.location}</p>
-          <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
-          <p><strong>Date:</strong> ${data.date}</p>
-          <div class="actions">
-            ${currentUser && currentUser.uid === data.uid ? `
-              <button onclick="editSkill('${doc.id}', ${JSON.stringify(data).replace(/"/g, '&quot;')})">Edit</button>
-              <button onclick="deleteSkill('${doc.id}')">Delete</button>
-            ` : ''}
-          </div>
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("user-info").innerHTML = `
+          <img src="${user.photoURL}">
+          <span>${user.displayName}</span>
         `;
-        container.appendChild(card);
+        loadSkills();
+      } else {
+        currentUser = null;
+        document.getElementById("user-info").innerHTML = "";
+        document.getElementById("skillsContainer").innerHTML = "";
+      }
+    });
+
+    function login() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider);
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    function toggleAddSkill() {
+      const form = document.getElementById("addSkillForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    function submitSkill() {
+      if (!currentUser) return alert("Login first");
+      const name = document.getElementById("nameInput").value;
+      const skill = document.getElementById("skillInput").value;
+      const location = document.getElementById("locationInput").value;
+      const whatsapp = document.getElementById("whatsappInput").value;
+      const date = document.getElementById("dateInput").value;
+      const picture = document.getElementById("pictureInput").value;
+
+      db.collection("skills").add({
+        name, skill, location, whatsapp, date, picture,
+        uid: currentUser.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        toggleAddSkill();
+        loadSkills();
       });
-    });
-  }
-
-  function deleteSkill(id) {
-    if (confirm("Delete this skill?")) {
-      db.collection("skills").doc(id).delete().then(loadSkills);
     }
-  }
 
-  function editSkill(id, data) {
-    const name = prompt("Edit Name", data.name);
-    const skill = prompt("Edit Skill", data.skill);
-    const location = prompt("Edit Location", data.location);
-    const whatsapp = prompt("Edit WhatsApp", data.whatsapp);
-
-    if (name && skill && location && whatsapp) {
-      db.collection("skills").doc(id).update({
-        name, skill, location, whatsapp
-      }).then(loadSkills);
+    function loadSkills() {
+      db.collection("skills").orderBy("createdAt", "desc").get().then(snapshot => {
+        const container = document.getElementById("skillsContainer");
+        container.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const isOwner = currentUser && data.uid === currentUser.uid;
+          container.innerHTML += `
+            <div class="skill-card" id="card-${doc.id}">
+              <img src="${data.picture}" alt="User Picture">
+              <p><strong>Name:</strong> ${data.name}</p>
+              <p><strong>Skill:</strong> ${data.skill}</p>
+              <p><strong>Location:</strong> ${data.location}</p>
+              <p><strong>Date:</strong> ${data.date}</p>
+              <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+              ${isOwner ? `
+                <div class="skill-actions">
+                  <button onclick="editSkill('${doc.id}')">Edit</button>
+                  <button onclick="deleteSkill('${doc.id}')">Delete</button>
+                </div>` : ``}
+            </div>
+          `;
+        });
+      });
     }
-  }
 
-  function searchSkills() {
-    const term = document.getElementById("searchInput").value.toLowerCase();
-    const cards = document.querySelectorAll(".skill-card");
-    cards.forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(term) ? "block" : "none";
-    });
-  }
-</script>
+    function deleteSkill(id) {
+      if (confirm("Delete this skill?")) {
+        db.collection("skills").doc(id).delete().then(loadSkills);
+      }
+    }
 
+    function editSkill(id) {
+      const card = document.getElementById("card-" + id);
+      const inputs = card.querySelectorAll("p, a, img");
+      const [name, skill, location, date, whatsapp, picture] = [...inputs].map(el => el.textContent || el.src);
+      card.innerHTML = `
+        <input type="text" value="${name.replace("Name: ", "")}" id="editName">
+        <input type="text" value="${skill.replace("Skill: ", "")}" id="editSkill">
+        <input type="text" value="${location.replace("Location: ", "")}" id="editLocation">
+        <input type="date" value="${date.replace("Date: ", "")}" id="editDate">
+        <input type="text" value="${whatsapp.replace("WhatsApp: ", "")}" id="editWhatsapp">
+        <input type="text" value="${picture}" id="editPicture">
+        <button onclick="saveEdit('${id}')">Save</button>
+      `;
+    }
+
+    function saveEdit(id) {
+      const updated = {
+        name: document.getElementById("editName").value,
+        skill: document.getElementById("editSkill").value,
+        location: document.getElementById("editLocation").value,
+        date: document.getElementById("editDate").value,
+        whatsapp: document.getElementById("editWhatsapp").value,
+        picture: document.getElementById("editPicture").value,
+      };
+      db.collection("skills").doc(id).update(updated).then(loadSkills);
+    }
+
+    function searchSkills() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const cards = document.getElementsByClassName("skill-card");
+      Array.from(cards).forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(query) ? "block" : "none";
+      });
+    }
+  </script>
 </body>
 </html>
