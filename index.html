@@ -1,208 +1,188 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>SL Skills Hub</title>
-  <!-- Firebase v8 for compatibility with current code -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: white;
-    }
-    header {
-      background-color: #007bff;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      position: relative;
-    }
-    #intro {
-      font-weight: bold;
-      font-size: 20px;
-      margin-top: 5px;
-    }
-    .top-left {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      text-align: center;
-    }
-    .top-left img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: block;
-      margin: auto;
-    }
-    .top-left p {
-      margin: 5px 0;
-      color: white;
-      font-size: 14px;
-    }
-    .header-buttons {
-      margin-top: 10px;
-    }
-    .header-buttons button,
-    .header-buttons input[type="text"] {
-      background-color: white;
-      color: #007bff;
-      border: none;
-      padding: 8px 15px;
-      margin: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #addSkillForm {
-      display: none;
-      background: #f9f9f9;
-      padding: 20px;
-      width: 300px;
-      margin: 20px auto;
-      border-radius: 8px;
-    }
-    #addSkillForm input {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      margin: 10px 0;
-    }
-    .skill-card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
-      margin: 10px;
-      text-align: center;
-    }
-    .skill-card img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-    }
-    .skill-card button {
-      background-color: red;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      margin: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .skill-card button.edit {
-      background-color: orange;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>SL Skills Hub</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#fff; }
+header { background:#007BFF; color:#fff; padding:10px; text-align:center; }
+header h1 { margin:5px 0; }
+header p { font-weight:bold; font-size:18px; margin:0; }
+#authSection { position:absolute; top:10px; left:10px; text-align:center; }
+#authSection img { width:40px; height:40px; border-radius:50%; display:block; margin:auto; }
+#authSection p { color:white; font-size:14px; margin:5px 0; }
+button { background:#007BFF; color:#fff; border:none; padding:8px 12px; cursor:pointer; border-radius:4px; }
+button:hover { background:#0056b3; }
+#headerActions { margin-top:10px; }
+#searchBar { padding:7px; width:200px; border-radius:4px; border:1px solid #ccc; }
+#addSkillForm { max-width:400px; margin:20px auto; padding:15px; border:1px solid #ccc; border-radius:8px; background:#f9f9f9; }
+#addSkillForm input { width:100%; padding:8px; margin:5px 0; }
+.skill-card { border:1px solid #ccc; padding:10px; border-radius:8px; margin:10px; max-width:300px; display:inline-block; vertical-align:top; background:#fff; }
+.skill-card img { width:50px; height:50px; border-radius:50%; }
+.skill-card .owner-actions { margin-top:5px; }
+</style>
 </head>
 <body>
 
 <header>
-  <div class="top-left">
-    <img id="userPic" src="" alt="">
-    <p id="userName"></p>
+  <div id="authSection">
+    <img id="userPic" style="display:none;">
+    <p id="userName" style="display:none;"></p>
     <button id="loginBtn">Login with Google</button>
     <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
   <h1>SL Skills Hub</h1>
-  <div id="intro">Find talented people near you</div>
-  <div class="header-buttons">
-    <button onclick="toggleAddSkill()">Add Skill</button>
+  <p>Find talented people near you</p>
+  <div id="headerActions">
+    <button id="showAddForm">Add Skill</button>
     <input type="text" id="searchBar" placeholder="Search skills...">
   </div>
 </header>
 
-<div id="addSkillForm">
+<div id="addSkillForm" style="display:none;">
   <input type="text" id="nameInput" placeholder="Your Name">
-  <input type="text" id="skillInput" placeholder="Your Skill">
-  <input type="text" id="locationInput" placeholder="Your Location">
-  <input type="text" id="whatsappInput" placeholder="WhatsApp Contact">
-  <button onclick="submitSkill()">Submit</button>
+  <input type="text" id="skillInput" placeholder="Skill">
+  <input type="text" id="locationInput" placeholder="Location">
+  <input type="text" id="whatsappInput" placeholder="WhatsApp Number">
+  <input type="text" id="picInput" placeholder="Profile Picture URL">
+  <button id="submitSkill">Submit</button>
 </div>
 
-<div id="skillsList"></div>
+<div id="skillsContainer"></div>
 
 <script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "YOUR_FIREBASE_API_KEY",
-    authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-    projectId: "YOUR_FIREBASE_PROJECT_ID",
-    storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-    appId: "YOUR_FIREBASE_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+// Firebase config
+const firebaseConfig = {
+  apiKey: "YOUR-API-KEY",
+  authDomain: "YOUR-PROJECT.firebaseapp.com",
+  projectId: "YOUR-PROJECT-ID",
+  storageBucket: "YOUR-PROJECT.appspot.com",
+  messagingSenderId: "YOUR-SENDER-ID",
+  appId: "YOUR-APP-ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  let currentUser = null;
+let currentUser = null;
 
-  document.getElementById('loginBtn').addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider);
-  });
+// Auth
+document.getElementById('loginBtn').onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+};
+document.getElementById('logoutBtn').onclick = () => auth.signOut();
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    auth.signOut();
-  });
-
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      document.getElementById('userPic').src = user.photoURL;
-      document.getElementById('userName').innerText = user.displayName;
-      document.getElementById('loginBtn').style.display = 'none';
-      document.getElementById('logoutBtn').style.display = 'inline-block';
-    } else {
-      currentUser = null;
-      document.getElementById('userPic').src = '';
-      document.getElementById('userName').innerText = '';
-      document.getElementById('loginBtn').style.display = 'inline-block';
-      document.getElementById('logoutBtn').style.display = 'none';
-    }
-  });
-
-  function toggleAddSkill() {
-    const form = document.getElementById('addSkillForm');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('loginBtn').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('userPic').src = user.photoURL;
+    document.getElementById('userPic').style.display = 'block';
+    document.getElementById('userName').innerText = user.displayName;
+    document.getElementById('userName').style.display = 'block';
+    document.getElementById('picInput').value = user.photoURL;
+  } else {
+    document.getElementById('loginBtn').style.display = 'inline-block';
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('userPic').style.display = 'none';
+    document.getElementById('userName').style.display = 'none';
   }
+});
 
-  function submitSkill() {
-    if (!currentUser) {
-      alert("Please log in first!");
-      return;
-    }
+// Show form
+document.getElementById('showAddForm').onclick = () => {
+  document.getElementById('addSkillForm').style.display = 'block';
+};
 
-    const name = document.getElementById('nameInput').value;
-    const skill = document.getElementById('skillInput').value;
-    const location = document.getElementById('locationInput').value;
-    const whatsapp = document.getElementById('whatsappInput').value;
+// Submit skill
+document.getElementById('submitSkill').onclick = () => {
+  if (!currentUser) { alert('Login first'); return; }
+  const name = document.getElementById('nameInput').value;
+  const skill = document.getElementById('skillInput').value;
+  const location = document.getElementById('locationInput').value;
+  const whatsapp = document.getElementById('whatsappInput').value;
+  const pic = document.getElementById('picInput').value || currentUser.photoURL;
+  const datePosted = new Date().toLocaleDateString();
 
-    if (!name || !skill || !location || !whatsapp) {
-      alert("All fields are required!");
-      return;
-    }
+  db.collection('skills').add({
+    uid: currentUser.uid, name, skill, location, whatsapp, pic, datePosted
+  }).then(() => {
+    document.getElementById('addSkillForm').style.display = 'none';
+    loadSkills();
+  });
+};
 
-    const date = new Date().toLocaleDateString();
-    const photoURL = currentUser.photoURL;
-
-    db.collection('skills').add({
-      uid: currentUser.uid,
-      name,
-      skill,
-      location,
-      whatsapp,
-      date,
-      photoURL
-    }).then(() => {
-      alert("Skill added!");
-      toggleAddSkill();
+// Load skills
+function loadSkills() {
+  db.collection('skills').get().then(snapshot => {
+    const container = document.getElementById('skillsContainer');
+    container.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const card = document.createElement('div');
+      card.className = 'skill-card';
+      card.innerHTML = `
+        <img src="${data.pic}">
+        <h3>${data.name}</h3>
+        <p><strong>Skill:</strong> ${data.skill}</p>
+        <p><strong>Location:</strong> ${data.location}</p>
+        <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+        <p><small>${data.datePosted}</small></p>
+      `;
+      if (currentUser && currentUser.uid === data.uid) {
+        const actions = document.createElement('div');
+        actions.className = 'owner-actions';
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = () => editSkill(doc.id, data);
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => db.collection('skills').doc(doc.id).delete().then(loadSkills);
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        card.appendChild(actions);
+      }
+      container.appendChild(card);
     });
-  }
-</script>
+  });
+}
 
+// Edit skill
+function editSkill(id, data) {
+  document.getElementById('addSkillForm').style.display = 'block';
+  document.getElementById('nameInput').value = data.name;
+  document.getElementById('skillInput').value = data.skill;
+  document.getElementById('locationInput').value = data.location;
+  document.getElementById('whatsappInput').value = data.whatsapp;
+  document.getElementById('picInput').value = data.pic;
+  document.getElementById('submitSkill').onclick = () => {
+    db.collection('skills').doc(id).update({
+      name: document.getElementById('nameInput').value,
+      skill: document.getElementById('skillInput').value,
+      location: document.getElementById('locationInput').value,
+      whatsapp: document.getElementById('whatsappInput').value,
+      pic: document.getElementById('picInput').value
+    }).then(() => {
+      document.getElementById('addSkillForm').style.display = 'none';
+      loadSkills();
+    });
+  };
+}
+
+// Search
+document.getElementById('searchBar').oninput = function() {
+  const search = this.value.toLowerCase();
+  document.querySelectorAll('.skill-card').forEach(card => {
+    card.style.display = card.innerText.toLowerCase().includes(search) ? 'inline-block' : 'none';
+  });
+};
+
+loadSkills();
+</script>
 </body>
 </html>
