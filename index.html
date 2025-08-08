@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <!-- Firebase v8 for compatibility with current code -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,6 +18,7 @@
       color: white;
       padding: 15px;
       text-align: center;
+      position: relative;
     }
     #intro {
       font-weight: bold;
@@ -105,7 +107,7 @@
     <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
   <h1>SL Skills Hub</h1>
-  <div id="intro">find talented people near you</div>
+  <div id="intro">Find talented people near you</div>
   <div class="header-buttons">
     <button onclick="toggleAddSkill()">Add Skill</button>
     <input type="text" id="searchBar" placeholder="Search skills...">
@@ -123,7 +125,7 @@
 <div id="skillsList"></div>
 
 <script>
-  // Firebase setup
+  // Firebase config
   const firebaseConfig = {
     apiKey: "YOUR_FIREBASE_API_KEY",
     authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
