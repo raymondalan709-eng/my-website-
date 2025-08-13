@@ -5,35 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SL Skills Hub</title>
 
-  <!-- Firebase compat builds (works with old-style firebase.* API) -->
+  <!-- Firebase compat SDKs (keeps old firebase.* API style) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
   <style>
-    /* --- Layout / Styles (keeps your blue header + white cards) --- */
-    :root{--blue:#007BFF;--white:#fff}
+    :root{--blue:#007BFF}
     body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;margin:0;background:#f3f4f6}
-    header{background:var(--blue);color:var(--white);padding:18px 12px;position:relative}
-    header h1{margin:0;font-size:34px;text-align:center}
-    header .intro{margin-top:8px;text-align:center;font-weight:700;font-size:18px;color:rgba(255,255,255,0.95)}
-    /* top-left user box */
+    header{background:var(--blue);color:#fff;padding:18px 14px;position:relative}
+    header h1{margin:0;text-align:center;font-size:32px}
+    header .intro{margin-top:8px;text-align:center;font-weight:700;font-size:18px}
     #userBox{position:absolute;left:14px;top:12px;text-align:left;color:#fff}
-    #userBox img{width:44px;height:44px;border-radius:50%;display:block;margin-bottom:6px}
+    #userBox img{width:46px;height:46px;border-radius:50%;display:block;margin-bottom:6px;object-fit:cover}
     #userBox .name{font-weight:700;margin-bottom:6px}
     #userBox button{display:block;background:#fff;color:var(--blue);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-bottom:6px}
-    /* header controls: add + search */
-    .header-controls{display:flex;gap:10px;justify-content:center;margin-top:12px}
+    .header-controls{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
     .header-controls input[type="search"]{padding:10px;border-radius:8px;border:0;width:280px;max-width:70vw}
     .header-controls button{padding:10px 16px;border-radius:8px;border:0;background:#fff;color:var(--blue);font-weight:700;cursor:pointer}
-    /* Add form */
-    #formWrapper{max-width:520px;margin:20px auto;display:none}
+    #formWrapper{max-width:640px;margin:18px auto;display:none}
     form.skill-form{background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-    .skill-form input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd;box-sizing:border-box}
+    .skill-form input[type="text"], .skill-form input[type="file"]{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd;box-sizing:border-box}
     .skill-form .row{display:flex;gap:10px}
     .skill-form .row input{flex:1}
+    .skill-form .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
     .skill-form button{background:var(--blue);color:#fff;border:0;padding:10px 14px;border-radius:6px;cursor:pointer;font-weight:700}
-    /* skills list */
     #skillsArea{padding:18px 12px 60px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
     .card{width:320px;background:#fff;border-radius:8px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05);border:1px solid #eee}
     .card .top{display:flex;gap:12px;align-items:center}
@@ -42,17 +39,17 @@
     .card p{margin:6px 0;color:#333}
     .card .small{font-size:13px;color:#666}
     .card .actions{margin-top:10px}
-    .card .actions button{margin-right:8px;padding:6px 10px;border-radius:6px;border:0;cursor:pointer}
+    .card .actions button{margin-right:8px;padding:8px 10px;border-radius:8px;border:0;cursor:pointer}
     .btn-edit{background:orange;color:#fff}
     .btn-delete{background:#e53935;color:#fff}
-    /* responsive tweaks */
-    @media (max-width:520px){ .header-controls input[type="search"]{width:180px} .card{width:90%} }
+    @media (max-width:520px){ .card{width:90%} .header-controls input[type="search"]{width:60vw} }
   </style>
 </head>
 <body>
+
   <header>
     <div id="userBox">
-      <img id="userPhoto" src="" alt="profile" style="display:none" />
+      <img id="userPhoto" src="" alt="profile" style="display:none">
       <div id="userName" class="name" style="display:none"></div>
       <button id="loginBtn">Login with Google</button>
       <button id="logoutBtn" style="display:none">Logout</button>
@@ -63,30 +60,31 @@
 
     <div class="header-controls">
       <button id="openAddBtn">Add Skill</button>
-      <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
+      <input id="searchInput" type="search" placeholder="Search by name, skill, or location…" />
     </div>
   </header>
 
-  <!-- Add / Edit form (we reuse same form for add & edit) -->
+  <!-- Add/Edit form wrapper -->
   <div id="formWrapper">
     <form id="skillForm" class="skill-form">
       <input type="hidden" id="skillId" value="">
-      <input id="name" placeholder="Your name" required />
-      <input id="skill" placeholder="Your skill" required />
-      <input id="location" placeholder="Location (eg: Freetown)" required />
-      <input id="whatsapp" placeholder="WhatsApp number (eg: +2327... or 07...)" required />
-      <input id="picture" placeholder="Picture URL (leave blank to use your Google photo)" />
-      <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px">
+      <input id="name" type="text" placeholder="Your name" required />
+      <input id="skill" type="text" placeholder="Your skill" required />
+      <input id="location" type="text" placeholder="Location (eg. Freetown)" required />
+      <input id="whatsapp" type="text" placeholder="WhatsApp number (e.g. +23270... or 07...)" required />
+      <input id="pictureUrl" type="text" placeholder="Picture URL (leave blank to use your Google profile pic)" />
+      <label style="font-size:13px;color:#666;margin-top:6px">Or upload a picture from your device (optional)</label>
+      <input id="pictureFile" type="file" accept="image/*" />
+      <div class="actions">
         <button type="submit" id="saveBtn">Save</button>
       </div>
     </form>
   </div>
 
-  <!-- skills list -->
   <main id="skillsArea"></main>
 
 <script>
-/* === CONFIG: paste your Firebase config here exactly from Project Settings === */
+/* ---------- Firebase config (inserted from your project) ---------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
@@ -95,26 +93,23 @@ const firebaseConfig = {
   messagingSenderId: "125049368940",
   appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
 };
-/* ========================================================================== */
+/* ----------------------------------------------------------------- */
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 let currentUser = null;
 
-/* ------------ Helpers ------------ */
+/* ---------- helpers ---------- */
 function normalizeWhatsApp(input) {
   if (!input) return "";
   input = input.trim();
-  // if it is already a wa.me link, use it
   if (input.startsWith("https://wa.me/") || input.startsWith("http://wa.me/")) return input;
-  // remove non digits
   let digits = input.replace(/\D/g,"");
-  // allow starting with country code; if starts with 0 -> assume Sierra Leone 232
-  if (digits.length && digits[0] === "0") digits = "232" + digits.slice(1);
+  if (digits.startsWith("0")) digits = "232" + digits.slice(1);
   if (!digits.startsWith("232")) {
-    // if short local number (like 7xxxxxxx) add 232
     if (digits.length <= 9) digits = "232" + digits;
   }
   return "https://wa.me/" + digits;
@@ -123,13 +118,13 @@ function formatDate(ts) {
   if (!ts) return "Date not available";
   try {
     if (ts.toDate) return ts.toDate().toLocaleString();
-    // ts might be string
     const d = new Date(ts);
     return isNaN(d) ? String(ts) : d.toLocaleString();
-  } catch (e) { return String(ts); }
+  } catch(e) { return String(ts); }
 }
+function escapeHtml(s){ if (s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* ------------ Auth UI & events ------------ */
+/* ---------- Auth UI ---------- */
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userPhoto = document.getElementById('userPhoto');
@@ -137,9 +132,9 @@ const userName = document.getElementById('userName');
 
 loginBtn.addEventListener('click', () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(err=>{
-    console.error("Login failed:", err);
-    alert("Login failed: " + (err.message||err.code));
+  auth.signInWithPopup(provider).catch(err => {
+    console.error('Sign-in error', err);
+    alert('Sign-in error: ' + (err.message || err.code));
   });
 });
 logoutBtn.addEventListener('click', () => auth.signOut());
@@ -149,109 +144,123 @@ auth.onAuthStateChanged(user => {
   if (user) {
     loginBtn.style.display = 'none';
     logoutBtn.style.display = 'inline-block';
-    userPhoto.src = user.photoURL || "";
+    userPhoto.src = user.photoURL || '';
     userPhoto.style.display = user.photoURL ? 'block' : 'none';
     userName.textContent = user.displayName || user.email;
     userName.style.display = 'block';
-    // prefill picture input with google photo for convenience
-    document.getElementById('picture').value = user.photoURL || "";
+    document.getElementById('pictureUrl').value = user.photoURL || '';
   } else {
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
     userPhoto.style.display = 'none';
     userName.style.display = 'none';
-    document.getElementById('picture').value = "";
+    document.getElementById('pictureUrl').value = '';
   }
+  // refresh cards so owner buttons update
+  // loadSkills() uses onSnapshot so will reflect auth change, but call it to be safe
+  loadSkills();
 });
 
-/* ------------ Add/Edit form logic ------------ */
-const formWrapper = document.getElementById('formWrapper');
+/* ---------- Add / Edit form ---------- */
 const openAddBtn = document.getElementById('openAddBtn');
+const formWrapper = document.getElementById('formWrapper');
 const skillForm = document.getElementById('skillForm');
-const saveBtn = document.getElementById('saveBtn');
+const pictureFileInput = document.getElementById('pictureFile');
 
 openAddBtn.addEventListener('click', () => {
-  if (!currentUser) return alert("Please log in to add a skill.");
-  document.getElementById('skillId').value = "";
+  if (!currentUser) return alert('Please log in to add a skill.');
+  document.getElementById('skillId').value = '';
   skillForm.reset();
-  // set picture default to current user's photo
-  document.getElementById('picture').value = currentUser ? (currentUser.photoURL || "") : "";
+  document.getElementById('pictureUrl').value = currentUser ? (currentUser.photoURL || '') : '';
   formWrapper.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 skillForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!currentUser) return alert("Please login first.");
+  if (!currentUser) return alert('Please log in first.');
 
   const id = document.getElementById('skillId').value || null;
   const name = document.getElementById('name').value.trim();
   const skill = document.getElementById('skill').value.trim();
   const location = document.getElementById('location').value.trim();
   const whatsappRaw = document.getElementById('whatsapp').value.trim();
-  const pictureUrl = document.getElementById('picture').value.trim() || currentUser.photoURL || "";
+  const pictureUrlField = document.getElementById('pictureUrl').value.trim();
 
-  if (!name || !skill || !location || !whatsappRaw) {
-    return alert("Please fill all fields.");
+  if (!name || !skill || !location || !whatsappRaw) return alert('Please fill all fields.');
+
+  // determine picture: file upload has priority, then pictureUrlField, then Google profile photo
+  let finalPictureUrl = pictureUrlField || currentUser.photoURL || '';
+
+  const file = pictureFileInput.files && pictureFileInput.files[0];
+  if (file) {
+    // upload to storage
+    try {
+      const filename = `${currentUser.uid}_${Date.now()}_${file.name.replace(/\s+/g,'_')}`;
+      const ref = storage.ref().child('skill_images/' + filename);
+      const snap = await ref.put(file);
+      finalPictureUrl = await snap.ref.getDownloadURL();
+    } catch (err) {
+      console.error('Upload failed', err);
+      alert('Image upload failed: ' + (err.message || err.code));
+      return;
+    }
   }
 
   const whatsapp = normalizeWhatsApp(whatsappRaw);
   const payload = {
     uid: currentUser.uid,
     posterName: currentUser.displayName || currentUser.email,
-    posterPhoto: currentUser.photoURL || "",
-    name, skill, location, whatsapp, picture: pictureUrl,
+    posterPhoto: currentUser.photoURL || '',
+    name, skill, location, whatsapp, picture: finalPictureUrl,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
   try {
     if (id) {
-      // update
       await db.collection('skills').doc(id).update(payload);
     } else {
-      // create
       await db.collection('skills').add(payload);
     }
-    formWrapper.style.display = 'none';
     skillForm.reset();
-    loadSkills(); // refresh
+    pictureFileInput.value = '';
+    formWrapper.style.display = 'none';
   } catch (err) {
-    console.error("Save failed:", err);
-    alert("Failed to save skill: " + (err.message || err.code));
+    console.error('Save error', err);
+    alert('Save failed: ' + (err.message || err.code));
   }
 });
 
-/* ------------ Render / Load skills (live) ------------ */
+/* ---------- Render / Live load ---------- */
 const skillsArea = document.getElementById('skillsArea');
 
-function renderCard(doc) {
+function cardDomFromDoc(doc) {
   const data = doc.data();
   const id = doc.id;
+  const picture = data.picture || data.posterPhoto || '';
   const card = document.createElement('div');
   card.className = 'card';
-  const picture = data.picture || data.posterPhoto || "";
-  const dateStr = formatDate(data.createdAt || data.createdAtTimestamp || data.createdAtString || data.createdAt);
+  card.dataset.id = id;
   card.innerHTML = `
     <div class="top">
-      <img src="${picture || ''}" alt="pic" />
+      <img src="${escapeHtml(picture)}" alt="pic" />
       <div style="flex:1">
-        <h3>${escapeHtml(data.name||'Anonymous')}</h3>
+        <h3>${escapeHtml(data.name||'')}</h3>
         <p class="small"><strong>${escapeHtml(data.skill||'')}</strong></p>
       </div>
     </div>
     <p><strong>Location:</strong> ${escapeHtml(data.location||'')}</p>
     <p><strong>Contact:</strong> <a href="${escapeAttr(data.whatsapp||'')}" target="_blank" rel="noopener">WhatsApp</a></p>
-    <p class="small">Posted on: ${dateStr}</p>
+    <p class="small">Posted on: ${formatDate(data.createdAt)}</p>
   `;
-
-  // owner actions
+  // owner-only actions
   if (currentUser && data.uid === currentUser.uid) {
     const actions = document.createElement('div');
     actions.className = 'actions owner-actions';
     const editBtn = document.createElement('button');
     editBtn.className = 'btn-edit';
     editBtn.textContent = 'Edit';
-    editBtn.onclick = () => startEdit(id, data);
+    editBtn.onclick = () => startEdit(doc.id, data);
     const delBtn = document.createElement('button');
     delBtn.className = 'btn-delete';
     delBtn.textContent = 'Delete';
@@ -259,53 +268,46 @@ function renderCard(doc) {
       if (!confirm('Delete this skill?')) return;
       try {
         await db.collection('skills').doc(id).delete();
-      } catch (err) { alert('Delete failed: ' + (err.message||err.code)); }
+      } catch (err) { alert('Delete failed: ' + (err.message || err.code)); }
     };
     actions.appendChild(editBtn);
     actions.appendChild(delBtn);
     card.appendChild(actions);
   }
-
-  card.dataset.id = id;
   return card;
 }
 
 let unsubscribe = null;
 function loadSkills() {
-  // detach previous listener
   if (typeof unsubscribe === 'function') unsubscribe();
-
   unsubscribe = db.collection('skills').orderBy('createdAt','desc').onSnapshot(snapshot => {
     skillsArea.innerHTML = '';
     snapshot.forEach(doc => {
-      const card = renderCard(doc);
+      const card = cardDomFromDoc(doc);
       skillsArea.appendChild(card);
     });
-    // run search filter if input has text
+    // re-run search filter
     const q = document.getElementById('searchInput').value.trim().toLowerCase();
     if (q) filterCards(q);
-  }, err => {
-    console.error("Listen failed:", err);
-  });
+  }, err => console.error('Listen failed', err));
 }
 
-/* ------------ Edit flow (prefill and save) ------------ */
+/* ---------- Edit flow ---------- */
 function startEdit(id, data) {
-  // prefill the form
   document.getElementById('skillId').value = id;
   document.getElementById('name').value = data.name || '';
   document.getElementById('skill').value = data.skill || '';
   document.getElementById('location').value = data.location || '';
-  // show normalized whatsapp as digits or original
+  // store whatsapp as digits (strip wa.me if present)
   document.getElementById('whatsapp').value = (data.whatsapp || '').replace(/^https?:\/\/wa\.me\//,'');
-  document.getElementById('picture').value = data.picture || data.posterPhoto || '';
+  document.getElementById('pictureUrl').value = data.picture || data.posterPhoto || '';
   formWrapper.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ------------ search/filtering ------------ */
+/* ---------- search ---------- */
 const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', (e) => filterCards(e.target.value.toLowerCase()));
+searchInput.addEventListener('input', () => filterCards(searchInput.value.trim().toLowerCase()));
 function filterCards(q) {
   document.querySelectorAll('.card').forEach(card => {
     const text = card.innerText.toLowerCase();
@@ -313,16 +315,20 @@ function filterCards(q) {
   });
 }
 
-/* ------------ util helpers (escape) ------------ */
-function escapeHtml(s) {
-  if (s==null) return '';
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function escapeAttr(s){ return s ? s : '#'; }
+/* ---------- utils ---------- */
+function escapeHtml(s){ if (s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ if (!s) return '#'; return s; }
 
-/* ------------ initial load when auth ready ------------ */
+/* ---------- initial load ---------- */
+loadSkills();
+
+/* ---------- refresh owner UI when auth changes ---------- */
 auth.onAuthStateChanged(user => {
   currentUser = user;
-  // reload skills to update owner buttons
+  // ensure form picture default updated if logged in
+  if (currentUser) document.getElementById('pictureUrl').value = currentUser.photoURL || '';
   loadSkills();
 });
+</script>
+</body>
+</html>
