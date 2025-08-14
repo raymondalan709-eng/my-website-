@@ -140,6 +140,29 @@
       font-weight:700;
     }
 
+    /* --- Live picture preview styles (added) --- */
+    .pic-preview-wrap {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:6px 0 2px;
+      min-height:60px;
+    }
+    #picturePreview {
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      object-fit:cover;
+      border:2px solid #e5e7eb; /* light border to match cards */
+      display:none;
+    }
+    #pictureError {
+      color:#e11d48; /* red-600 */
+      font-size:13px;
+      display:none;
+    }
+    /* ------------------------------------------ */
+
     #skillsArea {
       padding:18px 12px 60px;
       display:flex;
@@ -231,7 +254,15 @@
       <input id="location" type="text" placeholder="Location (eg. Freetown)" required />
       <input id="whatsapp" type="text" placeholder="WhatsApp number (e.g. +23270... or 07...)" required />
       <select id="category"><option value="">Select category</option></select>
+
       <input id="pictureUrl" type="text" placeholder="Picture URL (leave blank to use Google profile pic)" />
+
+      <!-- Live preview + error (added) -->
+      <div class="pic-preview-wrap">
+        <img id="picturePreview" alt="Preview">
+        <div id="pictureError"></div>
+      </div>
+
       <label style="font-size:13px;color:#666;margin-top:6px">Or upload a picture from your device (optional)</label>
       <input id="pictureFile" type="file" accept="image/*" />
       <div class="actions">
@@ -283,10 +314,13 @@
         userPhoto.src=user.photoURL||'';userPhoto.style.display=user.photoURL?'block':'none';
         userName.textContent=user.displayName||user.email;userName.style.display='block';
         document.getElementById('pictureUrl').value=user.photoURL||'';
+        // trigger preview when logging in (if we prefill)
+        handlePictureUrlInput();
       } else {
         loginBtn.style.display='inline-block';logoutBtn.style.display='none';
         userPhoto.style.display='none';userName.style.display='none';
         document.getElementById('pictureUrl').value='';
+        clearPreview();
       }
       loadSkills(); loadCategories();
     });
@@ -296,12 +330,60 @@
     const skillForm=document.getElementById('skillForm'), pictureFileInput=document.getElementById('pictureFile');
     const categorySelect=document.getElementById('category'), categoryFilter=document.getElementById('categoryFilter');
 
+    // --- Live preview handlers (added) ---
+    const pictureUrlInput = document.getElementById('pictureUrl');
+    const picturePreview  = document.getElementById('picturePreview');
+    const pictureError    = document.getElementById('pictureError');
+
+    const IMG_EXT_REGEX = /\.(jpg|jpeg|png|gif)(\?.*)?$/i;
+
+    function showError(msg){
+      pictureError.textContent = msg || 'Invalid image link.';
+      pictureError.style.display = 'block';
+      picturePreview.style.display = 'none';
+    }
+    function clearError(){ pictureError.style.display = 'none'; }
+    function clearPreview(){ picturePreview.style.display='none'; clearError(); }
+
+    function handlePictureUrlInput(){
+      const url = pictureUrlInput.value.trim();
+      if(!url){ clearPreview(); return; }
+      // quick extension check
+      if(!IMG_EXT_REGEX.test(url)){ showError('Please use a direct image link ending in .jpg, .jpeg, .png, or .gif'); return; }
+      clearError();
+      // try to load
+      picturePreview.src = url;
+      picturePreview.style.display = 'block';
+    }
+
+    pictureUrlInput.addEventListener('input', handlePictureUrlInput);
+
+    // If the preview fails to load (404/CORS etc.)
+    picturePreview.addEventListener('error', ()=> {
+      showError('Could not load this image. Check the link or try another image.');
+    });
+
+    // Optional: preview local file selection as well
+    pictureFileInput.addEventListener('change', (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file){ return; }
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        clearError();
+        picturePreview.src = ev.target.result;
+        picturePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+    // -------------------------------------
+
     openAddBtn.addEventListener('click',()=>{
       if(!currentUser)return alert('Please log in to add a skill.');
       if(!categorySelect.options.length||!categoryFilter.options.length)return alert('No categories available. Admin must add categories.');
       document.getElementById('skillId').value='';skillForm.reset();
       document.getElementById('pictureUrl').value=currentUser.photoURL||'';
       formWrapper.style.display='block';window.scrollTo({top:0,behavior:'smooth'});
+      handlePictureUrlInput(); // refresh preview based on prefill
     });
 
     skillForm.addEventListener('submit', async e=>{
@@ -316,7 +398,18 @@
       const pictureUrlField=document.getElementById('pictureUrl').value.trim();
       const category=categorySelect.value;
 
-      if(!name||!skill||!location||!whatsappRaw||!category)return alert('Please fill all fields and select category.');
+      if(!name||!skill||!location||!whatsappRaw||!category){
+        alert('Please fill all fields and select category.');
+        return;
+      }
+
+      // Validate image URL if provided (when no file chosen)
+      if(!pictureFileInput.files[0] && pictureUrlField){
+        if(!IMG_EXT_REGEX.test(pictureUrlField)){
+          showError('Please use a direct image link ending in .jpg, .jpeg, .png, or .gif');
+          return;
+        }
+      }
 
       let finalPictureUrl=pictureUrlField||currentUser.photoURL||'';
       const file=pictureFileInput.files[0];
@@ -337,6 +430,7 @@
         if(id) await db.collection('skills').doc(id).update(payload);
         else await db.collection('skills').add(payload);
         skillForm.reset(); pictureFileInput.value=''; formWrapper.style.display='none';
+        clearPreview();
       } catch(err){alert('Save failed: '+(err.message||err.code));}
     });
 
@@ -399,6 +493,7 @@
       categorySelect.value=data.category||'';
       formWrapper.style.display='block';
       window.scrollTo({top:0,behavior:'smooth'});
+      handlePictureUrlInput(); // show preview for existing picture
     }
 
     // Search & filter
