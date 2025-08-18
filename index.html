@@ -10,250 +10,286 @@
       background-color: #fff;
     }
     header {
-      background-color: #007BFF;
-      color: white;
+      background: #007BFF;
+      color: #fff;
       padding: 15px;
       text-align: center;
       position: relative;
     }
     header img.logo {
-      height: 40px;
+      width: 40px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    header h1 {
+      display: inline-block;
+      margin: 0;
+      font-size: 28px;
+      vertical-align: middle;
+    }
+    header p {
+      margin: 5px 0 0;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    #authSection {
       position: absolute;
       top: 10px;
       left: 10px;
+      text-align: left;
     }
-    #user-info {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      text-align: right;
-    }
-    #user-info img {
+    #authSection img {
+      width: 40px;
       border-radius: 50%;
-      width: 35px;
-      height: 35px;
+      display: block;
+      margin-bottom: 5px;
     }
-    #addSkillForm {
-      display: none;
-      max-width: 400px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: #f9f9f9;
-    }
-    .skill-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 15px;
+    #authSection button {
       background: #fff;
+      color: #007BFF;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
     }
-    .skill-card img.profile {
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-    }
-    .skill-card .actions {
+    #controls {
       margin-top: 10px;
     }
+    #controls input {
+      padding: 8px;
+      width: 200px;
+      border-radius: 5px;
+      border: none;
+    }
+    #controls button {
+      background: #fff;
+      color: #007BFF;
+      border: none;
+      padding: 8px 15px;
+      margin-left: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    #addSkillSection {
+      text-align: center;
+      padding: 20px;
+    }
+    #skillsContainer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    .skill-card {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      width: 250px;
+      margin: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .skill-card img.profile {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
     .skill-card button {
-      margin: 3px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .skill-card button.delete {
+      background: red;
     }
   </style>
 </head>
 <body>
   <header>
-    <!-- Replace "slsh-logo.png" with your actual logo file name -->
-    <img src="slsh-logo.png" class="logo" alt="SL Skills Hub Logo">
+    <img src="logo.png" class="logo" alt="Logo">
     <h1>SL Skills Hub</h1>
-    <p><b>find talented people near you</b></p>
-    <div id="user-info">
-      <div id="user-name"></div>
-      <img id="user-pic" src="" alt="" style="display:none;">
-      <button id="login">Login with Google</button>
-      <button id="logout" style="display:none;">Logout</button>
+    <p>find talented people near you</p>
+    <div id="authSection">
+      <img id="userPic" src="" style="display:none;">
+      <p id="userName"></p>
+      <button id="loginBtn">Login with Google</button>
+      <button id="logoutBtn" style="display:none;">Logout</button>
     </div>
-    <div style="margin-top:60px;">
-      <button onclick="toggleAddSkill()">Add a Skill</button>
-      <input type="text" id="search" placeholder="Search skills...">
+    <div id="controls">
+      <input type="text" id="searchBar" placeholder="Search skills...">
+      <button id="addSkillBtn">Add Skill</button>
     </div>
   </header>
 
-  <form id="addSkillForm">
-    <input type="text" id="name" placeholder="Your Name" required><br><br>
-    <input type="text" id="skill" placeholder="Skill" required><br><br>
-    <input type="text" id="location" placeholder="Location" required><br><br>
-    <input type="text" id="whatsapp" placeholder="WhatsApp Contact" required><br><br>
-    <label>Profile Picture: </label>
-    <input type="file" id="profilePic" accept="image/*"><br><br>
-    <button type="submit">Save Skill</button>
-  </form>
+  <section id="addSkillSection" style="display:none;">
+    <h2>Add a Skill</h2>
+    <input type="text" id="nameInput" placeholder="Your Name"><br><br>
+    <input type="text" id="skillInput" placeholder="Your Skill"><br><br>
+    <input type="text" id="locationInput" placeholder="Your Location"><br><br>
+    <input type="text" id="whatsappInput" placeholder="WhatsApp Contact"><br><br>
+    <input type="file" id="pictureInput" accept="image/*"><br><br>
+    <button id="saveSkillBtn">Save Skill</button>
+  </section>
 
-  <div id="skillsContainer"></div>
+  <section id="skillsContainer"></section>
 
-  <!-- Firebase SDK v9+ -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, orderBy, query, deleteDoc, doc, updateDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
-      apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-      authDomain: "sl-skills-hub.firebaseapp.com",
-      projectId: "sl-skills-hub",
-      storageBucket: "sl-skills-hub.appspot.com",
-      messagingSenderId: "125049368940",
-      appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
-    const loginBtn = document.getElementById("login");
-    const logoutBtn = document.getElementById("logout");
-    const userName = document.getElementById("user-name");
-    const userPic = document.getElementById("user-pic");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userPic = document.getElementById("userPic");
+    const userName = document.getElementById("userName");
+    const addSkillBtn = document.getElementById("addSkillBtn");
+    const addSkillSection = document.getElementById("addSkillSection");
+    const saveSkillBtn = document.getElementById("saveSkillBtn");
+    const skillsContainer = document.getElementById("skillsContainer");
+    const searchBar = document.getElementById("searchBar");
 
     let currentUser = null;
 
     loginBtn.onclick = async () => {
       try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        console.error("Login error:", err);
-        alert("Google login failed: " + err.message);
+        const result = await signInWithPopup(auth, provider);
+        currentUser = result.user;
+        userPic.src = currentUser.photoURL;
+        userPic.style.display = "block";
+        userName.textContent = currentUser.displayName;
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "block";
+      } catch (error) {
+        alert("Login failed");
       }
     };
 
-    logoutBtn.onclick = () => signOut(auth);
+    logoutBtn.onclick = async () => {
+      await signOut(auth);
+      currentUser = null;
+      userPic.style.display = "none";
+      userName.textContent = "";
+      loginBtn.style.display = "block";
+      logoutBtn.style.display = "none";
+    };
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        userName.textContent = user.displayName;
-        userPic.src = user.photoURL;
-        userPic.style.display = "inline-block";
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        loadSkills();
-      } else {
-        currentUser = null;
-        userName.textContent = "";
-        userPic.style.display = "none";
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
+    addSkillBtn.onclick = () => {
+      addSkillSection.style.display = "block";
+    };
+
+    saveSkillBtn.onclick = async () => {
+      if (!currentUser) return alert("Login first!");
+      const name = document.getElementById("nameInput").value;
+      const skill = document.getElementById("skillInput").value;
+      const location = document.getElementById("locationInput").value;
+      const whatsapp = document.getElementById("whatsappInput").value;
+      const pictureFile = document.getElementById("pictureInput").files[0];
+      let pictureURL = currentUser.photoURL;
+      if (pictureFile) {
+        pictureURL = URL.createObjectURL(pictureFile); // Temporary until Firebase Storage step
       }
-    });
-
-    function toggleAddSkill() {
-      document.getElementById("addSkillForm").style.display =
-        document.getElementById("addSkillForm").style.display === "block" ? "none" : "block";
-    }
-
-    document.getElementById("addSkillForm").onsubmit = async (e) => {
-      e.preventDefault();
-      if (!currentUser) {
-        alert("Please login first.");
-        return;
-      }
-
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const file = document.getElementById("profilePic").files[0];
-
-      let photoURL = "";
-      if (file) {
-        const storageRef = ref(storage, "profilePics/" + Date.now() + "-" + file.name);
-        await uploadBytes(storageRef, file);
-        photoURL = await getDownloadURL(storageRef);
-      }
-
       await addDoc(collection(db, "skills"), {
-        userId: currentUser.uid,
-        name,
-        skill,
-        location,
-        whatsapp,
-        photoURL,
-        createdAt: serverTimestamp()
+        uid: currentUser.uid,
+        name, skill, location, whatsapp,
+        pictureURL,
+        timestamp: new Date()
       });
-
-      document.getElementById("addSkillForm").reset();
-      document.getElementById("addSkillForm").style.display = "none";
       loadSkills();
+      addSkillSection.style.display = "none";
     };
 
     async function loadSkills() {
-      const container = document.getElementById("skillsContainer");
-      container.innerHTML = "";
-      const q = query(collection(db, "skills"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(docSnap => {
+      skillsContainer.innerHTML = "";
+      const q = await getDocs(collection(db, "skills"));
+      q.forEach(docSnap => {
         const data = docSnap.data();
         const card = document.createElement("div");
         card.className = "skill-card";
         card.innerHTML = `
-          <img class="profile" src="${data.photoURL || 'default.png'}" alt="profile">
+          <img src="${data.pictureURL}" class="profile">
           <h3>${data.name}</h3>
-          <p><b>Skill:</b> ${data.skill}</p>
-          <p><b>Location:</b> ${data.location}</p>
-          <p><b>WhatsApp:</b> ${data.whatsapp}</p>
-          <div class="actions">
-            ${currentUser && currentUser.uid === data.userId ? `
-              <button onclick="editSkill('${docSnap.id}')">Edit</button>
-              <button onclick="deleteSkill('${docSnap.id}')">Delete</button>
-            ` : ""}
-          </div>
+          <p><strong>Skill:</strong> ${data.skill}</p>
+          <p><strong>Location:</strong> ${data.location}</p>
+          <p><strong>WhatsApp:</strong> ${data.whatsapp}</p>
         `;
-        container.appendChild(card);
+        if (currentUser && data.uid === currentUser.uid) {
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "Edit";
+          editBtn.onclick = () => editSkill(docSnap.id, data);
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.className = "delete";
+          deleteBtn.onclick = () => deleteSkill(docSnap.id);
+          card.appendChild(editBtn);
+          card.appendChild(deleteBtn);
+        }
+        skillsContainer.appendChild(card);
       });
     }
 
-    window.deleteSkill = async (id) => {
+    async function deleteSkill(id) {
       await deleteDoc(doc(db, "skills", id));
       loadSkills();
-    };
+    }
 
-    window.editSkill = async (id) => {
-      const docRef = doc(db, "skills", id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        document.getElementById("name").value = data.name;
-        document.getElementById("skill").value = data.skill;
-        document.getElementById("location").value = data.location;
-        document.getElementById("whatsapp").value = data.whatsapp;
-        toggleAddSkill();
-        document.getElementById("addSkillForm").onsubmit = async (e) => {
-          e.preventDefault();
-          const name = document.getElementById("name").value;
-          const skill = document.getElementById("skill").value;
-          const location = document.getElementById("location").value;
-          const whatsapp = document.getElementById("whatsapp").value;
-          const file = document.getElementById("profilePic").files[0];
+    async function editSkill(id, data) {
+      const newName = prompt("Edit Name", data.name);
+      const newSkill = prompt("Edit Skill", data.skill);
+      const newLocation = prompt("Edit Location", data.location);
+      const newWhatsapp = prompt("Edit WhatsApp", data.whatsapp);
+      let newPictureURL = data.pictureURL;
 
-          let photoURL = data.photoURL;
-          if (file) {
-            const storageRef = ref(storage, "profilePics/" + Date.now() + "-" + file.name);
-            await uploadBytes(storageRef, file);
-            photoURL = await getDownloadURL(storageRef);
-          }
-
-          await updateDoc(docRef, { name, skill, location, whatsapp, photoURL });
-          document.getElementById("addSkillForm").reset();
-          document.getElementById("addSkillForm").style.display = "none";
+      const pictureInput = document.createElement("input");
+      pictureInput.type = "file";
+      pictureInput.accept = "image/*";
+      pictureInput.onchange = async () => {
+        const file = pictureInput.files[0];
+        if (file) {
+          newPictureURL = URL.createObjectURL(file); // Temporary until Firebase Storage step
+          await updateDoc(doc(db, "skills", id), {
+            name: newName,
+            skill: newSkill,
+            location: newLocation,
+            whatsapp: newWhatsapp,
+            pictureURL: newPictureURL
+          });
           loadSkills();
-        };
-      }
-    };
+        }
+      };
+      pictureInput.click();
+    }
+
+    searchBar.addEventListener("input", () => {
+      const term = searchBar.value.toLowerCase();
+      document.querySelectorAll(".skill-card").forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(term) ? "block" : "none";
+      });
+    });
+
+    loadSkills();
   </script>
 </body>
 </html>
