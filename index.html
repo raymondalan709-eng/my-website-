@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <!-- Favicon (logo in browser tab) -->
-  <link rel="icon" type="image/png" href="1000040429.jpg">
-  <style>
-    /* your CSS starts here */
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="icon" href="1000040429.jpg" type="image/jpg">
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background-color: #fff; }
-    header { background: #2196F3; color: white; padding: 20px; text-align: center; }
+    header { background: #2196F3; color: white; padding: 20px; text-align: center; position: relative; }
     header h1 { margin: 0; font-size: 2.5em; font-weight: bold; }
     header p { margin: 5px 0 15px; font-size: 1.2em; font-weight: bold; }
     #authSection { position: absolute; top: 15px; left: 15px; text-align: left; }
@@ -49,10 +48,6 @@
       <input type="text" id="searchInput" placeholder="Search skills...">
       <button onclick="toggleAddSkill()">Add a Skill</button>
       <select id="categoryFilter"><option value="">All Categories</option></select>
-      <div id="adminCategory" style="display:none;">
-        <input type="text" id="newCategoryInput" placeholder="New Category">
-        <button onclick="addCategory()">Add Category</button>
-      </div>
     </div>
   </header>
 
@@ -69,200 +64,191 @@
 
   <div id="skillsContainer"></div>
 
+  <!-- Firebase + Logic -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     // ====== PASTE YOUR FIREBASE CONFIG HERE ======
     const firebaseConfig = {
-  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-  authDomain: "sl-skills-hub.firebaseapp.com",
-  projectId: "sl-skills-hub",
-  storageBucket: "sl-skills-hub.firebasestorage.app",
-  messagingSenderId: "125049368940",
-  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-};
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_ID",
+      appId: "YOUR_APP_ID"
+    };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
     const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
+    let currentUser = null;
+    let editId = null;
+
+    // Auth
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const userPic = document.getElementById("userPic");
     const userName = document.getElementById("userName");
-    const skillsContainer = document.getElementById("skillsContainer");
-    const addSkillForm = document.getElementById("addSkillForm");
-    const formTitle = document.getElementById("formTitle");
-    const nameInput = document.getElementById("name");
-    const skillInput = document.getElementById("skill");
-    const locationInput = document.getElementById("location");
-    const whatsappInput = document.getElementById("whatsapp");
-    const categorySelect = document.getElementById("categorySelect");
-    const categoryFilter = document.getElementById("categoryFilter");
-    const adminCategory = document.getElementById("adminCategory");
-    const newCategoryInput = document.getElementById("newCategoryInput");
-    let currentUser = null;
-    let editId = null;
-
-    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
 
     loginBtn.onclick = () => signInWithPopup(auth, provider);
     logoutBtn.onclick = () => signOut(auth);
 
-    onAuthStateChanged(auth, user => {
-      if(user){
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
         currentUser = user;
         userPic.src = user.photoURL;
         userPic.style.display = "block";
         userName.textContent = user.displayName;
         loginBtn.style.display = "none";
         logoutBtn.style.display = "block";
-        nameInput.value = user.displayName;
-        if(user.uid === adminUID){ adminCategory.style.display = "block"; }
+        loadCategories();
+        loadSkills();
       } else {
         currentUser = null;
         userPic.style.display = "none";
         userName.textContent = "";
         loginBtn.style.display = "block";
         logoutBtn.style.display = "none";
-        adminCategory.style.display = "none";
       }
     });
 
-    function toggleAddSkill(){
-      addSkillForm.style.display = addSkillForm.style.display === "none" ? "block" : "none";
+    // Toggle form
+    function toggleAddSkill() {
+      document.getElementById("addSkillForm").style.display =
+        document.getElementById("addSkillForm").style.display === "none" ? "block" : "none";
     }
-    function cancelEdit(){
+
+    function cancelEdit() {
       editId = null;
-      formTitle.textContent = "Add a Skill";
-      addSkillForm.style.display = "none";
-      nameInput.value = currentUser ? currentUser.displayName : "";
-      skillInput.value = "";
-      locationInput.value = "";
-      whatsappInput.value = "";
-      categorySelect.value = "";
+      document.getElementById("formTitle").textContent = "Add a Skill";
+      document.getElementById("addSkillForm").reset;
+      document.getElementById("addSkillForm").style.display = "none";
     }
 
-    async function submitSkill(){
-      if(!currentUser) return alert("Please login first!");
-      const data = {
-        uid: currentUser.uid,
-        name: nameInput.value,
-        skill: skillInput.value,
-        location: locationInput.value,
-        whatsapp: whatsappInput.value,
-        category: categorySelect.value,
-        photoURL: currentUser.photoURL,
-        timestamp: new Date().toLocaleString()
-      };
-      if(editId){
-        await updateDoc(doc(db,"skills",editId), data);
-        editId = null;
-        formTitle.textContent = "Add a Skill";
-      } else {
-        await addDoc(collection(db,"skills"), data);
+    // Add Skill
+    async function submitSkill() {
+      if (!currentUser) return alert("Please login first");
+      const name = document.getElementById("name").value;
+      const skill = document.getElementById("skill").value;
+      const location = document.getElementById("location").value;
+      const whatsapp = document.getElementById("whatsapp").value;
+      const category = document.getElementById("categorySelect").value;
+
+      if (!name || !skill || !location || !whatsapp) {
+        alert("Please fill all fields");
+        return;
       }
-      cancelEdit();
+
+      if (editId) {
+        await updateDoc(doc(db, "skills", editId), {
+          name, skill, location, whatsapp, category,
+          userId: currentUser.uid,
+          userName: currentUser.displayName,
+          userPic: currentUser.photoURL
+        });
+        editId = null;
+        document.getElementById("formTitle").textContent = "Add a Skill";
+      } else {
+        await addDoc(collection(db, "skills"), {
+          name, skill, location, whatsapp, category,
+          userId: currentUser.uid,
+          userName: currentUser.displayName,
+          userPic: currentUser.photoURL,
+          createdAt: new Date()
+        });
+      }
+      document.getElementById("addSkillForm").style.display = "none";
     }
 
-    async function loadCategories(){
-      const snap = await getDocs(collection(db,"categories"));
+    // Load Categories
+    async function loadCategories() {
+      const categorySelect = document.getElementById("categorySelect");
+      const filter = document.getElementById("categoryFilter");
       categorySelect.innerHTML = "";
-      categoryFilter.innerHTML = "<option value=''>All Categories</option>";
-      snap.forEach(docu=>{
-        const opt1=document.createElement("option");
-        opt1.value=docu.data().name;
-        opt1.textContent=docu.data().name;
+      filter.innerHTML = "<option value=''>All Categories</option>";
+
+      const snapshot = await getDocs(collection(db, "categories"));
+      snapshot.forEach(docSnap => {
+        const cat = docSnap.data().name;
+        let opt1 = document.createElement("option");
+        opt1.value = cat; opt1.textContent = cat;
         categorySelect.appendChild(opt1);
-        const opt2=opt1.cloneNode(true);
-        categoryFilter.appendChild(opt2);
+        let opt2 = document.createElement("option");
+        opt2.value = cat; opt2.textContent = cat;
+        filter.appendChild(opt2);
       });
     }
 
-    async function addCategory(){
-      if(!currentUser || currentUser.uid !== adminUID) return;
-      const cat=newCategoryInput.value.trim();
-      if(cat==="") return;
-      await setDoc(doc(db,"categories",cat),{name:cat});
-      newCategoryInput.value="";
-      loadCategories();
-    }
-
-    function renderSkills(skills){
-      skillsContainer.innerHTML="";
-      skills.forEach(docu=>{
-        const s=docu.data();
-        const card=document.createElement("div");
-        card.className="skillCard";
-        card.innerHTML=`
-          <img src="${s.photoURL}" alt="Profile">
-          <h3>${s.name}</h3>
-          <p><strong>Skill:</strong> ${s.skill}</p>
-          <p><strong>Location:</strong> ${s.location}</p>
-          <p><strong>WhatsApp:</strong> ${s.whatsapp}</p>
-          <p><strong>Category:</strong> ${s.category||""}</p>
-          <p><em>${s.timestamp}</em></p>
-        `;
-        if(currentUser && currentUser.uid===s.uid){
-          const editBtn=document.createElement("button");
-          editBtn.textContent="Edit"; editBtn.className="editBtn";
-          editBtn.onclick=()=>{
-            editId=docu.id;
-            formTitle.textContent="Edit Skill";
-            nameInput.value=s.name;
-            skillInput.value=s.skill;
-            locationInput.value=s.location;
-            whatsappInput.value=s.whatsapp;
-            categorySelect.value=s.category||"";
-            addSkillForm.style.display="block";
-          };
-          const deleteBtn=document.createElement("button");
-          deleteBtn.textContent="Delete"; deleteBtn.className="deleteBtn";
-          deleteBtn.onclick=()=>deleteDoc(doc(db,"skills",docu.id));
-          card.appendChild(editBtn);
-          card.appendChild(deleteBtn);
-        }
-        skillsContainer.appendChild(card);
+    // Load Skills
+    function loadSkills() {
+      const skillsContainer = document.getElementById("skillsContainer");
+      onSnapshot(collection(db, "skills"), (snapshot) => {
+        skillsContainer.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const card = document.createElement("div");
+          card.className = "skillCard";
+          const date = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleString() : "";
+          card.innerHTML = `
+            <img src="${data.userPic || ''}">
+            <h3>${data.name}</h3>
+            <p><b>Skill:</b> ${data.skill}</p>
+            <p><b>Location:</b> ${data.location}</p>
+            <p><b>WhatsApp:</b> ${data.whatsapp}</p>
+            <p><b>Category:</b> ${data.category || ''}</p>
+            <p><i>Posted: ${date}</i></p>
+          `;
+          if (currentUser && currentUser.uid === data.userId) {
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.className = "editBtn";
+            editBtn.onclick = () => editSkill(docSnap.id, data);
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "deleteBtn";
+            deleteBtn.onclick = () => deleteSkill(docSnap.id);
+            card.appendChild(editBtn);
+            card.appendChild(deleteBtn);
+          }
+          skillsContainer.appendChild(card);
+        });
       });
     }
 
-    const q=query(collection(db,"skills"),orderBy("timestamp","desc"));
-    onSnapshot(q,snap=>{
-      const all=[]; snap.forEach(d=>all.push(d));
-      renderSkills(all);
-    });
+    function editSkill(id, data) {
+      editId = id;
+      document.getElementById("formTitle").textContent = "Edit Skill";
+      document.getElementById("name").value = data.name;
+      document.getElementById("skill").value = data.skill;
+      document.getElementById("location").value = data.location;
+      document.getElementById("whatsapp").value = data.whatsapp;
+      document.getElementById("categorySelect").value = data.category;
+      document.getElementById("addSkillForm").style.display = "block";
+    }
 
-    document.getElementById("searchInput").addEventListener("input",async e=>{
-      const val=e.target.value.toLowerCase();
-      const snap=await getDocs(collection(db,"skills"));
-      const results=[];
-      snap.forEach(d=>{
-        const s=d.data();
-        if(
-          s.name.toLowerCase().includes(val)||
-          s.skill.toLowerCase().includes(val)||
-          s.location.toLowerCase().includes(val)||
-          s.whatsapp.toLowerCase().includes(val)||
-          (s.category||"").toLowerCase().includes(val)
-        ){ results.push(d); }
+    async function deleteSkill(id) {
+      if (confirm("Delete this skill?")) {
+        await deleteDoc(doc(db, "skills", id));
+      }
+    }
+
+    // Search + filter
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      const search = e.target.value.toLowerCase();
+      document.querySelectorAll(".skillCard").forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(search) ? "block" : "none";
       });
-      renderSkills(results);
     });
 
-    categoryFilter.addEventListener("change",async e=>{
-      const cat=e.target.value;
-      const snap=await getDocs(collection(db,"skills"));
-      const results=[];
-      snap.forEach(d=>{
-        const s=d.data();
-        if(cat===""||s.category===cat) results.push(d);
+    document.getElementById("categoryFilter").addEventListener("change", (e) => {
+      const val = e.target.value;
+      document.querySelectorAll(".skillCard").forEach(card => {
+        card.style.display = (!val || card.textContent.includes(val)) ? "block" : "none";
       });
-      renderSkills(results);
     });
-
-    loadCategories();
   </script>
 </body>
 </html>
