@@ -518,4 +518,14 @@
           checkAdmin();
         } else {
           document.getElementById("userEmail").innerText = "";
-          document.get
+          document.getElementById("userPhoto").style.display = "none";
+          resetForm();
+          document.getElementById("addSkillBtn").disabled = true;
+          isAdmin = false;
+          document.getElementById("addCategoryBtn").style.display = "none";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
