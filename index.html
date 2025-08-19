@@ -71,14 +71,14 @@
     import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     // ====== PASTE YOUR FIREBASE CONFIG HERE ======
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MSG_ID",
-      appId: "YOUR_APP_ID"
-    };
+   const firebaseConfig = {
+  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+  authDomain: "sl-skills-hub.firebaseapp.com",
+  projectId: "sl-skills-hub",
+  storageBucket: "sl-skills-hub.firebasestorage.app",
+  messagingSenderId: "125049368940",
+  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+};
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -252,3 +252,4 @@
   </script>
 </body>
 </html>
+
