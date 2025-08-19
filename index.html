@@ -1,287 +1,259 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title><b>SL Skills Hub</b></title>
+  <meta charset="UTF-8" />
+  <title>SL Skills Hub</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #fff;
-    }
-    header {
-      background-color: #1E90FF; /* Blue header */
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 36px;
-      font-weight: bold;
-    }
-    header p {
-      margin: 5px 0 0;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    #auth-section {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      text-align: left;
-    }
-    #auth-section img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: block;
-      margin-bottom: 5px;
-    }
-    #auth-section p {
-      margin: 0;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    #auth-section button {
-      margin-top: 5px;
-      background: #1E90FF;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #auth-section button:hover {
-      background: #005fcb;
-    }
-    .header-buttons {
-      margin-top: 15px;
-    }
-    .header-buttons input {
-      padding: 8px;
-      width: 60%;
-      border-radius: 5px;
-      border: none;
-      margin-right: 10px;
-    }
-    .header-buttons button {
-      background: white;
-      color: #1E90FF;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .header-buttons button:hover {
-      background: #f2f2f2;
-    }
-    #addSkillForm {
-      display: none;
-      margin: 20px auto;
-      padding: 20px;
-      max-width: 400px;
-      background: #f9f9f9;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    #addSkillForm input {
-      display: block;
-      width: 90%;
-      margin: 10px auto;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-    #addSkillForm button {
-      background: #1E90FF;
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #addSkillForm button:hover {
-      background: #005fcb;
-    }
-    #skillsContainer {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .skill-card {
-      background: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .skill-card img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      margin-bottom: 10px;
-    }
-    .skill-card h3 {
-      margin: 5px 0;
-    }
-    .skill-card p {
-      margin: 3px 0;
-    }
-    .skill-card button {
-      background: #1E90FF;
-      border: none;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      margin-top: 5px;
-      cursor: pointer;
-    }
-    .skill-card button:hover {
-      background: #005fcb;
-    }
+    body { font-family: Arial, sans-serif; margin:0; background-color:#fff; color:#111; }
+    header { background-color:#1E90FF; color:white; padding:18px 20px; position:relative; text-align:center; }
+    header h1 { margin:0; font-size:34px; font-weight:700; }
+    header p.intro { margin:6px 0 0; font-size:18px; font-weight:600; }
+
+    #auth-section { position:absolute; top:12px; left:12px; text-align:left; }
+    #auth-section img { width:44px; height:44px; border-radius:50%; display:block; margin-bottom:6px; object-fit:cover; background:#fff; }
+    #auth-section p { margin:0; font-size:14px; font-weight:600; color:white; }
+    #auth-section button { margin-top:6px; background:#1E90FF; border:1px solid rgba(255,255,255,0.25); color:white; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:700; }
+    #auth-section button:hover { opacity:0.95; }
+
+    .header-controls { margin-top:14px; display:flex; justify-content:center; gap:10px; align-items:center; }
+    .header-controls input[type="text"]{ padding:10px; width:60%; max-width:520px; border-radius:8px; border:none; font-size:16px; }
+    .header-controls button { background:white; color:#1E90FF; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
+    .header-controls button:hover { opacity:0.95; }
+
+    #addSkillForm { display:none; margin:18px auto; padding:18px; max-width:420px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); text-align:center; }
+    #addSkillForm input, #addSkillForm select { display:block; width:92%; margin:10px auto; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:15px; }
+    #addSkillForm .row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    #addSkillForm button { background:#1E90FF; border:none; color:white; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:700; margin-top:8px; }
+    #addSkillForm button.secondary { background:#777; }
+
+    #skillsContainer { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:18px; padding:18px; }
+    .skill-card { background:white; border-radius:10px; padding:14px; box-shadow:0 2px 6px rgba(0,0,0,0.08); text-align:center; position:relative; }
+    .skill-card img.profile { width:62px; height:62px; border-radius:50%; object-fit:cover; margin:0 auto 8px; background:#f0f0f0; }
+    .skill-card h3 { margin:6px 0 4px; font-size:18px; }
+    .skill-card p { margin:4px 0; font-size:14px; color:#222; }
+    .skill-meta { font-size:12px; color:#555; margin-top:8px; }
+
+    .actions { display:flex; gap:8px; justify-content:center; margin-top:8px; flex-wrap:wrap; }
+    .actions button { background:#1E90FF; border:none; color:white; padding:6px 10px; border-radius:7px; cursor:pointer; font-weight:700; }
+    .actions button.delete { background:#e04f5f; }
+    .actions button.small { padding:6px 8px; font-size:13px; }
+
+    #categoryControls { margin-top:8px; font-size:13px; }
+    #categoryControls input { width:180px; padding:6px; border-radius:6px; border:1px solid #ddd; }
+
+    @media(max-width:640px){ .header-controls input { width:70%; } #auth-section img{ width:36px; height:36px; } header h1{ font-size:28px; } }
   </style>
 </head>
 <body>
   <header>
     <h1>SL Skills Hub</h1>
-    <p>find talented people near you</p>
+    <p class="intro">Find talented people near you</p>
 
     <div id="auth-section">
-      <img id="userPic" src="" style="display:none;">
+      <img id="userPic" src="" alt="profile" style="display:none;">
       <p id="userName"></p>
       <button id="loginBtn">Login with Google</button>
       <button id="logoutBtn" style="display:none;">Logout</button>
     </div>
 
-    <div class="header-buttons">
-      <input type="text" id="searchInput" placeholder="Search skills...">
-      <button onclick="toggleAddForm()">Add a Skill</button>
+    <div class="header-controls">
+      <input id="searchInput" type="text" placeholder="Search skills...">
+      <button id="toggleAddBtn">Add a Skill</button>
+    </div>
+
+    <div id="categoryControls" style="display:none;">
+      <select id="categorySelect">
+        <option value="">All categories</option>
+      </select>
+      <input id="categoryInput" placeholder="New category (admin only)" style="display:none;">
+      <button id="addCategoryBtn" style="display:none;">Add Category</button>
     </div>
   </header>
 
-  <div id="addSkillForm">
-    <input type="text" id="nameInput" placeholder="Your Name">
-    <input type="text" id="skillInput" placeholder="Your Skill">
-    <input type="text" id="locationInput" placeholder="Your Location">
-    <input type="text" id="whatsappInput" placeholder="WhatsApp Contact">
-    <input type="text" id="profilePicInput" placeholder="Profile Picture URL">
-    <button onclick="addSkill()">Post Skill</button>
+  <div id="addSkillForm" aria-hidden="true">
+    <input id="nameInput" type="text" placeholder="Your Name" />
+    <input id="skillInput" type="text" placeholder="Your Skill (e.g. Tailor, Web Dev)" />
+    <input id="locationInput" type="text" placeholder="Location (City)" />
+    <input id="whatsappInput" type="text" placeholder="WhatsApp contact (optional)" />
+    <input id="profilePicInput" type="text" placeholder="Profile picture URL (leave blank to use your Google pic)" />
+    <select id="categoryInputSelect" style="display:block; width:92%; margin:10px auto; padding:10px; border-radius:6px; border:1px solid #ddd;">
+      <option value="">Select category (optional)</option>
+    </select>
+    <div class="row">
+      <button id="postSkillBtn">Post Skill</button>
+      <button id="cancelEditBtn" class="secondary">Cancel</button>
+    </div>
   </div>
 
   <div id="skillsContainer"></div>
 
-  <script>
+  <script type="module">
+    // ====== PASTE YOUR FIREBASE CONFIG HERE ======
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    const ADMIN_UID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // DOM refs
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userPic = document.getElementById('userPic');
+    const userNameEl = document.getElementById('userName');
+    const toggleAddBtn = document.getElementById('toggleAddBtn');
+    const addSkillForm = document.getElementById('addSkillForm');
+    const postSkillBtn = document.getElementById('postSkillBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const searchInput = document.getElementById('searchInput');
+    const skillsContainer = document.getElementById('skillsContainer');
+    const categoryControls = document.getElementById('categoryControls');
+    const categorySelect = document.getElementById('categorySelect');
+    const categoryInput = document.getElementById('categoryInput');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const categoryInputSelect = document.getElementById('categoryInputSelect');
+    const nameInput = document.getElementById('nameInput');
+    const skillInput = document.getElementById('skillInput');
+    const locationInput = document.getElementById('locationInput');
+    const whatsappInput = document.getElementById('whatsappInput');
+    const profilePicInput = document.getElementById('profilePicInput');
+
     let currentUser = null;
-    let skills = [];
+    let editingId = null;
+    let categories = [];
+    let allSkills = [];
 
-    // Fake Google login simulation
-    document.getElementById('loginBtn').onclick = () => {
-      currentUser = {
-        uid: "user123",
-        name: "John Doe",
-        picture: "https://i.pravatar.cc/100"
-      };
-      document.getElementById('userPic').src = currentUser.picture;
-      document.getElementById('userPic').style.display = 'block';
-      document.getElementById('userName').innerText = currentUser.name;
-      document.getElementById('loginBtn').style.display = 'none';
-      document.getElementById('logoutBtn').style.display = 'block';
-    };
+    // ====== AUTH ======
+    loginBtn.addEventListener('click', async () => { try { await signInWithPopup(auth, provider); } catch(err){ alert("Login failed: "+err.message); } });
+    logoutBtn.addEventListener('click', async () => { try { await signOut(auth); } catch(err){ console.error(err); } });
 
-    document.getElementById('logoutBtn').onclick = () => {
-      currentUser = null;
-      document.getElementById('userPic').style.display = 'none';
-      document.getElementById('userName').innerText = '';
-      document.getElementById('loginBtn').style.display = 'block';
-      document.getElementById('logoutBtn').style.display = 'none';
-    };
-
-    function toggleAddForm() {
-      if (!currentUser) {
-        alert("Please login first");
-        return;
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if(user){
+        userPic.src = user.photoURL||""; userPic.style.display = user.photoURL?"block":"none";
+        userNameEl.textContent = user.displayName||user.email||"";
+        loginBtn.style.display = "none"; logoutBtn.style.display="inline-block";
+        if(user.uid===ADMIN_UID){
+          categoryControls.style.display="block";
+          categoryInput.style.display="inline-block";
+          addCategoryBtn.style.display="inline-block";
+        } else {
+          categoryControls.style.display="block";
+          categoryInput.style.display="none";
+          addCategoryBtn.style.display="none";
+        }
+        nameInput.value = user.displayName||"";
+        await loadCategories();
+      } else {
+        userPic.style.display="none"; userNameEl.textContent="";
+        loginBtn.style.display="inline-block"; logoutBtn.style.display="none";
+        categoryControls.style.display="none";
       }
-      const form = document.getElementById('addSkillForm');
-      form.style.display = form.style.display === "none" ? "block" : "none";
+      renderSkills();
+    });
+
+    // ====== CATEGORY HANDLING ======
+    async function loadCategories(){
+      const q = query(collection(db,"categories"), orderBy("name","asc"));
+      const snap = await getDocs(q);
+      categories = [];
+      categorySelect.innerHTML='<option value="">All categories</option>';
+      categoryInputSelect.innerHTML='<option value="">Select category (optional)</option>';
+      snap.forEach(doc=>{ 
+        const cat = doc.data().name;
+        categories.push(cat); 
+        categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+        categoryInputSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
     }
 
-    function addSkill() {
-      if (!currentUser) {
-        alert("Please login first");
-        return;
+    addCategoryBtn.addEventListener('click', async ()=>{
+      const val = categoryInput.value.trim();
+      if(val && currentUser && currentUser.uid===ADMIN_UID){
+        await addDoc(collection(db,"categories"), {name:val});
+        categoryInput.value="";
+        await loadCategories();
       }
-      const name = document.getElementById('nameInput').value;
-      const skill = document.getElementById('skillInput').value;
-      const location = document.getElementById('locationInput').value;
-      const whatsapp = document.getElementById('whatsappInput').value;
-      const profilePic = document.getElementById('profilePicInput').value || currentUser.picture;
-      const date = new Date().toLocaleDateString();
+    });
 
-      const skillObj = {
-        id: Date.now(),
+    // ====== SKILL HANDLING ======
+    toggleAddBtn.addEventListener('click', ()=>{ addSkillForm.style.display=addSkillForm.style.display==='none'?'block':'none'; editingId=null; clearForm(); });
+    cancelEditBtn.addEventListener('click', ()=>{ addSkillForm.style.display='none'; editingId=null; clearForm(); });
+
+    function clearForm(){ skillInput.value=""; locationInput.value=""; whatsappInput.value=""; profilePicInput.value=""; categoryInputSelect.value=""; }
+
+    postSkillBtn.addEventListener('click', async ()=>{
+      if(!currentUser) return alert("Login first!");
+      const data = {
         uid: currentUser.uid,
-        name, skill, location, whatsapp, profilePic, date
+        name: nameInput.value.trim(),
+        skill: skillInput.value.trim(),
+        location: locationInput.value.trim(),
+        whatsapp: whatsappInput.value.trim(),
+        profilePic: profilePicInput.value.trim() || currentUser.photoURL||"",
+        category: categoryInputSelect.value || "",
+        timestamp: serverTimestamp()
       };
+      try{
+        if(editingId){
+          await updateDoc(doc(db,"skills",editingId),data);
+          editingId=null;
+        } else {
+          await addDoc(collection(db,"skills"),data);
+        }
+        addSkillForm.style.display='none';
+        clearForm();
+      } catch(err){ console.error(err); }
+    });
 
-      skills.push(skillObj);
+    onSnapshot(collection(db,"skills"), snap=>{
+      allSkills=[];
+      snap.forEach(doc=>{ allSkills.push({id:doc.id,...doc.data()}); });
       renderSkills();
-      document.getElementById('addSkillForm').reset;
-      document.getElementById('addSkillForm').style.display = "none";
+    });
+
+    function renderSkills(){
+      const filter = searchInput.value.trim().toLowerCase();
+      skillsContainer.innerHTML = "";
+      const filtered = allSkills.filter(s=>{
+        return !filter || s.name.toLowerCase().includes(filter)||s.skill.toLowerCase().includes(filter)||s.location.toLowerCase().includes(filter)||s.whatsapp.toLowerCase().includes(filter)||s.category.toLowerCase().includes(filter);
+      });
+      filtered.forEach(s=>{
+        const card = document.createElement('div'); card.className="skill-card";
+        card.innerHTML = `
+          <img class="profile" src="${s.profilePic}" />
+          <h3>${s.name}</h3>
+          <p><strong>Skill:</strong> ${s.skill}</p>
+          <p><strong>Location:</strong> ${s.location}</p>
+          <p><strong>WhatsApp:</strong> ${s.whatsapp}</p>
+          <p><strong>Category:</strong> ${s.category}</p>
+          <div class="skill-meta">${s.timestamp?.toDate? s.timestamp.toDate().toLocaleString() : ""}</div>
+        `;
+        if(currentUser && currentUser.uid===s.uid){
+          const actions = document.createElement('div'); actions.className="actions";
+          const editBtn = document.createElement('button'); editBtn.className="small"; editBtn.textContent="Edit"; editBtn.onclick=()=>{ editingId=s.id; addSkillForm.style.display='block'; nameInput.value=s.name; skillInput.value=s.skill; locationInput.value=s.location; whatsappInput.value=s.whatsapp; profilePicInput.value=s.profilePic; categoryInputSelect.value=s.category; };
+          const deleteBtn = document.createElement('button'); deleteBtn.className="small delete"; deleteBtn.textContent="Delete"; deleteBtn.onclick=async()=>{ if(confirm("Delete this skill?")) await deleteDoc(doc(db,"skills",s.id)); };
+          actions.appendChild(editBtn); actions.appendChild(deleteBtn);
+          card.appendChild(actions);
+        }
+        skillsContainer.appendChild(card);
+      });
     }
 
-    function renderSkills() {
-      const container = document.getElementById('skillsContainer');
-      container.innerHTML = "";
-      const search = document.getElementById('searchInput').value.toLowerCase();
-
-      skills.filter(s => s.skill.toLowerCase().includes(search) || s.name.toLowerCase().includes(search))
-        .forEach(skill => {
-          const card = document.createElement('div');
-          card.className = 'skill-card';
-          card.innerHTML = `
-            <img src="${skill.profilePic}">
-            <h3>${skill.name}</h3>
-            <p><strong>Skill:</strong> ${skill.skill}</p>
-            <p><strong>Location:</strong> ${skill.location}</p>
-            <p><strong>WhatsApp:</strong> ${skill.whatsapp}</p>
-            <p><small>Posted: ${skill.date}</small></p>
-          `;
-          if (currentUser && skill.uid === currentUser.uid) {
-            const editBtn = document.createElement('button');
-            editBtn.innerText = "Edit";
-            editBtn.onclick = () => editSkill(skill.id);
-            const delBtn = document.createElement('button');
-            delBtn.innerText = "Delete";
-            delBtn.onclick = () => deleteSkill(skill.id);
-            card.appendChild(editBtn);
-            card.appendChild(delBtn);
-          }
-          container.appendChild(card);
-        });
-    }
-
-    function deleteSkill(id) {
-      skills = skills.filter(s => s.id !== id);
-      renderSkills();
-    }
-
-    function editSkill(id) {
-      const skill = skills.find(s => s.id === id);
-      if (!skill) return;
-      document.getElementById('nameInput').value = skill.name;
-      document.getElementById('skillInput').value = skill.skill;
-      document.getElementById('locationInput').value = skill.location;
-      document.getElementById('whatsappInput').value = skill.whatsapp;
-      document.getElementById('profilePicInput').value = skill.profilePic;
-      document.getElementById('addSkillForm').style.display = "block";
-      deleteSkill(id);
-    }
-
-    document.getElementById('searchInput').oninput = renderSkills;
+    searchInput.addEventListener('input', renderSkills);
   </script>
 </body>
 </html>
