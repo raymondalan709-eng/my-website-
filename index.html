@@ -6,56 +6,60 @@
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#fff; }
 
-    /* Auth buttons fixed top-left */
+    /* Auth buttons fixed top-right */
     #auth {
       position: fixed;
       top:10px;
-      left:10px;
+      right:10px;
       z-index:1000;
       text-align:center;
     }
-    #auth img { width:40px; height:40px; border-radius:50%; display:block; margin-bottom:5px; }
+    #auth img { width:40px; height:40px; border-radius:50%; display:block; margin:auto; margin-bottom:5px; }
     #auth p { margin:0; font-size:14px; color:#000; font-weight:bold; }
-    #auth button { display:block; margin:5px 0; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; background:#1976D2; color:#fff; }
+    #auth button { display:block; margin:5px auto; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; background:#1976D2; color:#fff; }
 
     /* Header & search */
-    header { background:#2196F3; color:#fff; padding:15px; text-align:center; margin-left:0; margin-right:0; }
+    header { background:#2196F3; color:#fff; padding:15px; text-align:center; }
     header h1 { margin:5px 0; }
     header p { margin:0; font-size:18px; font-weight:bold; }
-    #searchBar { margin-top:10px; padding:8px; width:90%; max-width:500px; display:block; margin-left:auto; margin-right:auto; }
+    #searchBar { margin-top:10px; padding:10px; width:90%; max-width:500px; display:block; margin-left:auto; margin-right:auto; border-radius:6px; border:1px solid #ccc; }
 
     /* Add skill form */
     #addSkillForm { margin:20px auto; width:90%; max-width:400px; background:#f5f5f5; padding:15px; border-radius:8px; }
-    #addSkillForm input, #addSkillForm button { display:block; margin:10px 0; padding:8px; width:100%; }
+    #addSkillForm input, #addSkillForm button { display:block; margin:10px 0; padding:10px; width:100%; font-size:16px; }
 
     /* Skill cards */
-    .card { border:1px solid #ccc; border-radius:8px; padding:15px; margin:10px auto; width:95%; max-width:400px; background:#fff; }
+    .card { border:1px solid #ccc; border-radius:8px; padding:15px; margin:10px auto; width:95%; max-width:400px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
     .card img { width:50px; height:50px; border-radius:50%; display:block; margin:auto; }
-    .card h3 { margin:10px 0 5px; text-align:center; }
-    .card p { margin:5px 0; text-align:center; }
-    .card button { margin:5px 2px; padding:5px 10px; cursor:pointer; font-size:14px; border:none; border-radius:5px; background:#1976D2; color:#fff; width:100%; }
+    .card h3 { margin:10px 0 5px; text-align:center; font-size:18px; }
+    .card p { margin:5px 0; text-align:center; font-size:15px; }
+    .card button { margin:5px 0; padding:8px; cursor:pointer; font-size:14px; border:none; border-radius:5px; background:#1976D2; color:#fff; width:100%; }
 
     /* Tablet/desktop */
     @media (min-width: 768px) {
       #addSkillForm, .card { width:300px; }
       #searchBar { width:50%; }
+      .card button { width:auto; display:inline-block; margin:5px; }
     }
 
-    /* Mobile */
+    /* Mobile phones */
     @media (max-width: 480px) {
-      #addSkillForm { width:95%; padding:10px; }
-      #searchBar { width:95%; padding:6px; font-size:14px; }
-      .card { width:95%; padding:10px; }
-      .card img { width:40px; height:40px; }
-      .card h3 { font-size:16px; }
-      .card p { font-size:14px; }
       #auth img { width:35px; height:35px; }
-      #auth button { font-size:14px; padding:8px; }
+      #auth button { font-size:13px; padding:6px; }
+      header h1 { font-size:22px; }
+      header p { font-size:14px; }
+      #searchBar { width:95%; padding:8px; font-size:14px; }
+      #addSkillForm { width:95%; padding:12px; }
+      #addSkillForm input, #addSkillForm button { font-size:14px; padding:8px; }
+      .card { width:95%; padding:12px; }
+      .card h3 { font-size:16px; }
+      .card p { font-size:13px; }
+      .card button { font-size:13px; padding:7px; width:100%; display:block; }
     }
   </style>
 </head>
 <body>
-  <!-- Auth top-left -->
+  <!-- Auth top-right -->
   <div id="auth">
     <img id="userPic" src="" style="display:none;">
     <p id="userName"></p>
@@ -79,20 +83,21 @@
   </form>
 
   <div id="skillsList"></div>
-
+  <!-- Firebase + App Logic -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-  authDomain: "sl-skills-hub.firebaseapp.com",
-  projectId: "sl-skills-hub",
-  storageBucket: "sl-skills-hub.firebasestorage.app",
-  messagingSenderId: "125049368940",
-  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-};
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_ID",
+      appId: "YOUR_APP_ID"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
@@ -102,157 +107,246 @@
     const logoutBtn = document.getElementById("logoutBtn");
     const userPic = document.getElementById("userPic");
     const userName = document.getElementById("userName");
-    const addSkillForm = document.getElementById("addSkillForm");
     const skillsList = document.getElementById("skillsList");
-    const searchBar = document.getElementById("searchBar");
+    const addSkillForm = document.getElementById("addSkillForm");
     const categoriesBtn = document.getElementById("categoriesBtn");
+    const ADMIN_UID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
 
     let currentUser = null;
-    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
 
-    async function renderSkills() {
-      const q = query(collection(db, "skills"));
-      const snap = await getDocs(q);
+    // 🔹 Auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "block";
+        userPic.style.display = "block";
+        userPic.src = user.photoURL;
+        userName.textContent = user.displayName;
+
+        if (user.uid === ADMIN_UID) {
+          categoriesBtn.style.display = "block";
+        } else {
+          categoriesBtn.style.display = "none";
+        }
+      } else {
+        currentUser = null;
+        loginBtn.style.display = "block";
+        logoutBtn.style.display = "none";
+        userPic.style.display = "none";
+        userName.textContent = "";
+        categoriesBtn.style.display = "none";
+      }
+    });
+
+    // 🔹 Login
+    loginBtn.addEventListener("click", async () => {
+      try { await signInWithPopup(auth, provider); } 
+      catch (error) { alert("Login failed: " + error.message); }
+    });
+
+    // 🔹 Logout
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    // 🔹 Add Skill
+    addSkillForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser) { alert("Login first!"); return; }
+
+      const name = document.getElementById("name").value.trim();
+      const skill = document.getElementById("skill").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      const timestamp = new Date();
+
+      if (!name || !skill || !location || !whatsapp) {
+        alert("Fill all fields!");
+        return;
+      }
+
+      await addDoc(collection(db, "skills"), {
+        name, skill, location, whatsapp,
+        uid: currentUser.uid,
+        userName: currentUser.displayName,
+        userPic: currentUser.photoURL,
+        createdAt: timestamp
+      });
+
+      addSkillForm.reset();
+      loadSkills();
+    });
+
+    // 🔹 Load Skills
+    async function loadSkills() {
       skillsList.innerHTML = "";
-      snap.forEach(docSnap => {
+      const q = query(collection(db, "skills"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const card = document.createElement("div");
         card.className = "card";
-        const photo = data.photoURL || "https://via.placeholder.com/50";
+
         card.innerHTML = `
-          <img src="${photo}">
+          <img src="${data.userPic || ""}" alt="profile">
           <h3>${data.name}</h3>
           <p><b>Skill:</b> ${data.skill}</p>
           <p><b>Location:</b> ${data.location}</p>
-          <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
-          <p><b>Date:</b> ${data.date}</p>
+          <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:green;text-decoration:none;">${data.whatsapp}</a></p>
+          <p><i>Posted by ${data.userName || "Unknown"}</i></p>
         `;
-        const shareBtn = document.createElement("button");
-        shareBtn.innerHTML = "🔗 Share";
-        shareBtn.onclick = () => {
-          const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
-          if(navigator.share) navigator.share({title:"SL Skills Hub", text, url: window.location.href});
-          else { navigator.clipboard.writeText(text + " " + window.location.href); alert("Link copied!"); }
-        };
-        card.appendChild(shareBtn);
 
-        if(currentUser && data.uid === currentUser.uid){
+        // Edit/Delete only for owner
+        if (currentUser && currentUser.uid === data.uid) {
           const editBtn = document.createElement("button");
           editBtn.textContent = "Edit";
-          editBtn.onclick = async () => {
-            const newName = prompt("Edit name:", data.name);
-            const newSkill = prompt("Edit skill:", data.skill);
-            const newLoc = prompt("Edit location:", data.location);
-            const newWA = prompt("Edit WhatsApp:", data.whatsapp);
-            await updateDoc(doc(db, "skills", docSnap.id), {name:newName, skill:newSkill, location:newLoc, whatsapp:newWA});
-            renderSkills();
+          editBtn.onclick = () => editSkill(docSnap.id, data);
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.onclick = async () => {
+            await deleteDoc(doc(db, "skills", docSnap.id));
+            loadSkills();
           };
-          const delBtn = document.createElement("button");
-          delBtn.textContent = "Delete";
-          delBtn.onclick = async () => { await deleteDoc(doc(db, "skills", docSnap.id)); renderSkills(); };
+
           card.appendChild(editBtn);
-          card.appendChild(delBtn);
+          card.appendChild(deleteBtn);
         }
+
+        // Share button
+        const shareBtn = document.createElement("button");
+        shareBtn.textContent = "Share";
+        shareBtn.onclick = () => {
+          const text = `${data.name} offers ${data.skill} at ${data.location}. WhatsApp: ${data.whatsapp}`;
+          if (navigator.share) {
+            navigator.share({ title: "SL Skills Hub", text });
+          } else {
+            alert("Sharing not supported");
+          }
+        };
+        card.appendChild(shareBtn);
 
         skillsList.appendChild(card);
       });
     }
 
-    async function fixOldSkills(user) {
-      const snap = await getDocs(collection(db, "skills"));
-      snap.forEach(async docSnap => {
-        const data = docSnap.data();
-        if(!data.uid || !data.photoURL){
-          await updateDoc(docSnap.ref, {uid:user.uid, photoURL:user.photoURL, displayName:user.displayName});
-        }
+    loadSkills();
+    // 🔹 Edit Skill (owner only)
+    async function editSkill(id, data) {
+      const name = prompt("Edit name:", data.name || "");
+      if (name === null) return;
+      const skill = prompt("Edit skill:", data.skill || "");
+      if (skill === null) return;
+      const location = prompt("Edit location:", data.location || "");
+      if (location === null) return;
+      const whatsapp = prompt("Edit WhatsApp:", data.whatsapp || "");
+      if (whatsapp === null) return;
+
+      await updateDoc(doc(db, "skills", id), {
+        name, skill, location, whatsapp
       });
+      loadSkills();
     }
 
-    loginBtn.onclick = async () => { await signInWithPopup(auth, provider); };
-    logoutBtn.onclick = async () => { await signOut(auth); };
+    // 🔹 Simple Search (by name, skill, or location)
+    const searchInput = document.getElementById("searchBar");
+    searchInput.addEventListener("input", async () => {
+      const term = searchInput.value.trim().toLowerCase();
+      if (!term) {
+        loadSkills();
+        return;
+      }
 
-    onAuthStateChanged(auth, async user => {
-      if(user){
-        currentUser=user;
-        userPic.src = user.photoURL;
-        userPic.style.display="block";
-        userName.textContent = user.displayName;
-        loginBtn.style.display="none";
-        logoutBtn.style.display="block";
-        categoriesBtn.style.display = (user.uid===adminUID) ? "block" : "none";
-        await fixOldSkills(user);
-        renderSkills();
-      } else {
-        currentUser=null;
-        userPic.style.display="none";
-        userName.textContent="";
-        loginBtn.style.display="block";
-        logoutBtn.style.display="none";
-        categoriesBtn.style.display="none";
-        renderSkills();
+      skillsList.innerHTML = "";
+      const q = query(collection(db, "skills"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const hay = `${(data.name||"").toLowerCase()} ${(data.skill||"").toLowerCase()} ${(data.location||"").toLowerCase()}`;
+        if (!hay.includes(term)) return;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${data.userPic || ""}" alt="profile">
+          <h3>${data.name}</h3>
+          <p><b>Skill:</b> ${data.skill}</p>
+          <p><b>Location:</b> ${data.location}</p>
+          <p><b>WhatsApp:</b> <a href="https://wa.me/${(data.whatsapp||'').replace(/\D/g,'')}" target="_blank" style="color:green;text-decoration:none;">${data.whatsapp||''}</a></p>
+          <p><i>Posted by ${data.userName || "Unknown"}</i></p>
+        `;
+
+        // Share button
+        const shareBtn = document.createElement("button");
+        shareBtn.textContent = "Share";
+        shareBtn.onclick = () => {
+          const text = `${data.name} offers ${data.skill} at ${data.location}. WhatsApp: ${data.whatsapp}`;
+          if (navigator.share) {
+            navigator.share({ title: "SL Skills Hub", text });
+          } else {
+            try {
+              navigator.clipboard.writeText(text + " " + window.location.href);
+              alert("Link copied!");
+            } catch {
+              alert(text);
+            }
+          }
+        };
+        card.appendChild(shareBtn);
+
+        // Owner controls
+        if (currentUser && currentUser.uid === data.uid) {
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "Edit";
+          editBtn.onclick = () => editSkill(docSnap.id, data);
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.onclick = async () => {
+            await deleteDoc(doc(db, "skills", docSnap.id));
+            loadSkills();
+          };
+
+          card.appendChild(editBtn);
+          card.appendChild(deleteBtn);
+        }
+
+        skillsList.appendChild(card);
+      });
+    });
+
+    // 🔹 Backfill old skills (add uid & userPic if missing) after login
+    async function backfillOldSkills(user) {
+      const q = query(collection(db, "skills"));
+      const snapshot = await getDocs(q);
+      const updates = [];
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!data.uid || !data.userPic || !data.userName) {
+          updates.push(updateDoc(doc(db, "skills", docSnap.id), {
+            uid: data.uid || user.uid,
+            userPic: data.userPic || user.photoURL || "",
+            userName: data.userName || user.displayName || "User"
+          }));
+        }
+      });
+      if (updates.length) await Promise.all(updates);
+    }
+
+    // Run backfill when user logs in (without changing your existing auth listener)
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try { await backfillOldSkills(user); } catch (e) { /* silent */ }
+        loadSkills();
       }
     });
 
-    addSkillForm.onsubmit = async e => {
-      e.preventDefault();
-      if(!currentUser){ alert("Login required"); return; }
-      const name=document.getElementById("name").value;
-      const skill=document.getElementById("skill").value;
-      const location=document.getElementById("location").value;
-      const whatsapp=document.getElementById("whatsapp").value;
-      await addDoc(collection(db,"skills"),{
-        name, skill, location, whatsapp, date:new Date().toLocaleString(),
-        uid:currentUser.uid, photoURL:currentUser.photoURL, displayName:currentUser.displayName
-      });
-      addSkillForm.reset();
-      renderSkills();
-    };
-
-    searchBar.oninput = async () => {
-      const snap = await getDocs(collection(db, "skills"));
-      skillsList.innerHTML="";
-      snap.forEach(docSnap=>{
-        const data=docSnap.data();
-        if(data.name.toLowerCase().includes(searchBar.value.toLowerCase()) || data.skill.toLowerCase().includes(searchBar.value.toLowerCase())){
-          const card = document.createElement("div");
-          card.className="card";
-          const photo = data.photoURL || "https://via.placeholder.com/50";
-          card.innerHTML=`<img src="${photo}"><h3>${data.name}</h3>
-            <p><b>Skill:</b> ${data.skill}</p>
-            <p><b>Location:</b> ${data.location}</p>
-            <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
-            <p><b>Date:</b> ${data.date}</p>`;
-          const shareBtn = document.createElement("button");
-          shareBtn.innerHTML = "🔗 Share";
-          shareBtn.onclick = () => {
-            const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
-            if(navigator.share) navigator.share({title:"SL Skills Hub", text, url: window.location.href});
-            else { navigator.clipboard.writeText(text + " " + window.location.href); alert("Link copied!"); }
-          };
-          card.appendChild(shareBtn);
-
-          if(currentUser && data.uid===currentUser.uid){
-            const editBtn = document.createElement("button");
-            editBtn.textContent="Edit";
-            editBtn.onclick=async()=>{
-              const newName=prompt("Edit name:",data.name);
-              const newSkill=prompt("Edit skill:",data.skill);
-              const newLoc=prompt("Edit location:",data.location);
-              const newWA=prompt("Edit WhatsApp:",data.whatsapp);
-              await updateDoc(doc(db,"skills",docSnap.id),{name:newName, skill:newSkill, location:newLoc, whatsapp:newWA});
-              renderSkills();
-            };
-            const delBtn=document.createElement("button");
-            delBtn.textContent="Delete";
-            delBtn.onclick=async()=>{await deleteDoc(doc(db,"skills",docSnap.id)); renderSkills();};
-            card.appendChild(editBtn);
-            card.appendChild(delBtn);
-          }
-
-          skillsList.appendChild(card);
-        }
-      });
-    };
+    // Optional: Admin Categories click (kept minimal as requested)
+    categoriesBtn.addEventListener("click", () => {
+      alert("Admin: Add Category (coming soon)");
+    });
   </script>
 </body>
 </html>
