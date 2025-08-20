@@ -19,6 +19,7 @@
     .card h3 { margin:10px 0 5px; }
     .card p { margin:5px 0; }
     .card button { margin:5px 2px; padding:5px 10px; }
+    #categoriesBtn { margin:10px 0; padding:8px; width:100%; background:#1976D2; color:#fff; border:none; border-radius:5px; cursor:pointer; }
 
     /* ===== MOBILE RESPONSIVE CSS ===== */
     @media (min-width: 768px) {
@@ -52,8 +53,10 @@
     const addSkillForm = document.getElementById("addSkillForm");
     const skillsList = document.getElementById("skillsList");
     const searchBar = document.getElementById("searchBar");
+    const categoriesBtn = document.getElementById("categoriesBtn");
 
     let currentUser = null;
+    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1"; // admin UID for categories
 
     async function renderSkills() {
       const q = query(collection(db, "skills"));
@@ -73,20 +76,26 @@
           <p><b>Date:</b> ${data.date || ""}</p>
         `;
 
-        // Share button
-        const shareBtn = document.createElement("button");
-        shareBtn.textContent = "Share";
-        shareBtn.onclick = () => {
-          const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
-          if (navigator.share) {
-            navigator.share({ title: "SL Skills Hub", text, url: window.location.href });
-          } else {
-            navigator.clipboard.writeText(text + " " + window.location.href);
-            alert("Link copied to clipboard!");
-          }
-        };
-        card.appendChild(shareBtn);
-
+        // Share button as blue icon
+const shareBtn = document.createElement("button");
+shareBtn.innerHTML = "🔗"; // small link icon
+shareBtn.style.backgroundColor = "#1976D2"; // blue color
+shareBtn.style.color = "#fff";
+shareBtn.style.border = "none";
+shareBtn.style.borderRadius = "5px";
+shareBtn.style.cursor = "pointer";
+shareBtn.style.padding = "5px 10px";
+shareBtn.onclick = () => {
+  const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
+  if (navigator.share) {
+    navigator.share({ title: "SL Skills Hub", text, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(text + " " + window.location.href);
+    alert("Link copied to clipboard!");
+  }
+};
+card.appendChild(shareBtn);
+        
         // Edit/Delete only for owner
         if (currentUser && data.uid === currentUser.uid) {
           const editBtn = document.createElement("button");
@@ -141,6 +150,11 @@
         userName.textContent = user.displayName;
         loginBtn.style.display = "none";
         logoutBtn.style.display = "block";
+
+        // Show categories button only for admin
+        if(currentUser.uid === adminUID) categoriesBtn.style.display = "block";
+        else categoriesBtn.style.display = "none";
+
         await fixOldSkills(user);
         renderSkills();
       } else {
@@ -149,6 +163,7 @@
         userName.textContent = "";
         loginBtn.style.display = "block";
         logoutBtn.style.display = "none";
+        categoriesBtn.style.display = "none";
         renderSkills();
       }
     });
@@ -197,6 +212,12 @@
       });
     };
 
+    // Categories button action
+    categoriesBtn.onclick = () => {
+      const category = prompt("Enter new skill category:");
+      if(category) alert(`Category "${category}" added (you can link to Firestore later)`); 
+    }
+
     renderSkills();
   </script>
 </head>
@@ -220,6 +241,7 @@
     <input id="location" placeholder="Your Location" required>
     <input id="whatsapp" placeholder="WhatsApp Contact" required>
     <button type="submit">Add Skill</button>
+    <button type="button" id="categoriesBtn" style="display:none">Add Category</button>
   </form>
 
   <div id="skillsList"></div>
