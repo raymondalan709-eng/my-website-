@@ -4,11 +4,9 @@
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <link rel="icon" href="1000040429.jpg" type="image/jpg">
-
-  <!-- Responsive meta tag -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Open Graph for social previews -->
+  <!-- Open Graph -->
   <meta property="og:title" content="SL Skills Hub">
   <meta property="og:description" content="Find talented people near you">
   <meta property="og:image" content="https://raymondalan709-eng.github.io/my-website-/1000040429.jpg">
@@ -48,7 +46,7 @@
 </head>
 <body>
 
-  <!-- Top-right Google login & user info -->
+  <!-- Top-bar user info -->
   <div id="top-bar">
     <img id="user-pic" src="" alt="" style="display:none;">
     <span id="user-name"></span>
@@ -84,29 +82,28 @@
     <input type="text" id="skill" placeholder="Your Skill" required>
     <input type="text" id="location" placeholder="Your Location" required>
     <input type="text" id="whatsapp" placeholder="WhatsApp Contact" required>
-    <input type="text" id="userPicInput" placeholder="Profile Picture URL">
     <select id="category"></select>
     <button id="saveSkill">Save Skill</button>
   </div>
 
-  <!-- Skill cards -->
+  <!-- Skills list -->
   <div id="skills-list"></div>
 
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
-      apiKey: "YOUR-API-KEY",
-      authDomain: "YOUR-PROJECT.firebaseapp.com",
-      projectId: "YOUR-PROJECT-ID",
-      storageBucket: "YOUR-PROJECT.appspot.com",
-      messagingSenderId: "SENDER-ID",
-      appId: "APP-ID"
-    };
-    const app = firebase.initializeApp(firebaseConfig);
+  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+  authDomain: "sl-skills-hub.firebaseapp.com",
+  projectId: "sl-skills-hub",
+  storageBucket: "sl-skills-hub.firebasestorage.app",
+  messagingSenderId: "125049368940",
+  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+};
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
     const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
@@ -125,22 +122,22 @@
     const adminCategoryDiv = document.getElementById("admin-category");
     const addCategoryBtn = document.getElementById("addCategory");
 
+    // Google login
     loginBtn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(err => alert("Login failed: " + err.message));
+      auth.signInWithPopup(provider).catch(err=>alert("Login failed: "+err.message));
     };
     logoutBtn.onclick = () => auth.signOut();
 
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(user=>{
       if(user){
         currentUser = user;
         loginBtn.style.display="none";
         logoutBtn.style.display="inline-block";
-        userPic.src=user.photoURL;
-        userPic.style.display="inline-block";
+        userPic.src=user.photoURL; userPic.style.display="inline-block";
         userName.textContent=user.displayName;
         adminCategoryDiv.style.display=(user.uid===adminUID)?"block":"none";
-      } else {
+      }else{
         currentUser=null;
         loginBtn.style.display="inline-block";
         logoutBtn.style.display="none";
@@ -150,30 +147,32 @@
       }
     });
 
-    showFormBtn.onclick = () => skillForm.style.display = (skillForm.style.display==="none")?"block":"none";
+    showFormBtn.onclick = ()=>skillForm.style.display = (skillForm.style.display==="none")?"block":"none";
 
-    saveSkillBtn.onclick = async () => {
+    saveSkillBtn.onclick = async ()=>{
       if(!currentUser) return alert("Please login first");
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const category = document.getElementById("category").value;
-      const userPicInput = document.getElementById("userPicInput").value || currentUser.photoURL;
-
-      await db.collection("skills").add({ name, skill, location, whatsapp, category, userId: currentUser.uid, userPic:userPicInput, timestamp:firebase.firestore.FieldValue.serverTimestamp() });
+      const name=document.getElementById("name").value;
+      const skill=document.getElementById("skill").value;
+      const location=document.getElementById("location").value;
+      const whatsapp=document.getElementById("whatsapp").value;
+      const category=document.getElementById("category").value;
+      await db.collection("skills").add({
+        name, skill, location, whatsapp, category,
+        userId: currentUser.uid,
+        userPic: currentUser.photoURL,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
       skillForm.reset(); skillForm.style.display="none";
     };
 
-    addCategoryBtn.onclick = async () => {
-      if(!currentUser || currentUser.uid!==adminUID) return;
-      const newCat = document.getElementById("newCategory").value;
+    addCategoryBtn.onclick = async ()=>{
+      if(!currentUser||currentUser.uid!==adminUID) return;
+      const newCat=document.getElementById("newCategory").value;
       if(newCat){ await db.collection("categories").add({name:newCat}); document.getElementById("newCategory").value=""; }
     };
 
     db.collection("categories").onSnapshot(snapshot=>{
-      categoryDropdown.innerHTML="";
-      categoryFilter.innerHTML='<option value="">All Categories</option>';
+      categoryDropdown.innerHTML=""; categoryFilter.innerHTML='<option value="">All Categories</option>';
       snapshot.forEach(doc=>{
         const cat=doc.data().name;
         const option1=document.createElement("option"); option1.value=cat; option1.textContent=cat; categoryDropdown.appendChild(option1);
@@ -185,48 +184,52 @@
       skillsList.innerHTML="";
       snapshot.forEach(doc=>{
         const data=doc.data();
-        const card=document.createElement("div");
-        card.className="skill-card";
+        const card=document.createElement("div"); card.className="skill-card";
         const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
         card.innerHTML=`<img src="${data.userPic||''}" alt=""><h3>${data.name}</h3><p><strong>Skill:</strong> ${data.skill}</p><p><strong>Location:</strong> ${data.location}</p><p><strong>WhatsApp:</strong> ${data.whatsapp}</p><p><em>Posted on: ${date}</em></p>`;
         if(currentUser && currentUser.uid===data.userId){
-          const actions=document.createElement("div");
-          actions.className="skill-actions";
+          const actions=document.createElement("div"); actions.className="skill-actions";
           const editBtn=document.createElement("button"); editBtn.textContent="Edit";
           const delBtn=document.createElement("button"); delBtn.textContent="Delete";
           actions.appendChild(editBtn); actions.appendChild(delBtn); card.appendChild(actions);
 
           editBtn.onclick=async()=>{
-            const newName=prompt("Update Name:",data.name);
-            const newSkill=prompt("Update Skill:",data.skill);
-            const newLoc=prompt("Update Location:",data.location);
-            const newWhats=prompt("Update WhatsApp:",data.whatsapp)
-            if(newName!==null && newSkill!==null && newLoc!==null && newWhats!==null ){
+            const newName=prompt("Update Name:", data.name);
+            const newSkill=prompt("Update Skill:", data.skill);
+            const newLoc=prompt("Update Location:", data.location);
+            const newWhats=prompt("Update WhatsApp:", data.whatsapp);
+            if(newName!==null&&newSkill!==null&&newLoc!==null&&newWhats!==null){
               await db.collection("skills").doc(doc.id).update({name:newName,skill:newSkill,location:newLoc,whatsapp:newWhats});
             }
           };
-          delBtn.onclick=()=>{if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete();}
+          delBtn.onclick=()=>{ if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
         }
         skillsList.appendChild(card);
       });
     });
 
-    document.getElementById("searchBar").addEventListener("input",e=>{
+    document.getElementById("searchBar").addEventListener("input", e=>{
       const search=e.target.value.toLowerCase();
-      Array.from(skillsList.children).forEach(card=>{ card.style.display=card.textContent.toLowerCase().includes(search)?"block":"none"; });
+      Array.from(skillsList.children).forEach(card=>{
+        const text=card.textContent.toLowerCase();
+        card.style.display=text.includes(search)?"block":"none";
+      });
     });
 
-    categoryFilter.addEventListener("change",e=>{
+    categoryFilter.addEventListener("change", e=>{
       const filter=e.target.value.toLowerCase();
-      Array.from(skillsList.children).forEach(card=>{ card.style.display=(filter===""||card.textContent.toLowerCase().includes(filter))?"block":"none"; });
+      Array.from(skillsList.children).forEach(card=>{
+        const text=card.textContent.toLowerCase();
+        card.style.display=filter===""||text.includes(filter)?"block":"none";
+      });
     });
 
     // Share buttons
-    const shareText=encodeURIComponent("Check out SL Skills Hub: Find talented people near you!");
-    const shareUrl=encodeURIComponent(window.location.href);
-    document.querySelector(".whatsapp").href=`https://wa.me/?text=${shareText}%20${shareUrl}`;
-    document.querySelector(".facebook").href=`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
-    document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`;
+    const pageUrl=encodeURIComponent(window.location.href);
+    document.querySelector(".whatsapp").href=`https://wa.me/?text=Check%20out%20SL%20Skills%20Hub%20${pageUrl}`;
+    document.querySelector(".facebook").href=`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
+    document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?url=${pageUrl}&text=Check%20out%20SL%20Skills%20Hub`;
   </script>
+
 </body>
 </html>
