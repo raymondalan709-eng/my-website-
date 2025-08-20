@@ -20,7 +20,7 @@
     .card p { margin:5px 0; }
     .card button { margin:5px 2px; padding:5px 10px; }
 
-    /* Responsive tweaks */
+    /* ===== MOBILE RESPONSIVE CSS ===== */
     @media (min-width: 768px) {
       #addSkillForm, .card { width:300px; }
       #searchBar { width:50%; }
@@ -32,13 +32,13 @@
     import { getFirestore, collection, addDoc, getDocs, query, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+  authDomain: "sl-skills-hub.firebaseapp.com",
+  projectId: "sl-skills-hub",
+  storageBucket: "sl-skills-hub.firebasestorage.app",
+  messagingSenderId: "125049368940",
+  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+};
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
