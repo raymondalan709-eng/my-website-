@@ -3,232 +3,183 @@
 <head>
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
-  <link rel="icon" href="1000040429.jpg" type="image/jpg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="SL Skills Hub">
-  <meta property="og:description" content="Find talented people near you">
-  <meta property="og:image" content="https://raymondalan709-eng.github.io/my-website-/1000040429.jpg">
-  <meta property="og:url" content="https://raymondalan709-eng.github.io/my-website-/">
-  <meta name="twitter:card" content="summary_large_image">
-
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#fff; }
-    #top-bar { display:flex; justify-content:flex-end; align-items:center; padding:10px; background:#fff; flex-wrap:wrap; }
-    #top-bar img { width:40px; height:40px; border-radius:50%; margin-right:8px; display:none; }
-    #top-bar span { margin-right:10px; font-weight:bold; }
-    #top-bar button { background:#2196F3; color:#fff; border:none; padding:6px 12px; margin-left:5px; border-radius:4px; cursor:pointer; }
-    #top-bar button:hover { background:#1976D2; }
-    header { background:#2196F3; color:#fff; padding:10px; text-align:center; }
-    header h1 { margin:5px 0; }
-    header h2 { margin:0; font-size:18px; font-weight:bold; }
-    #searchBar { padding:8px; width:60%; max-width:400px; margin-top:10px; }
-    #show-form { background:#2196F3; color:#fff; border:none; padding:8px 12px; margin:10px 0; border-radius:4px; cursor:pointer; }
-    #show-form:hover { background:#1976D2; }
-    #category-section { margin-top:10px; }
-    #admin-category { display:none; margin-top:10px; }
-    #skill-form { display:none; margin:20px auto; width:90%; max-width:300px; text-align:center; }
-    #skill-form input, #skill-form select, #skill-form button { display:block; width:100%; padding:8px; margin:8px 0; }
-    #saveSkill { background:#2196F3; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-    #saveSkill:hover { background:#1976D2; }
-    .skill-card { border:1px solid #ddd; border-radius:6px; margin:10px auto; padding:10px; width:90%; max-width:400px; box-shadow:2px 2px 5px rgba(0,0,0,0.1); }
+    header { background:#2196F3; color:white; padding:15px; text-align:center; }
+    header h1 { margin:5px 0; font-size:28px; }
+    header p { margin:0; font-weight:bold; font-size:18px; }
+    #auth { position:absolute; top:10px; right:10px; }
+    #auth img { width:30px; height:30px; border-radius:50%; vertical-align:middle; }
+    #auth span { margin-right:10px; font-weight:bold; }
+    #searchBar { width:90%; max-width:400px; padding:8px; margin:10px auto; display:block; border:1px solid #ccc; border-radius:4px; }
+    #addSkillForm, #categoryForm { text-align:center; margin:15px; }
+    #skillsList { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; padding:15px; }
+    .skill-card { border:1px solid #ddd; padding:10px; border-radius:8px; background:white; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
     .skill-card img { width:50px; height:50px; border-radius:50%; }
-    .skill-actions button { background:#2196F3; color:#fff; border:none; padding:5px 10px; margin:5px; border-radius:4px; cursor:pointer; }
-    .skill-actions button:hover { background:#1976D2; }
-    #share-buttons { text-align:center; margin:15px 0; flex-wrap:wrap; }
-    .share-btn { display:inline-flex; align-items:center; justify-content:center; margin:5px; padding:6px 10px; border-radius:4px; color:white; text-decoration:none; font-weight:bold; }
-    .share-btn img { width:18px; height:18px; margin-right:5px; }
-    .whatsapp { background:#25D366; } .facebook { background:#3b5998; } .twitter { background:#1DA1F2; }
-    .share-btn:hover { opacity:0.8; }
-    @media (max-width:500px) { #searchBar{width:90%;} #skill-form{width:90%;} #top-bar{flex-direction:column; align-items:flex-start;} }
+    .skill-actions { margin-top:10px; }
+    .skill-actions button { margin-right:5px; padding:5px 10px; border:none; border-radius:4px; cursor:pointer; }
+    .share-buttons { text-align:center; margin:10px; }
+    .share-buttons a { margin:5px; padding:8px 12px; border-radius:4px; color:white; text-decoration:none; display:inline-block; }
+    .whatsapp { background:#25D366; }
+    .facebook { background:#3b5998; }
+    .twitter { background:#1DA1F2; }
+    @media(max-width:600px){ #searchBar{width:95%;} }
   </style>
 </head>
 <body>
-
-  <!-- Top-bar user info -->
-  <div id="top-bar">
-    <img id="user-pic" src="" alt="">
-    <span id="user-name"></span>
-    <button id="login">Login with Google</button>
-    <button id="logout" style="display:none;">Logout</button>
+  <div id="auth">
+    <span id="userName"></span>
+    <img id="userPic" src="" alt="" style="display:none;">
+    <button id="loginBtn">Login</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 
-  <!-- Header -->
   <header>
     <h1>SL Skills Hub</h1>
-    <h2>Find talented people near you</h2>
+    <p>Find talented people near you</p>
     <input type="text" id="searchBar" placeholder="Search skills...">
-    <button id="show-form">Add a Skill</button>
-    <div id="category-section">
+    <div>
       <select id="categoryFilter"><option value="">All Categories</option></select>
-      <div id="admin-category">
-        <input type="text" id="newCategory" placeholder="New Category">
-        <button id="addCategory">Add Category</button>
-      </div>
+      <input type="text" id="newCategory" placeholder="New Category">
+      <button id="addCategoryBtn">Add Category</button>
     </div>
   </header>
 
-  <!-- Share buttons -->
-  <div id="share-buttons">
-    <a class="share-btn whatsapp" href="#" target="_blank"><img src="https://img.icons8.com/color/48/000000/whatsapp.png"/> WhatsApp</a>
-    <a class="share-btn facebook" href="#" target="_blank"><img src="https://img.icons8.com/color/48/000000/facebook-new.png"/> Facebook</a>
-    <a class="share-btn twitter" href="#" target="_blank"><img src="https://img.icons8.com/color/48/000000/twitter--v1.png"/> Twitter</a>
+  <div class="share-buttons">
+    <a class="whatsapp" target="_blank">WhatsApp</a>
+    <a class="facebook" target="_blank">Facebook</a>
+    <a class="twitter" target="_blank">Twitter</a>
   </div>
 
-  <!-- Skill form -->
-  <div id="skill-form">
-    <input type="text" id="name" placeholder="Your Name" required>
-    <input type="text" id="skill" placeholder="Your Skill" required>
-    <input type="text" id="location" placeholder="Your Location" required>
-    <input type="text" id="whatsapp" placeholder="WhatsApp Contact" required>
-    <select id="category"></select>
-    <button id="saveSkill">Save Skill</button>
+  <div id="addSkillForm">
+    <h3>Add a Skill</h3>
+    <input id="name" placeholder="Your Name"><br><br>
+    <input id="skill" placeholder="Skill"><br><br>
+    <input id="location" placeholder="Location"><br><br>
+    <input id="whatsapp" placeholder="WhatsApp"><br><br>
+    <button id="saveSkillBtn">Save Skill</button>
   </div>
 
-  <!-- Skills list -->
-  <div id="skills-list"></div>
+  <div id="skillsList"></div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script>
-   const firebaseConfig = {
-  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-  authDomain: "sl-skills-hub.firebaseapp.com",
-  projectId: "sl-skills-hub",
-  storageBucket: "sl-skills-hub.firebasestorage.app",
-  messagingSenderId: "125049368940",
-  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-};
+    const firebaseConfig = {
+      apiKey: "YOUR-API-KEY",
+      authDomain: "YOUR-PROJECT.firebaseapp.com",
+      projectId: "YOUR-PROJECT-ID",
+      storageBucket: "YOUR-PROJECT.appspot.com",
+      messagingSenderId: "YOUR-SENDER-ID",
+      appId: "YOUR-APP-ID"
+    };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
-    let currentUser = null;
 
-    const loginBtn = document.getElementById("login");
-    const logoutBtn = document.getElementById("logout");
-    const userPic = document.getElementById("user-pic");
-    const userName = document.getElementById("user-name");
-    const showFormBtn = document.getElementById("show-form");
-    const skillForm = document.getElementById("skill-form");
-    const saveSkillBtn = document.getElementById("saveSkill");
-    const skillsList = document.getElementById("skills-list");
-    const categoryDropdown = document.getElementById("category");
-    const categoryFilter = document.getElementById("categoryFilter");
-    const adminCategoryDiv = document.getElementById("admin-category");
-    const addCategoryBtn = document.getElementById("addCategory");
+    const loginBtn=document.getElementById("loginBtn");
+    const logoutBtn=document.getElementById("logoutBtn");
+    const userName=document.getElementById("userName");
+    const userPic=document.getElementById("userPic");
+    let currentUser=null;
 
-    loginBtn.onclick = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(err => alert("Login failed: " + err.message));
+    loginBtn.onclick=()=>{
+      const provider=new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider);
     };
-    logoutBtn.onclick = () => auth.signOut();
+    logoutBtn.onclick=()=>auth.signOut();
 
-    auth.onAuthStateChanged(user => {
-      currentUser = user;
-      if (user) {
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        userPic.src = user.photoURL || 'https://via.placeholder.com/50';
-        userPic.style.display = "inline-block";
-        userName.textContent = user.displayName;
-        adminCategoryDiv.style.display = (user.uid === adminUID) ? "block" : "none";
+    auth.onAuthStateChanged(user=>{
+      if(user){
+        currentUser=user;
+        loginBtn.style.display="none";
+        logoutBtn.style.display="inline-block";
+        userName.textContent=user.displayName;
+        userPic.src=user.photoURL||"https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png";
+        userPic.style.display="inline-block";
+        loadSkills();
       } else {
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
-        userPic.style.display = "none";
-        userName.textContent = "";
-        adminCategoryDiv.style.display = "none";
+        currentUser=null;
+        loginBtn.style.display="inline-block";
+        logoutBtn.style.display="none";
+        userName.textContent="";
+        userPic.style.display="none";
+        skillsList.innerHTML="";
       }
-      loadSkills();
     });
 
-    showFormBtn.onclick = () => skillForm.style.display = (skillForm.style.display==="none") ? "block" : "none";
-
-    saveSkillBtn.onclick = async () => {
-      if(!currentUser) return alert("Please login first");
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const category = document.getElementById("category").value;
-      await db.collection("skills").add({
-        name, skill, location, whatsapp, category,
-        userId: currentUser.uid,
-        userPic: currentUser.photoURL || 'https://via.placeholder.com/50',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      skillForm.reset(); skillForm.style.display="none";
+    document.getElementById("saveSkillBtn").onclick=async()=>{
+      if(!currentUser){alert("Please login first");return;}
+      const name=document.getElementById("name").value;
+      const skill=document.getElementById("skill").value;
+      const location=document.getElementById("location").value;
+      const whatsapp=document.getElementById("whatsapp").value;
+      if(name&&skill&&location&&whatsapp){
+        await db.collection("skills").add({
+          name, skill, location, whatsapp,
+          userId: currentUser.uid,
+          userPic: currentUser.photoURL||"https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
     };
-
-    addCategoryBtn.onclick = async () => {
-      if(!currentUser || currentUser.uid!==adminUID) return;
-      const newCat = document.getElementById("newCategory").value;
-      if(newCat){ await db.collection("categories").add({name:newCat}); document.getElementById("newCategory").value=""; }
-    };
-
-    db.collection("categories").onSnapshot(snapshot=>{
-      categoryDropdown.innerHTML="";
-      categoryFilter.innerHTML='<option value="">All Categories</option>';
-      snapshot.forEach(doc=>{
-        const cat=doc.data().name;
-        const option1=document.createElement("option"); option1.value=cat; option1.textContent=cat; categoryDropdown.appendChild(option1);
-        const option2=document.createElement("option"); option2.value=cat; option2.textContent=cat; categoryFilter.appendChild(option2);
-      });
-    });
 
     function loadSkills(){
       db.collection("skills").orderBy("timestamp","desc").onSnapshot(snapshot=>{
         skillsList.innerHTML="";
         snapshot.forEach(doc=>{
-          const data = doc.data();
-          const card = document.createElement("div"); card.className="skill-card";
-          const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "";
+          const data=doc.data();
+          const card=document.createElement("div");
+          card.className="skill-card";
+          const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
           card.innerHTML=`
-            <img src="${data.userPic || 'https://via.placeholder.com/50'}" alt="">
+            <img src="${data.userPic || 'https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png'}" alt="">
             <h3>${data.name}</h3>
             <p><strong>Skill:</strong> ${data.skill}</p>
             <p><strong>Location:</strong> ${data.location}</p>
             <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
             <p><em>Posted on: ${date}</em></p>
           `;
-          if(currentUser && data.userId && currentUser.uid===data.userId){
-            const actions = document.createElement("div"); actions.className="skill-actions";
+
+          // Show edit/delete for owner, OR if userId missing (old skill)
+          if(currentUser && (!data.userId || currentUser.uid===data.userId)){
+            const actions=document.createElement("div"); actions.className="skill-actions";
             const editBtn=document.createElement("button"); editBtn.textContent="Edit";
             const delBtn=document.createElement("button"); delBtn.textContent="Delete";
             actions.appendChild(editBtn); actions.appendChild(delBtn); card.appendChild(actions);
 
-            editBtn.onclick = async()=>{
-              const newName = prompt("Update name:", data.name);
-              const newSkill = prompt("Update skill:", data.skill);
-              const newLoc = prompt("Update location:", data.location);
-              const newWhats = prompt("Update WhatsApp:", data.whatsapp);
-              if(newName && newSkill && newLoc && newWhats){
-                await db.collection("skills").doc(doc.id).update({name:newName, skill:newSkill, location:newLoc, whatsapp:newWhats});
+            editBtn.onclick=async()=>{
+              const newName=prompt("Update name:", data.name);
+              const newSkill=prompt("Update skill:", data.skill);
+              const newLoc=prompt("Update location:", data.location);
+              const newWhats=prompt("Update WhatsApp:", data.whatsapp);
+              if(newName&&newSkill&&newLoc&&newWhats){
+                await db.collection("skills").doc(doc.id).update({
+                  name:newName, skill:newSkill, location:newLoc, whatsapp:newWhats
+                });
               }
             };
-            delBtn.onclick = ()=>{ if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
+            delBtn.onclick=()=>{ if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
           }
+
           skillsList.appendChild(card);
         });
       });
     }
 
+    // Search
     document.getElementById("searchBar").addEventListener("input", e=>{
       const search=e.target.value.toLowerCase();
-      Array.from(skillsList.children).forEach(card=>card.style.display=card.textContent.toLowerCase().includes(search)?"block":"none");
-    });
-    categoryFilter.addEventListener("change", e=>{
-      const filter=e.target.value.toLowerCase();
-      Array.from(skillsList.children).forEach(card=>card.style.display=filter===""||card.textContent.toLowerCase().includes(filter)?"block":"none");
+      Array.from(skillsList.children).forEach(card=>{
+        card.style.display=card.textContent.toLowerCase().includes(search)?"block":"none";
+      });
     });
 
     // Share buttons
-    const pageUrl = encodeURIComponent(window.location.href);
+    const pageUrl=encodeURIComponent(window.location.href);
     document.querySelector(".whatsapp").href=`https://wa.me/?text=Check%20out%20SL%20Skills%20Hub%20${pageUrl}`;
     document.querySelector(".facebook").href=`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
     document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?url=${pageUrl}&text=Check%20out%20SL%20Skills%20Hub`;
