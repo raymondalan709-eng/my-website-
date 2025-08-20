@@ -4,8 +4,19 @@
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#fff; }
-    header { background:#2196F3; color:#fff; padding:15px; text-align:center; }
+    /* Make Share button icon smaller and centered on mobile */
+.card button {
+  font-size: 14px; /* slightly smaller text/icon */
+}
+@media (max-width: 480px) {
+  .card button {
+    width: 40px;       /* small square button */
+    height: 40px;
+    padding: 5px;
+    margin: 5px auto;  /* center it horizontally */
+    display: block;
+  }
+}
     header h1 { margin:5px 0; }
     header p { margin:0; font-size:18px; font-weight:bold; }
     #auth { position:absolute; top:10px; left:10px; text-align:left; }
@@ -21,7 +32,6 @@
     .card button { margin:5px 2px; padding:5px 10px; }
     #categoriesBtn { margin:10px 0; padding:8px; width:100%; background:#1976D2; color:#fff; border:none; border-radius:5px; cursor:pointer; }
 
-    /* ===== MOBILE RESPONSIVE CSS ===== */
     @media (min-width: 768px) {
       #addSkillForm, .card { width:300px; }
       #searchBar { width:50%; }
@@ -31,7 +41,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig = {
+
+    const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
   projectId: "sl-skills-hub",
@@ -39,7 +50,7 @@ const firebaseConfig = {
   messagingSenderId: "125049368940",
   appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
 };
-    
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
@@ -234,3 +245,12 @@ const firebaseConfig = {
   <form id="addSkillForm">
     <input id="name" placeholder="Your Name" required>
     <input id="skill" placeholder="Your Skill" required>
+    <input id="location" placeholder="Your Location" required>
+    <input id="whatsapp" placeholder="WhatsApp Contact" required>
+    <button type="submit">Add Skill</button>
+    <button type="button" id="categoriesBtn" style="display:none">Add Category</button>
+  </form>
+
+  <div id="skillsList"></div>
+</body>
+</html>
