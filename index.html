@@ -95,7 +95,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <script>
- const firebaseConfig = {
+   const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
   projectId: "sl-skills-hub",
@@ -188,9 +188,8 @@
           const data = doc.data();
           const card = document.createElement("div"); card.className="skill-card";
           const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "";
-          const pic = data.userPic || 'https://via.placeholder.com/50';
           card.innerHTML=`
-            <img src="${pic}" alt="">
+            <img src="${data.userPic || 'https://via.placeholder.com/50'}" alt="">
             <h3>${data.name}</h3>
             <p><strong>Skill:</strong> ${data.skill}</p>
             <p><strong>Location:</strong> ${data.location}</p>
@@ -203,16 +202,16 @@
             const delBtn=document.createElement("button"); delBtn.textContent="Delete";
             actions.appendChild(editBtn); actions.appendChild(delBtn); card.appendChild(actions);
 
-            editBtn.onclick=async()=>{
-              const newName=prompt("Update name:", data.name);
-              const newSkill=prompt("Update skill:", data.skill);
-              const newLoc=prompt("Update location:", data.location);
-              const newWhats=prompt("Update WhatsApp:", data.whatsapp);
+            editBtn.onclick = async()=>{
+              const newName = prompt("Update name:", data.name);
+              const newSkill = prompt("Update skill:", data.skill);
+              const newLoc = prompt("Update location:", data.location);
+              const newWhats = prompt("Update WhatsApp:", data.whatsapp);
               if(newName && newSkill && newLoc && newWhats){
                 await db.collection("skills").doc(doc.id).update({name:newName, skill:newSkill, location:newLoc, whatsapp:newWhats});
               }
             };
-            delBtn.onclick=()=>{ if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
+            delBtn.onclick = ()=>{ if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
           }
           skillsList.appendChild(card);
         });
@@ -228,11 +227,11 @@
       Array.from(skillsList.children).forEach(card=>card.style.display=filter===""||card.textContent.toLowerCase().includes(filter)?"block":"none");
     });
 
-    const pageUrl=encodeURIComponent(window.location.href);
+    // Share buttons
+    const pageUrl = encodeURIComponent(window.location.href);
     document.querySelector(".whatsapp").href=`https://wa.me/?text=Check%20out%20SL%20Skills%20Hub%20${pageUrl}`;
     document.querySelector(".facebook").href=`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
-    document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?url=${pageUrl}&text=Check%20out%20SL%20Skills Hub`;
+    document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?url=${pageUrl}&text=Check%20out%20SL%20Skills%20Hub`;
   </script>
-
 </body>
 </html>
