@@ -11,23 +11,30 @@
     #auth { position:absolute; top:10px; left:10px; text-align:left; }
     #auth img { width:40px; height:40px; border-radius:50%; display:block; margin-bottom:5px; }
     #auth p { margin:0; font-size:14px; color:#000; font-weight:bold; }
-    #searchBar { margin-top:10px; padding:8px; width:90%; max-width:500px; }
+    #auth button { display:block; margin:5px 0; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; background:#1976D2; color:#fff; }
+    #searchBar { margin-top:10px; padding:8px; width:90%; max-width:500px; display:block; margin-left:auto; margin-right:auto; }
     #addSkillForm { margin:20px auto; width:90%; max-width:400px; background:#f5f5f5; padding:15px; border-radius:8px; }
     #addSkillForm input, #addSkillForm button { display:block; margin:10px 0; padding:8px; width:100%; }
     .card { border:1px solid #ccc; border-radius:8px; padding:15px; margin:10px auto; width:90%; max-width:400px; background:#fff; }
     .card img { width:50px; height:50px; border-radius:50%; display:block; margin:auto; }
-    .card h3 { margin:10px 0 5px; }
-    .card p { margin:5px 0; }
-    .card button { margin:5px 2px; padding:5px 10px; cursor:pointer; }
-    #categoriesBtn { margin:10px 0; padding:8px; width:100%; background:#1976D2; color:#fff; border:none; border-radius:5px; cursor:pointer; }
+    .card h3 { margin:10px 0 5px; text-align:center; }
+    .card p { margin:5px 0; text-align:center; }
+    .card button { margin:5px 2px; padding:5px 10px; cursor:pointer; font-size:14px; border:none; border-radius:5px; background:#1976D2; color:#fff; }
+    /* Mobile & tablet responsiveness */
     @media (min-width: 768px) {
       #addSkillForm, .card { width:300px; }
       #searchBar { width:50%; }
     }
-    /* Mobile optimized buttons */
-    .card button { font-size: 14px; }
     @media (max-width: 480px) {
-      .card button { width: 40px; height: 40px; padding: 5px; margin: 5px auto; display: block; }
+      #addSkillForm { width:95%; padding:10px; }
+      #searchBar { width:95%; padding:6px; font-size:14px; }
+      .card { width:95%; padding:10px; }
+      .card img { width:40px; height:40px; }
+      .card h3 { font-size:16px; }
+      .card p { font-size:14px; }
+      .card button { width:100%; margin:5px 0; padding:8px; font-size:14px; }
+      #auth img { width:35px; height:35px; }
+      #auth button { width:100%; margin:5px 0; font-size:14px; padding:8px; }
     }
   </style>
 </head>
@@ -43,7 +50,6 @@
     <p id="userName"></p>
     <button id="loginBtn">Login with Google</button>
     <button id="logoutBtn" style="display:none;">Logout</button>
-    <button id="categoriesBtn" style="display:none;">Add Category</button>
   </div>
 
   <form id="addSkillForm">
@@ -52,6 +58,7 @@
     <input type="text" id="location" placeholder="Location" required>
     <input type="text" id="whatsapp" placeholder="WhatsApp Number" required>
     <button type="submit">Add Skill</button>
+    <button type="button" id="categoriesBtn" style="display:none;">Add Category</button>
   </form>
 
   <div id="skillsList"></div>
@@ -69,7 +76,6 @@
   messagingSenderId: "125049368940",
   appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
 };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
@@ -104,22 +110,17 @@
           <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
           <p><b>Date:</b> ${data.date}</p>
         `;
-
-        // Share Button
+        // Share button
         const shareBtn = document.createElement("button");
         shareBtn.innerHTML = "🔗";
-        shareBtn.style.backgroundColor = "#1976D2";
-        shareBtn.style.color = "#fff";
-        shareBtn.style.border = "none";
-        shareBtn.style.borderRadius = "5px";
         shareBtn.onclick = () => {
           const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
-          if (navigator.share) navigator.share({title:"SL Skills Hub", text, url: window.location.href});
+          if(navigator.share) navigator.share({title:"SL Skills Hub", text, url: window.location.href});
           else { navigator.clipboard.writeText(text + " " + window.location.href); alert("Link copied!"); }
         };
         card.appendChild(shareBtn);
 
-        // Edit/Delete only for owner
+        // Edit/Delete buttons for owner
         if(currentUser && data.uid === currentUser.uid){
           const editBtn = document.createElement("button");
           editBtn.textContent = "Edit";
@@ -142,6 +143,7 @@
       });
     }
 
+    // Fix old skills that didn't have UID or photo
     async function fixOldSkills(user) {
       const snap = await getDocs(collection(db, "skills"));
       snap.forEach(async docSnap => {
@@ -152,9 +154,11 @@
       });
     }
 
+    // Login/Logout
     loginBtn.onclick = async () => { await signInWithPopup(auth, provider); };
     logoutBtn.onclick = async () => { await signOut(auth); };
 
+    // Auth state change
     onAuthStateChanged(auth, async user => {
       if(user){
         currentUser=user;
@@ -177,6 +181,7 @@
       }
     });
 
+    // Add skill
     addSkillForm.onsubmit = async e => {
       e.preventDefault();
       if(!currentUser){ alert("Login required"); return; }
@@ -192,29 +197,52 @@
       renderSkills();
     };
 
+    // Search bar
     searchBar.oninput = async () => {
       const snap = await getDocs(collection(db, "skills"));
       skillsList.innerHTML="";
       snap.forEach(docSnap=>{
         const data=docSnap.data();
-        if(data.name.toLowerCase().includes(searchBar.value.toLowerCase()) ||
-           data.skill.toLowerCase().includes(searchBar.value.toLowerCase())){
-             const card = document.createElement("div");
-             card.className="card";
-             card.innerHTML=`<img src="${data.photoURL||'https://via.placeholder.com/50'}"><h3>${data.name}</h3>
-             <p><b>Skill:</b> ${data.skill}</p>
-             <p><b>Location:</b> ${data.location}</p>
-             <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
-             <p><b>Date:</b> ${data.date}</p>`;
-             skillsList.appendChild(card);
+        if(data.name.toLowerCase().includes(searchBar.value.toLowerCase()) || data.skill.toLowerCase().includes(searchBar.value.toLowerCase())){
+          const card = document.createElement("div");
+          card.className="card";
+          const photo = data.photoURL || "https://via.placeholder.com/50";
+          card.innerHTML=`<img src="${photo}"><h3>${data.name}</h3>
+            <p><b>Skill:</b> ${data.skill}</p>
+            <p><b>Location:</b> ${data.location}</p>
+            <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
+            <p><b>Date:</b> ${data.date}</p>`;
+          const shareBtn = document.createElement("button");
+          shareBtn.innerHTML = "🔗";
+          shareBtn.onclick = () => {
+            const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
+            if(navigator.share) navigator.share({title:"SL Skills Hub", text, url: window.location.href});
+            else { navigator.clipboard.writeText(text + " " + window.location.href); alert("Link copied!"); }
+          };
+          card.appendChild(shareBtn);
+
+          if(currentUser && data.uid===currentUser.uid){
+            const editBtn = document.createElement("button");
+            editBtn.textContent="Edit";
+            editBtn.onclick=async()=>{
+              const newName=prompt("Edit name:",data.name);
+              const newSkill=prompt("Edit skill:",data.skill);
+              const newLoc=prompt("Edit location:",data.location);
+              const newWA=prompt("Edit WhatsApp:",data.whatsapp);
+              await updateDoc(doc(db,"skills",docSnap.id),{name:newName, skill:newSkill, location:newLoc, whatsapp:newWA});
+              renderSkills();
+            };
+            const delBtn=document.createElement("button");
+            delBtn.textContent="Delete";
+            delBtn.onclick=async()=>{await deleteDoc(doc(db,"skills",docSnap.id)); renderSkills();};
+            card.appendChild(editBtn);
+            card.appendChild(delBtn);
+          }
+
+          skillsList.appendChild(card);
         }
       });
     };
-
-    categoriesBtn.onclick = () => {
-      const category = prompt("Enter new skill category:");
-      if(category) alert(`Category "${category}" added (you can link it in Firestore).`);
-    };
   </script>
 </body>
-</html>         
+</html>
