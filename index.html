@@ -4,19 +4,8 @@
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <style>
-    /* Make Share button icon smaller and centered on mobile */
-.card button {
-  font-size: 14px; /* slightly smaller text/icon */
-}
-@media (max-width: 480px) {
-  .card button {
-    width: 40px;       /* small square button */
-    height: 40px;
-    padding: 5px;
-    margin: 5px auto;  /* center it horizontally */
-    display: block;
-  }
-}
+    body { font-family: Arial, sans-serif; margin:0; background:#fff; }
+    header { background:#2196F3; color:#fff; padding:15px; text-align:center; }
     header h1 { margin:5px 0; }
     header p { margin:0; font-size:18px; font-weight:bold; }
     #auth { position:absolute; top:10px; left:10px; text-align:left; }
@@ -29,14 +18,44 @@
     .card img { width:50px; height:50px; border-radius:50%; display:block; margin:auto; }
     .card h3 { margin:10px 0 5px; }
     .card p { margin:5px 0; }
-    .card button { margin:5px 2px; padding:5px 10px; }
+    .card button { margin:5px 2px; padding:5px 10px; cursor:pointer; }
     #categoriesBtn { margin:10px 0; padding:8px; width:100%; background:#1976D2; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-
     @media (min-width: 768px) {
       #addSkillForm, .card { width:300px; }
       #searchBar { width:50%; }
     }
+    /* Mobile optimized buttons */
+    .card button { font-size: 14px; }
+    @media (max-width: 480px) {
+      .card button { width: 40px; height: 40px; padding: 5px; margin: 5px auto; display: block; }
+    }
   </style>
+</head>
+<body>
+  <header>
+    <h1>SL Skills Hub</h1>
+    <p>find talented people near you</p>
+    <input type="text" id="searchBar" placeholder="Search skills...">
+  </header>
+
+  <div id="auth">
+    <img id="userPic" src="" style="display:none;">
+    <p id="userName"></p>
+    <button id="loginBtn">Login with Google</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
+    <button id="categoriesBtn" style="display:none;">Add Category</button>
+  </div>
+
+  <form id="addSkillForm">
+    <input type="text" id="name" placeholder="Your Name" required>
+    <input type="text" id="skill" placeholder="Skill" required>
+    <input type="text" id="location" placeholder="Location" required>
+    <input type="text" id="whatsapp" placeholder="WhatsApp Number" required>
+    <button type="submit">Add Skill</button>
+  </form>
+
+  <div id="skillsList"></div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -72,41 +91,36 @@
       const q = query(collection(db, "skills"));
       const snap = await getDocs(q);
       skillsList.innerHTML = "";
-      snap.forEach((docSnap) => {
+      snap.forEach(docSnap => {
         const data = docSnap.data();
         const card = document.createElement("div");
         card.className = "card";
-        const photo = data.photoURL ? data.photoURL : "https://via.placeholder.com/50";
+        const photo = data.photoURL || "https://via.placeholder.com/50";
         card.innerHTML = `
           <img src="${photo}">
-          <h3>${data.name || ""}</h3>
-          <p><b>Skill:</b> ${data.skill || ""}</p>
-          <p><b>Location:</b> ${data.location || ""}</p>
-          <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3; text-decoration:none;">${data.whatsapp}</a></p>
-          <p><b>Date:</b> ${data.date || ""}</p>
+          <h3>${data.name}</h3>
+          <p><b>Skill:</b> ${data.skill}</p>
+          <p><b>Location:</b> ${data.location}</p>
+          <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
+          <p><b>Date:</b> ${data.date}</p>
         `;
 
-        // Share button as blue icon
+        // Share Button
         const shareBtn = document.createElement("button");
         shareBtn.innerHTML = "🔗";
         shareBtn.style.backgroundColor = "#1976D2";
         shareBtn.style.color = "#fff";
         shareBtn.style.border = "none";
         shareBtn.style.borderRadius = "5px";
-        shareBtn.style.cursor = "pointer";
-        shareBtn.style.padding = "5px 10px";
         shareBtn.onclick = () => {
           const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
-          if (navigator.share) {
-            navigator.share({ title: "SL Skills Hub", text, url: window.location.href });
-          } else {
-            navigator.clipboard.writeText(text + " " + window.location.href);
-            alert("Link copied to clipboard!");
-          }
+          if (navigator.share) navigator.share({title:"SL Skills Hub", text, url: window.location.href});
+          else { navigator.clipboard.writeText(text + " " + window.location.href); alert("Link copied!"); }
         };
         card.appendChild(shareBtn);
 
-        if (currentUser && data.uid === currentUser.uid) {
+        // Edit/Delete only for owner
+        if(currentUser && data.uid === currentUser.uid){
           const editBtn = document.createElement("button");
           editBtn.textContent = "Edit";
           editBtn.onclick = async () => {
@@ -114,36 +128,26 @@
             const newSkill = prompt("Edit skill:", data.skill);
             const newLoc = prompt("Edit location:", data.location);
             const newWA = prompt("Edit WhatsApp:", data.whatsapp);
-            const newPic = prompt("Edit photo URL:", data.photoURL);
-            await updateDoc(doc(db, "skills", docSnap.id), {
-              name:newName, skill:newSkill, location:newLoc, whatsapp:newWA, photoURL:newPic
-            });
+            await updateDoc(doc(db, "skills", docSnap.id), {name:newName, skill:newSkill, location:newLoc, whatsapp:newWA});
             renderSkills();
           };
           const delBtn = document.createElement("button");
           delBtn.textContent = "Delete";
-          delBtn.onclick = async () => {
-            await deleteDoc(doc(db, "skills", docSnap.id));
-            renderSkills();
-          };
+          delBtn.onclick = async () => { await deleteDoc(doc(db, "skills", docSnap.id)); renderSkills(); };
           card.appendChild(editBtn);
           card.appendChild(delBtn);
         }
+
         skillsList.appendChild(card);
       });
     }
 
     async function fixOldSkills(user) {
-      const q = query(collection(db, "skills"));
-      const snap = await getDocs(q);
-      snap.forEach(async (docSnap) => {
+      const snap = await getDocs(collection(db, "skills"));
+      snap.forEach(async docSnap => {
         const data = docSnap.data();
-        if (!data.uid || !data.photoURL) {
-          await updateDoc(docSnap.ref, {
-            uid: user.uid,
-            photoURL: user.photoURL,
-            displayName: user.displayName
-          });
+        if(!data.uid || !data.photoURL){
+          await updateDoc(docSnap.ref, {uid:user.uid, photoURL:user.photoURL, displayName:user.displayName});
         }
       });
     }
@@ -151,106 +155,66 @@
     loginBtn.onclick = async () => { await signInWithPopup(auth, provider); };
     logoutBtn.onclick = async () => { await signOut(auth); };
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
+    onAuthStateChanged(auth, async user => {
+      if(user){
+        currentUser=user;
         userPic.src = user.photoURL;
-        userPic.style.display = "block";
+        userPic.style.display="block";
         userName.textContent = user.displayName;
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "block";
-
-        if(currentUser.uid === adminUID) categoriesBtn.style.display = "block";
-        else categoriesBtn.style.display = "none";
-
+        loginBtn.style.display="none";
+        logoutBtn.style.display="block";
+        categoriesBtn.style.display = (user.uid===adminUID) ? "block" : "none";
         await fixOldSkills(user);
         renderSkills();
       } else {
-        currentUser = null;
-        userPic.style.display = "none";
-        userName.textContent = "";
-        loginBtn.style.display = "block";
-        logoutBtn.style.display = "none";
-        categoriesBtn.style.display = "none";
+        currentUser=null;
+        userPic.style.display="none";
+        userName.textContent="";
+        loginBtn.style.display="block";
+        logoutBtn.style.display="none";
+        categoriesBtn.style.display="none";
         renderSkills();
       }
     });
 
-    addSkillForm.onsubmit = async (e) => {
+    addSkillForm.onsubmit = async e => {
       e.preventDefault();
-      if (!currentUser) { alert("Login required"); return; }
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      await addDoc(collection(db, "skills"), {
-        name, skill, location, whatsapp,
-        date: new Date().toLocaleString(),
-        uid: currentUser.uid,
-        photoURL: currentUser.photoURL,
-        displayName: currentUser.displayName
+      if(!currentUser){ alert("Login required"); return; }
+      const name=document.getElementById("name").value;
+      const skill=document.getElementById("skill").value;
+      const location=document.getElementById("location").value;
+      const whatsapp=document.getElementById("whatsapp").value;
+      await addDoc(collection(db,"skills"),{
+        name, skill, location, whatsapp, date:new Date().toLocaleString(),
+        uid:currentUser.uid, photoURL:currentUser.photoURL, displayName:currentUser.displayName
       });
       addSkillForm.reset();
       renderSkills();
     };
 
     searchBar.oninput = async () => {
-      const q = query(collection(db, "skills"));
-      const snap = await getDocs(q);
-      skillsList.innerHTML = "";
-      snap.forEach((docSnap) => {
-        const data = docSnap.data();
-        if (
-          data.skill.toLowerCase().includes(searchBar.value.toLowerCase()) ||
-          data.name.toLowerCase().includes(searchBar.value.toLowerCase())
-        ) {
-          const card = document.createElement("div");
-          card.className = "card";
-          const photo = data.photoURL ? data.photoURL : "https://via.placeholder.com/50";
-          card.innerHTML = `
-            <img src="${photo}">
-            <h3>${data.name || ""}</h3>
-            <p><b>Skill:</b> ${data.skill || ""}</p>
-            <p><b>Location:</b> ${data.location || ""}</p>
-            <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3; text-decoration:none;">${data.whatsapp}</a></p>
-            <p><b>Date:</b> ${data.date || ""}</p>
-          `;
-          skillsList.appendChild(card);
+      const snap = await getDocs(collection(db, "skills"));
+      skillsList.innerHTML="";
+      snap.forEach(docSnap=>{
+        const data=docSnap.data();
+        if(data.name.toLowerCase().includes(searchBar.value.toLowerCase()) ||
+           data.skill.toLowerCase().includes(searchBar.value.toLowerCase())){
+             const card = document.createElement("div");
+             card.className="card";
+             card.innerHTML=`<img src="${data.photoURL||'https://via.placeholder.com/50'}"><h3>${data.name}</h3>
+             <p><b>Skill:</b> ${data.skill}</p>
+             <p><b>Location:</b> ${data.location}</p>
+             <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3;text-decoration:none;">${data.whatsapp}</a></p>
+             <p><b>Date:</b> ${data.date}</p>`;
+             skillsList.appendChild(card);
         }
       });
     };
 
     categoriesBtn.onclick = () => {
       const category = prompt("Enter new skill category:");
-      if(category) alert(`Category "${category}" added (you can link to Firestore later)`); 
-    }
-
-    renderSkills();
+      if(category) alert(`Category "${category}" added (you can link it in Firestore).`);
+    };
   </script>
-</head>
-<body>
-  <div id="auth">
-    <img id="userPic" style="display:none">
-    <p id="userName"></p>
-    <button id="loginBtn">Login with Google</button>
-    <button id="logoutBtn" style="display:none">Logout</button>
-  </div>
-
-  <header>
-    <h1>SL Skills Hub</h1>
-    <p>find talented people near you</p>
-    <input type="text" id="searchBar" placeholder="Search skills...">
-  </header>
-
-  <form id="addSkillForm">
-    <input id="name" placeholder="Your Name" required>
-    <input id="skill" placeholder="Your Skill" required>
-    <input id="location" placeholder="Your Location" required>
-    <input id="whatsapp" placeholder="WhatsApp Contact" required>
-    <button type="submit">Add Skill</button>
-    <button type="button" id="categoriesBtn" style="display:none">Add Category</button>
-  </form>
-
-  <div id="skillsList"></div>
 </body>
-</html>
+</html>         
