@@ -31,8 +31,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
   projectId: "sl-skills-hub",
@@ -40,7 +39,7 @@
   messagingSenderId: "125049368940",
   appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
 };
-
+    
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
@@ -56,7 +55,7 @@
     const categoriesBtn = document.getElementById("categoriesBtn");
 
     let currentUser = null;
-    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1"; // admin UID for categories
+    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
 
     async function renderSkills() {
       const q = query(collection(db, "skills"));
@@ -72,31 +71,30 @@
           <h3>${data.name || ""}</h3>
           <p><b>Skill:</b> ${data.skill || ""}</p>
           <p><b>Location:</b> ${data.location || ""}</p>
-          <p><b>WhatsApp:</b> ${data.whatsapp || ""}</p>
+          <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3; text-decoration:none;">${data.whatsapp}</a></p>
           <p><b>Date:</b> ${data.date || ""}</p>
         `;
 
         // Share button as blue icon
-const shareBtn = document.createElement("button");
-shareBtn.innerHTML = "🔗"; // small link icon
-shareBtn.style.backgroundColor = "#1976D2"; // blue color
-shareBtn.style.color = "#fff";
-shareBtn.style.border = "none";
-shareBtn.style.borderRadius = "5px";
-shareBtn.style.cursor = "pointer";
-shareBtn.style.padding = "5px 10px";
-shareBtn.onclick = () => {
-  const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
-  if (navigator.share) {
-    navigator.share({ title: "SL Skills Hub", text, url: window.location.href });
-  } else {
-    navigator.clipboard.writeText(text + " " + window.location.href);
-    alert("Link copied to clipboard!");
-  }
-};
-card.appendChild(shareBtn);
-        
-        // Edit/Delete only for owner
+        const shareBtn = document.createElement("button");
+        shareBtn.innerHTML = "🔗";
+        shareBtn.style.backgroundColor = "#1976D2";
+        shareBtn.style.color = "#fff";
+        shareBtn.style.border = "none";
+        shareBtn.style.borderRadius = "5px";
+        shareBtn.style.cursor = "pointer";
+        shareBtn.style.padding = "5px 10px";
+        shareBtn.onclick = () => {
+          const text = `${data.name} offers ${data.skill} in ${data.location}. Contact: ${data.whatsapp}`;
+          if (navigator.share) {
+            navigator.share({ title: "SL Skills Hub", text, url: window.location.href });
+          } else {
+            navigator.clipboard.writeText(text + " " + window.location.href);
+            alert("Link copied to clipboard!");
+          }
+        };
+        card.appendChild(shareBtn);
+
         if (currentUser && data.uid === currentUser.uid) {
           const editBtn = document.createElement("button");
           editBtn.textContent = "Edit";
@@ -151,7 +149,6 @@ card.appendChild(shareBtn);
         loginBtn.style.display = "none";
         logoutBtn.style.display = "block";
 
-        // Show categories button only for admin
         if(currentUser.uid === adminUID) categoriesBtn.style.display = "block";
         else categoriesBtn.style.display = "none";
 
@@ -204,7 +201,7 @@ card.appendChild(shareBtn);
             <h3>${data.name || ""}</h3>
             <p><b>Skill:</b> ${data.skill || ""}</p>
             <p><b>Location:</b> ${data.location || ""}</p>
-            <p><b>WhatsApp:</b> ${data.whatsapp || ""}</p>
+            <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:#2196F3; text-decoration:none;">${data.whatsapp}</a></p>
             <p><b>Date:</b> ${data.date || ""}</p>
           `;
           skillsList.appendChild(card);
@@ -212,7 +209,6 @@ card.appendChild(shareBtn);
       });
     };
 
-    // Categories button action
     categoriesBtn.onclick = () => {
       const category = prompt("Enter new skill category:");
       if(category) alert(`Category "${category}" added (you can link to Firestore later)`); 
@@ -238,12 +234,3 @@ card.appendChild(shareBtn);
   <form id="addSkillForm">
     <input id="name" placeholder="Your Name" required>
     <input id="skill" placeholder="Your Skill" required>
-    <input id="location" placeholder="Your Location" required>
-    <input id="whatsapp" placeholder="WhatsApp Contact" required>
-    <button type="submit">Add Skill</button>
-    <button type="button" id="categoriesBtn" style="display:none">Add Category</button>
-  </form>
-
-  <div id="skillsList"></div>
-</body>
-</html>
