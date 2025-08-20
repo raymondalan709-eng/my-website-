@@ -95,7 +95,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <script>
-   const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
   projectId: "sl-skills-hub",
@@ -189,15 +189,16 @@
           const card=document.createElement("div");
           card.className="skill-card";
           const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
+          const pic = data.userPic || 'https://via.placeholder.com/50';
           card.innerHTML=`
-            <img src="${data.userPic||'https://via.placeholder.com/50'}" alt="">
+            <img src="${pic}" alt="">
             <h3>${data.name}</h3>
             <p><strong>Skill:</strong> ${data.skill}</p>
             <p><strong>Location:</strong> ${data.location}</p>
             <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
             <p><em>Posted on: ${date}</em></p>
           `;
-          if(currentUser && currentUser.uid===data.userId){
+          if(currentUser && data.userId && currentUser.uid===data.userId){
             const actions=document.createElement("div"); actions.className="skill-actions";
             const editBtn=document.createElement("button"); editBtn.textContent="Edit";
             const delBtn=document.createElement("button"); delBtn.textContent="Delete";
