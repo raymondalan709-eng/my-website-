@@ -53,7 +53,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
@@ -77,6 +76,7 @@ const searchBar = document.getElementById("searchBar");
 const categoriesBtn = document.getElementById("categoriesBtn");
 
 let currentUser = null;
+let defaultSubmit = null;
 
 loginBtn.onclick = async () => { const result = await signInWithPopup(auth, provider); currentUser = result.user; };
 logoutBtn.onclick = async () => { await signOut(auth); };
@@ -100,9 +100,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-const defaultSubmit = addSkillForm.onsubmit;
-
-addSkillForm.onsubmit = async (e)=>{
+defaultSubmit = async function(e){
   e.preventDefault();
   if(!currentUser) { alert("Login first!"); return; }
   const skillData = {
@@ -119,6 +117,8 @@ addSkillForm.onsubmit = async (e)=>{
   addSkillForm.reset();
   loadSkills();
 };
+
+addSkillForm.onsubmit = defaultSubmit;
 
 async function loadSkills(){
   skillsList.innerHTML = "";
