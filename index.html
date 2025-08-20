@@ -1,50 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>SL Skills Hub</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#fff; }
-    #auth { position: fixed; top:10px; right:10px; z-index:1000; text-align:center; }
-    #auth img { width:40px; height:40px; border-radius:50%; display:block; margin:auto; margin-bottom:5px; }
-    #auth p { margin:0; font-size:14px; color:#000; font-weight:bold; }
-    #auth button { display:block; margin:5px auto; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; background:#1976D2; color:#fff; }
-    header { background:#2196F3; color:#fff; padding:15px; text-align:center; }
-    header h1 { margin:5px 0; }
-    header p { margin:0; font-size:18px; font-weight:bold; }
-    #searchBar { margin-top:10px; padding:10px; width:90%; max-width:500px; display:block; margin-left:auto; margin-right:auto; border-radius:6px; border:1px solid #ccc; }
-    #addSkillForm { margin:20px auto; width:90%; max-width:400px; background:#f5f5f5; padding:15px; border-radius:8px; }
-    #addSkillForm input, #addSkillForm button { display:block; margin:10px 0; padding:10px; width:100%; font-size:16px; }
-    .card { border:1px solid #ccc; border-radius:8px; padding:15px; margin:10px auto; width:95%; max-width:400px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-    .card img { width:50px; height:50px; border-radius:50%; display:block; margin:auto; }
-    .card h3 { margin:10px 0 5px; text-align:center; font-size:18px; }
-    .card p { margin:5px 0; text-align:center; font-size:15px; }
-    .card button { margin:5px 0; padding:8px; cursor:pointer; font-size:14px; border:none; border-radius:5px; background:#1976D2; color:#fff; width:100%; }
-    @media (min-width: 768px) { #addSkillForm, .card { width:300px; } #searchBar { width:50%; } .card button { width:auto; display:inline-block; margin:5px; } }
-    @media (max-width: 480px) { #auth img { width:35px; height:35px; } #auth button { font-size:13px; padding:6px; } header h1 { font-size:22px; } header p { font-size:14px; } #searchBar { width:95%; padding:8px; font-size:14px; } #addSkillForm { width:95%; padding:12px; } #addSkillForm input, #addSkillForm button { font-size:14px; padding:8px; } .card { width:95%; padding:12px; } .card h3 { font-size:16px; } .card p { font-size:13px; } .card button { font-size:13px; padding:7px; width:100%; display:block; } }
-  </style>
+<meta charset="UTF-8">
+<title>SL Skills Hub</title>
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#fff; }
+#auth { position: fixed; top:10px; right:10px; z-index:1000; text-align:center; }
+#auth img { width:40px; height:40px; border-radius:50%; display:block; margin:auto; margin-bottom:5px; }
+#auth p { margin:0; font-size:14px; color:#000; font-weight:bold; }
+#auth button { display:block; margin:5px auto; padding:5px 10px; border:none; border-radius:5px; cursor:pointer; background:#1976D2; color:#fff; }
+header { background:#2196F3; color:#fff; padding:15px; text-align:center; }
+header h1 { margin:5px 0; }
+header p { margin:0; font-size:18px; font-weight:bold; }
+#searchBar { margin-top:10px; padding:10px; width:90%; max-width:500px; display:block; margin-left:auto; margin-right:auto; border-radius:6px; border:1px solid #ccc; }
+#addSkillForm { margin:20px auto; width:90%; max-width:400px; background:#f5f5f5; padding:15px; border-radius:8px; }
+#addSkillForm input, #addSkillForm button { display:block; margin:10px 0; padding:10px; width:100%; font-size:16px; }
+#addSkillForm #categoriesBtn { display:none; }
+.card { border:1px solid #ccc; border-radius:8px; padding:15px; margin:10px auto; width:95%; max-width:400px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+.card img { width:50px; height:50px; border-radius:50%; display:block; margin:auto; }
+.card h3 { margin:10px 0 5px; text-align:center; font-size:18px; }
+.card p { margin:5px 0; text-align:center; font-size:15px; }
+.card button { margin:5px 0; padding:8px; cursor:pointer; font-size:14px; border:none; border-radius:5px; background:#1976D2; color:#fff; width:100%; }
+@media (min-width: 768px) { #addSkillForm, .card { width:300px; } #searchBar { width:50%; } .card button { width:auto; display:inline-block; margin:5px; } }
+@media (max-width: 480px) { #auth img { width:35px; height:35px; } #auth button { font-size:13px; padding:6px; } header h1 { font-size:22px; } header p { font-size:14px; } #searchBar { width:95%; padding:8px; font-size:14px; } #addSkillForm { width:95%; padding:12px; } #addSkillForm input, #addSkillForm button { font-size:14px; padding:8px; } .card { width:95%; padding:12px; } .card h3 { font-size:16px; } .card p { font-size:13px; } .card button { font-size:13px; padding:7px; width:100%; display:block; } }
+</style>
 </head>
 <body>
+
 <div id="auth">
-  <img id="userPic" src="" style="display:none;">
-  <p id="userName"></p>
-  <button id="loginBtn">Login with Google</button>
-  <button id="logoutBtn" style="display:none;">Logout</button>
+<img id="userPic" src="" style="display:none;">
+<p id="userName"></p>
+<button id="loginBtn">Login with Google</button>
+<button id="logoutBtn" style="display:none;">Logout</button>
 </div>
 
 <header>
-  <h1>SL Skills Hub</h1>
-  <p>find talented people near you</p>
-  <input type="text" id="searchBar" placeholder="Search skills...">
+<h1>SL Skills Hub</h1>
+<p>find talented people near you</p>
+<input type="text" id="searchBar" placeholder="Search skills...">
 </header>
 
 <form id="addSkillForm">
-  <input type="text" id="name" placeholder="Your Name" required>
-  <input type="text" id="skill" placeholder="Skill" required>
-  <input type="text" id="location" placeholder="Location" required>
-  <input type="text" id="whatsapp" placeholder="WhatsApp Number" required>
-  <button type="submit">Add Skill</button>
-  <button type="button" id="categoriesBtn" style="display:none;">Add Category</button>
+<input type="text" id="name" placeholder="Your Name" required>
+<input type="text" id="skill" placeholder="Skill" required>
+<input type="text" id="location" placeholder="Location" required>
+<input type="text" id="whatsapp" placeholder="WhatsApp Number" required>
+<button type="submit">Add Skill</button>
+<button type="button" id="categoriesBtn">Add Category</button>
 </form>
 
 <div id="skillsList"></div>
@@ -76,115 +78,114 @@ const searchBar = document.getElementById("searchBar");
 const categoriesBtn = document.getElementById("categoriesBtn");
 
 let currentUser = null;
-let defaultSubmit = null;
 
 loginBtn.onclick = async () => { const result = await signInWithPopup(auth, provider); currentUser = result.user; };
 logoutBtn.onclick = async () => { await signOut(auth); };
 
 onAuthStateChanged(auth, async (user) => {
-  currentUser = user;
-  if(user){
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "block";
-    userPic.style.display = "block";
-    userPic.src = user.photoURL||"";
-    userName.textContent = user.displayName||"User";
-    if(user.uid==="I5WY1FJzNibUDOCzCBdGWPtX9Nj1") categoriesBtn.style.display = "block";
-    loadSkills();
-  } else {
-    loginBtn.style.display = "block";
-    logoutBtn.style.display = "none";
-    userPic.style.display = "none";
-    userName.textContent = "";
-    loadSkills();
-  }
+currentUser = user;
+if(user){
+loginBtn.style.display = "none";
+logoutBtn.style.display = "block";
+userPic.style.display = "block";
+userPic.src = user.photoURL||"";
+userName.textContent = user.displayName||"User";
+if(user.uid==="I5WY1FJzNibUDOCzCBdGWPtX9Nj1") categoriesBtn.style.display = "block";
+loadSkills();
+} else {
+loginBtn.style.display = "block";
+logoutBtn.style.display = "none";
+userPic.style.display = "none";
+userName.textContent = "";
+categoriesBtn.style.display = "none";
+loadSkills();
+}
 });
 
-defaultSubmit = async function(e){
-  e.preventDefault();
-  if(!currentUser) { alert("Login first!"); return; }
-  const skillData = {
-    name: document.getElementById("name").value,
-    skill: document.getElementById("skill").value,
-    location: document.getElementById("location").value,
-    whatsapp: document.getElementById("whatsapp").value,
-    uid: currentUser.uid,
-    userPic: currentUser.photoURL||"",
-    userName: currentUser.displayName||"User",
-    date: new Date().toISOString()
-  };
-  await addDoc(collection(db,"skills"), skillData);
-  addSkillForm.reset();
-  loadSkills();
+addSkillForm.onsubmit = async (e)=>{
+e.preventDefault();
+if(!currentUser){ alert("Login first!"); return; }
+const skillData = {
+name: document.getElementById("name").value,
+skill: document.getElementById("skill").value,
+location: document.getElementById("location").value,
+whatsapp: document.getElementById("whatsapp").value,
+uid: currentUser.uid,
+userPic: currentUser.photoURL||"",
+userName: currentUser.displayName||"User",
+date: new Date().toISOString()
+};
+await addDoc(collection(db,"skills"), skillData);
+addSkillForm.reset();
+loadSkills();
 };
 
-addSkillForm.onsubmit = defaultSubmit;
-
 async function loadSkills(){
-  skillsList.innerHTML = "";
-  const q = query(collection(db,"skills"), orderBy("date","desc"));
-  const snapshot = await getDocs(q);
-  snapshot.forEach(docSnap=>{
-    const data = docSnap.data();
-    const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <img src="${data.userPic||''}">
-      <h3>${data.userName}</h3>
-      <p><strong>Skill:</strong> ${data.skill}</p>
-      <p><strong>Location:</strong> ${data.location}</p>
-      <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
-      <p><strong>Date:</strong> ${new Date(data.date).toLocaleString()}</p>
-    `;
-    const btnContainer = document.createElement("div");
-    btnContainer.style.display="flex";
-    btnContainer.style.flexDirection="column";
-    btnContainer.style.gap="5px";
+skillsList.innerHTML = "";
+const q = query(collection(db,"skills"), orderBy("date","desc"));
+const snapshot = await getDocs(q);
+snapshot.forEach(docSnap=>{
+const data = docSnap.data();
+const card = document.createElement("div");
+card.className="card";
+card.innerHTML=`
+<img src="${data.userPic||''}">
+<h3>${data.userName}</h3>
+<p><strong>Skill:</strong> ${data.skill}</p>
+<p><strong>Location:</strong> ${data.location}</p>
+<p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+<p><strong>Date:</strong> ${new Date(data.date).toLocaleString()}</p>
+`;
+const btnContainer = document.createElement("div");
+btnContainer.style.display="flex";
+btnContainer.style.flexDirection="column";
+btnContainer.style.gap="5px";
 
-    if(currentUser && currentUser.uid===data.uid){
-      const editBtn=document.createElement("button");
-      editBtn.textContent="Edit";
-      editBtn.onclick=()=>editSkill(docSnap.id,data);
-      const delBtn=document.createElement("button");
-      delBtn.textContent="Delete";
-      delBtn.onclick=()=>deleteSkill(docSnap.id);
-      btnContainer.appendChild(editBtn);
-      btnContainer.appendChild(delBtn);
-    }
+if(currentUser && currentUser.uid===data.uid){
+const editBtn=document.createElement("button");
+editBtn.textContent="Edit";
+editBtn.onclick=()=>editSkill(docSnap.id,data);
+const delBtn=document.createElement("button");
+delBtn.textContent="Delete";
+delBtn.onclick=()=>deleteSkill(docSnap.id);
+btnContainer.appendChild(editBtn);
+btnContainer.appendChild(delBtn);
+}
 
-    const shareBtn=document.createElement("button");
-    shareBtn.textContent="Share";
-    shareBtn.onclick=()=>navigator.share?navigator.share({title:"SL Skills Hub",text:`Check out ${data.userName}'s skill: ${data.skill}`,url:window.location.href}):alert("Sharing not supported");
-    btnContainer.appendChild(shareBtn);
+const shareBtn=document.createElement("button");
+shareBtn.textContent="Share";
+shareBtn.onclick=()=>navigator.share?navigator.share({title:"SL Skills Hub",text:`Check out ${data.userName}'s skill: ${data.skill}`,url:window.location.href}):alert("Sharing not supported");
+btnContainer.appendChild(shareBtn);
 
-    card.appendChild(btnContainer);
-    skillsList.appendChild(card);
-  });
+card.appendChild(btnContainer);
+skillsList.appendChild(card);
+});
 }
 
 async function editSkill(id,data){
-  document.getElementById("name").value=data.name;
-  document.getElementById("skill").value=data.skill;
-  document.getElementById("location").value=data.location;
-  document.getElementById("whatsapp").value=data.whatsapp;
+document.getElementById("name").value=data.name;
+document.getElementById("skill").value=data.skill;
+document.getElementById("location").value=data.location;
+document.getElementById("whatsapp").value=data.whatsapp;
 
-  addSkillForm.onsubmit = async (e)=>{
-    e.preventDefault();
-    await updateDoc(doc(db,"skills",id),{
-      name: document.getElementById("name").value,
-      skill: document.getElementById("skill").value,
-      location: document.getElementById("location").value,
-      whatsapp: document.getElementById("whatsapp").value
-    });
-    addSkillForm.reset();
-    addSkillForm.onsubmit = defaultSubmit;
-    loadSkills();
-  };
+addSkillForm.onsubmit = async (e)=>{
+e.preventDefault();
+await updateDoc(doc(db,"skills",id),{
+name: document.getElementById("name").value,
+skill: document.getElementById("skill").value,
+location: document.getElementById("location").value,
+whatsapp: document.getElementById("whatsapp").value
+});
+addSkillForm.reset();
+addSkillForm.onsubmit = async (e)=>{e.preventDefault();if(!currentUser){alert("Login first!"); return;} const skillData={name: document.getElementById("name").value, skill: document.getElementById("skill").value, location: document.getElementById("location").value, whatsapp: document.getElementById("whatsapp").value, uid: currentUser.uid, userPic: currentUser.photoURL||"", userName: currentUser.displayName||"User", date: new Date().toISOString()}; await addDoc(collection(db,"skills"), skillData); addSkillForm.reset(); loadSkills();};
+loadSkills();
+};
 }
 
 async function deleteSkill(id){ if(confirm("Delete this skill?")) await deleteDoc(doc(db,"skills",id)); loadSkills(); }
 
 searchBar.oninput = loadSkills;
+
 </script>
 </body>
 </html>
