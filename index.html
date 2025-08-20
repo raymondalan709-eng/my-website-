@@ -5,6 +5,9 @@
   <title>SL Skills Hub</title>
   <link rel="icon" href="1000040429.jpg" type="image/jpg">
 
+  <!-- Responsive meta tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Open Graph for social previews -->
   <meta property="og:title" content="SL Skills Hub">
   <meta property="og:description" content="Find talented people near you">
@@ -19,13 +22,14 @@
       background-color: #fff;
     }
 
-    /* Header and top area */
+    /* Top bar (Google login / user info) */
     #top-bar {
       display: flex;
       justify-content: flex-end;
       align-items: center;
       padding: 10px;
       background-color: #fff;
+      flex-wrap: wrap;
     }
     #top-bar img {
       width: 40px;
@@ -46,27 +50,21 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #top-bar button:hover {
-      background-color: #1976D2;
-    }
+    #top-bar button:hover { background-color: #1976D2; }
 
+    /* Header */
     header {
       background-color: #2196F3;
       color: white;
       padding: 10px;
       text-align: center;
     }
-    header h1 {
-      margin: 5px 0;
-    }
-    header h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: bold;
-    }
+    header h1 { margin: 5px 0; }
+    header h2 { margin: 0; font-size: 18px; font-weight: bold; }
     #searchBar {
       padding: 8px;
       width: 60%;
+      max-width: 400px;
       margin-top: 10px;
     }
     #show-form {
@@ -78,22 +76,18 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #show-form:hover {
-      background-color: #1976D2;
-    }
-    #category-section {
-      margin-top: 10px;
-    }
-    #admin-category {
-      display: none;
-      margin-top: 10px;
-    }
+    #show-form:hover { background-color: #1976D2; }
+
+    /* Category section */
+    #category-section { margin-top: 10px; }
+    #admin-category { display: none; margin-top: 10px; }
 
     /* Skill form */
     #skill-form {
       display: none;
       margin: 20px auto;
-      width: 300px;
+      width: 90%;
+      max-width: 300px;
       text-align: center;
     }
     #skill-form input, #skill-form select, #skill-form button {
@@ -109,9 +103,7 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #saveSkill:hover {
-      background-color: #1976D2;
-    }
+    #saveSkill:hover { background-color: #1976D2; }
 
     /* Skill cards */
     .skill-card {
@@ -137,20 +129,19 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .skill-actions button:hover {
-      background-color: #1976D2;
-    }
+    .skill-actions button:hover { background-color: #1976D2; }
 
     /* Share buttons */
     #share-buttons {
       text-align: center;
       margin: 15px 0;
+      flex-wrap: wrap;
     }
     .share-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin: 0 5px;
+      margin: 5px;
       padding: 6px 10px;
       border-radius: 4px;
       color: white;
@@ -166,6 +157,13 @@
     .facebook { background-color: #3b5998; }
     .twitter { background-color: #1DA1F2; }
     .share-btn:hover { opacity: 0.8; }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      #searchBar { width: 90%; }
+      #skill-form { width: 90%; }
+      #top-bar { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -228,6 +226,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
 
   <script>
+    // Firebase config - replace with your actual project info
    const firebaseConfig = {
   apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
   authDomain: "sl-skills-hub.firebaseapp.com",
@@ -239,9 +238,8 @@
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
-    let currentUser = null;
     const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
+    let currentUser = null;
 
     const loginBtn = document.getElementById("login");
     const logoutBtn = document.getElementById("logout");
@@ -259,13 +257,15 @@
     // Login
     loginBtn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider);
+      auth.signInWithPopup(provider)
+        .then(result => { /* logged in */ })
+        .catch(err => alert("Login failed: " + err.message));
     };
 
     // Logout
     logoutBtn.onclick = () => auth.signOut();
 
-    // Auth state change
+    // Auth state
     auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
@@ -274,9 +274,7 @@
         userPic.src = user.photoURL;
         userPic.style.display = "inline-block";
         userName.textContent = user.displayName;
-
-        if (user.uid === adminUID) adminCategoryDiv.style.display = "block";
-        else adminCategoryDiv.style.display = "none";
+        adminCategoryDiv.style.display = (user.uid === adminUID) ? "block" : "none";
       } else {
         currentUser = null;
         loginBtn.style.display = "inline-block";
@@ -289,7 +287,7 @@
 
     // Toggle skill form
     showFormBtn.onclick = () => {
-      skillForm.style.display = skillForm.style.display === "none" ? "block" : "none";
+      skillForm.style.display = (skillForm.style.display === "none") ? "block" : "none";
     };
 
     // Save skill
@@ -303,14 +301,15 @@
 
       await db.collection("skills").add({
         name, skill, location, whatsapp, category,
-        userId: currentUser.uid, userPic: currentUser.photoURL,
+        userId: currentUser.uid,
+        userPic: currentUser.photoURL,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
       skillForm.reset();
       skillForm.style.display = "none";
     };
 
-    // Add category (admin only)
+    // Add category (admin)
     addCategoryBtn.onclick = async () => {
       if (!currentUser || currentUser.uid !== adminUID) return;
       const newCat = document.getElementById("newCategory").value;
@@ -320,7 +319,7 @@
       }
     };
 
-    // Categories snapshot
+    // Load categories
     db.collection("categories").onSnapshot(snapshot => {
       categoryDropdown.innerHTML = "";
       categoryFilter.innerHTML = '<option value="">All Categories</option>';
@@ -329,14 +328,13 @@
         const option1 = document.createElement("option");
         option1.value = cat; option1.textContent = cat;
         categoryDropdown.appendChild(option1);
-
         const option2 = document.createElement("option");
         option2.value = cat; option2.textContent = cat;
         categoryFilter.appendChild(option2);
       });
     });
 
-    // Display skills
+    // Load skills
     db.collection("skills").orderBy("timestamp", "desc").onSnapshot(snapshot => {
       skillsList.innerHTML = "";
       snapshot.forEach(doc => {
@@ -352,7 +350,7 @@
           <p><strong>WhatsApp:</strong> ${data.whatsapp}</p>
           <p><em>Posted on: ${date}</em></p>
         `;
-        if (currentUser && (currentUser.uid === data.userId || currentUser.displayName === data.name)) {
+        if (currentUser && currentUser.uid === data.userId) {
           const actions = document.createElement("div");
           actions.className = "skill-actions";
           const editBtn = document.createElement("button");
@@ -367,16 +365,13 @@
             const newSkill = prompt("Update skill:", data.skill);
             if (newSkill !== null) await db.collection("skills").doc(doc.id).update({ skill: newSkill });
           };
-
-          delBtn.onclick = () => {
-            if (confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete();
-          };
+          delBtn.onclick = () => { if (confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
         }
         skillsList.appendChild(card);
       });
     });
 
-    // Search
+    // Search skills
     document.getElementById("searchBar").addEventListener("input", e => {
       const search = e.target.value.toLowerCase();
       Array.from(skillsList.children).forEach(card => {
@@ -384,20 +379,20 @@
       });
     });
 
-    // Category filter
+    // Filter by category
     categoryFilter.addEventListener("change", e => {
       const filter = e.target.value.toLowerCase();
       Array.from(skillsList.children).forEach(card => {
-        card.style.display = filter === "" || card.textContent.toLowerCase().includes(filter) ? "block" : "none";
+        card.style.display = (filter === "" || card.textContent.toLowerCase().includes(filter)) ? "block" : "none";
       });
     });
 
-    // Share buttons functionality
-    const pageUrl = encodeURIComponent(window.location.href);
-    document.querySelector('.whatsapp').href = `https://api.whatsapp.com/send?text=Check out SL Skills Hub: ${pageUrl}`;
-    document.querySelector('.facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
-    document.querySelector('.twitter').href = `https://twitter.com/intent/tweet?url=${pageUrl}&text=Check out SL Skills Hub!`;
-
+    // Share buttons links
+    const shareText = encodeURIComponent("Check out SL Skills Hub: Find talented people near you!");
+    const shareUrl = encodeURIComponent(window.location.href);
+    document.querySelector(".whatsapp").href = `https://wa.me/?text=${shareText}%20${shareUrl}`;
+    document.querySelector(".facebook").href = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+    document.querySelector(".twitter").href = `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`;
   </script>
 </body>
 </html>
