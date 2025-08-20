@@ -130,21 +130,22 @@
     logoutBtn.onclick = () => auth.signOut();
 
     auth.onAuthStateChanged(user=>{
+      currentUser=user;
       if(user){
-        currentUser = user;
         loginBtn.style.display="none";
         logoutBtn.style.display="inline-block";
         userPic.src=user.photoURL; userPic.style.display="inline-block";
         userName.textContent=user.displayName;
         adminCategoryDiv.style.display=(user.uid===adminUID)?"block":"none";
       }else{
-        currentUser=null;
         loginBtn.style.display="inline-block";
         logoutBtn.style.display="none";
         userPic.style.display="none";
         userName.textContent="";
         adminCategoryDiv.style.display="none";
       }
+      // re-render skills to show/hide edit/delete buttons
+      loadSkills();
     });
 
     showFormBtn.onclick = ()=>skillForm.style.display = (skillForm.style.display==="none")?"block":"none";
@@ -180,35 +181,48 @@
       });
     });
 
-    db.collection("skills").orderBy("timestamp","desc").onSnapshot(snapshot=>{
-      skillsList.innerHTML="";
-      snapshot.forEach(doc=>{
-        const data=doc.data();
-        const card=document.createElement("div"); card.className="skill-card";
-        const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
-        card.innerHTML=`<img src="${data.userPic||''}" alt=""><h3>${data.name}</h3><p><strong>Skill:</strong> ${data.skill}</p><p><strong>Location:</strong> ${data.location}</p><p><strong>WhatsApp:</strong> ${data.whatsapp}</p><p><em>Posted on: ${date}</em></p>`;
-        if(currentUser && currentUser.uid===data.userId){
-          const actions=document.createElement("div"); actions.className="skill-actions";
-          const editBtn=document.createElement("button"); editBtn.textContent="Edit";
-          const delBtn=document.createElement("button"); delBtn.textContent="Delete";
-          actions.appendChild(editBtn); actions.appendChild(delBtn); card.appendChild(actions);
+    function loadSkills(){
+      db.collection("skills").orderBy("timestamp","desc").get().then(snapshot=>{
+        skillsList.innerHTML="";
+        snapshot.forEach(doc=>{
+          const data=doc.data();
+          const card=document.createElement("div"); card.className="skill-card";
+          const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
+          card.innerHTML=`
+            <img src="${data.userPic || 'https://via.placeholder.com/50'}" alt="">
+            <h3>${data.name}</h3>
+            <p><strong>Skill:</strong> ${data.skill}</p>
+            <p><strong>Location:</strong> ${data.location}</p>
+            <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+            <p><em>Posted on: ${date}</em></p>
+          `;
+          if(currentUser && currentUser.uid===data.userId){
+            const actions=document.createElement("div"); actions.className="skill-actions";
+            const editBtn=document.createElement("button"); editBtn.textContent="Edit";
+            const delBtn=document.createElement("button"); delBtn.textContent="Delete";
+            actions.appendChild(editBtn); actions.appendChild(delBtn); card.appendChild(actions);
 
-          editBtn.onclick=async()=>{
-            const newName=prompt("Update Name:", data.name);
-            const newSkill=prompt("Update Skill:", data.skill);
-            const newLoc=prompt("Update Location:", data.location);
-            const newWhats=prompt("Update WhatsApp:", data.whatsapp);
-            if(newName!==null&&newSkill!==null&&newLoc!==null&&newWhats!==null){
-              await db.collection("skills").doc(doc.id).update({name:newName,skill:newSkill,location:newLoc,whatsapp:newWhats});
-            }
-          };
-          delBtn.onclick=()=>{ if(confirm("Delete this skill?")) db.collection("skills").doc(doc.id).delete(); };
-        }
-        skillsList.appendChild(card);
+            editBtn.onclick=async()=>{
+              const newName=prompt("Update Name:", data.name);
+              const newSkill=prompt("Update Skill:", data.skill);
+              const newLoc=prompt("Update Location:", data.location);
+              const newWhats=prompt("Update WhatsApp:", data.whatsapp);
+              if(newName!==null&&newSkill!==null&&newLoc!==null&&newWhats!==null){
+                await db.collection("skills").doc(doc.id).update({name:newName,skill:newSkill,location:newLoc,whatsapp:newWhats});
+                loadSkills();
+              }
+            };
+            delBtn.onclick=()=>{ if(confirm("Delete this skill?")) { db.collection("skills").doc(doc.id).delete(); loadSkills(); } };
+          }
+          skillsList.appendChild(card);
+        });
       });
-    });
+    }
 
-    document.getElementById("searchBar").addEventListener("input", e=>{
+    // initial load
+    loadSkills();
+
+    document.getElementById("searchBar").addEventListener("input",e=>{
       const search=e.target.value.toLowerCase();
       Array.from(skillsList.children).forEach(card=>{
         const text=card.textContent.toLowerCase();
@@ -216,7 +230,7 @@
       });
     });
 
-    categoryFilter.addEventListener("change", e=>{
+    categoryFilter.addEventListener("change",e=>{
       const filter=e.target.value.toLowerCase();
       Array.from(skillsList.children).forEach(card=>{
         const text=card.textContent.toLowerCase();
@@ -228,7 +242,7 @@
     const pageUrl=encodeURIComponent(window.location.href);
     document.querySelector(".whatsapp").href=`https://wa.me/?text=Check%20out%20SL%20Skills%20Hub%20${pageUrl}`;
     document.querySelector(".facebook").href=`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
-    document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?url=${pageUrl}&text=Check%20out%20SL%20Skills%20Hub`;
+    document.querySelector(".twitter").href=`https://twitter.com/intent/tweet?url=${pageUrl}&text=Check%20out%20SL%20Skills Hub`;
   </script>
 
 </body>
