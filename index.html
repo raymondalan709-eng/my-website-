@@ -267,6 +267,7 @@ saveSkillBtn.onclick = async () => {
     location,
     whatsapp,
     category,
+    uid:currentuser.uid,
     userPic: currentUser.photoURL || "",
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -361,5 +362,6 @@ saveSkillBtn.onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
