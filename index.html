@@ -30,12 +30,24 @@
     .deleteBtn { background: #f44336; color: white; }
 
     /* ✅ Mobile responsiveness */
-    @media(max-width:640px){ #controls input{width:150px;} }
-    #controls { flex-direction: column; align-items: center; }
-      #controls input, #controls select, #controls button { width: 90%; }
-      header h1 { font-size: 1.8em; }
-      header p { font-size: 1em; }
-    }
+   @media (max-width: 768px) {
+  #controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #controls input, 
+  #controls button,
+  #controls select {
+    width: 90% !important;
+    margin: 5px 0;
+  }
+  #skillsContainer {
+    grid-template-columns: 1fr !important;
+  }
+  header h1 { font-size: 1.8em; }
+  header p { font-size: 1em; }
+}
   </style>
 </head>
 <body>
@@ -286,4 +298,5 @@
   </script>
 </body>
 </html>
+
 
