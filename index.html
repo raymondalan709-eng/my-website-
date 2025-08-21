@@ -5,15 +5,15 @@
   <title>SL Skills Hub</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background-color: #fff; }
-    header { background: #2196F3; color: white; padding: 20px; text-align: center; }
+    header { background: #2196F3; color: white; padding: 20px; text-align: center; position: relative; }
     header h1 { margin: 0; font-size: 2.5em; font-weight: bold; }
     header p { margin: 5px 0 15px; font-size: 1.2em; font-weight: bold; }
     #authSection { position: absolute; top: 15px; left: 15px; text-align: left; }
     #authSection img { width: 40px; height: 40px; border-radius: 50%; display: block; margin-bottom: 5px; }
     #authSection p { margin: 0 0 5px; font-weight: bold; color: white; }
-    #controls { margin-top: 15px; }
+    #controls { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
     #controls input, #controls button, #controls select {
-      padding: 10px; margin: 5px; border: none; border-radius: 5px;
+      padding: 10px; border: none; border-radius: 5px; font-size: 14px;
     }
     #controls input { width: 200px; }
     #controls button { background: white; color: #2196F3; cursor: pointer; font-weight: bold; }
@@ -28,7 +28,14 @@
     .skillCard button { margin: 5px 5px 0 0; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; }
     .editBtn { background: #ffc107; color: white; }
     .deleteBtn { background: #f44336; color: white; }
-    @media(max-width:640px){ #controls input{width:150px;} }
+
+    /* ✅ Mobile responsiveness */
+    @media(max-width:640px){
+      #controls { flex-direction: column; align-items: center; }
+      #controls input, #controls select, #controls button { width: 90%; }
+      header h1 { font-size: 1.8em; }
+      header p { font-size: 1em; }
+    }
   </style>
 </head>
 <body>
@@ -49,7 +56,6 @@
         <input type="text" id="newCategoryInput" placeholder="New Category">
         <button onclick="addCategory()">Add Category</button>
       </div>
-      <!-- ✅ Share button -->
       <button onclick="shareSite()">Share</button>
     </div>
   </header>
@@ -61,6 +67,7 @@
     <input type="text" id="location" placeholder="Location">
     <input type="text" id="whatsapp" placeholder="WhatsApp Contact">
     <select id="categorySelect"></select>
+    <button onclick="shareWhatsApp()">Share on WhatsApp</button>
     <button onclick="submitSkill()">Post Skill</button>
     <button onclick="cancelEdit()">Cancel</button>
   </div>
@@ -81,7 +88,6 @@
   messagingSenderId: "125049368940",
   appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
 };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
@@ -263,18 +269,20 @@
 
     loadCategories();
 
+    // ✅ Expose functions globally so buttons work
+    window.toggleAddSkill = toggleAddSkill;
+    window.cancelEdit = cancelEdit;
+    window.submitSkill = submitSkill;
+    window.addCategory = addCategory;
+    window.shareSite = shareSite;
+
     // ✅ Share function
-    function shareSite(){
-      if(navigator.share){
-        navigator.share({
-          title: "SL Skills Hub",
-          text: "Check out this amazing skills hub!",
-          url: window.location.href
-        });
-      } else {
-        alert("Sharing not supported. Copy this link: " + window.location.href);
-      }
-    }
+  function shareSite(){
+  const url = window.location.href;
+  const text = "Check out SL Skills Hub! Find talented people near you: ";
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + url)}`;
+  window.open(whatsappUrl, "_blank");
+}  
   </script>
 </body>
 </html>
