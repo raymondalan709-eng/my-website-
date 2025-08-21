@@ -261,7 +261,7 @@ saveSkillBtn.onclick = async () => {
   }
 
   await db.collection("skills").add({
-    uid: currentUser.uid,   // 🔥 changed from userId → uid
+      // 🔥 changed from userId → uid
     name,
     skill,
     location,
@@ -362,6 +362,7 @@ saveSkillBtn.onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
