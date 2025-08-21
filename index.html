@@ -246,27 +246,37 @@
       skillForm.style.display = skillForm.style.display === "none" ? "block" : "none";
     };
 
-    saveSkillBtn.onclick = async () => {
-      if (!currentUser) return alert("Please login first");
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const category = document.getElementById("category").value;
+  saveSkillBtn.onclick = async () => {
+  if (!currentUser) {
+    alert("Please login first");
+    return;
+  }
 
-      await db.collection("skills").add({
-        name,
-        skill,
-        location,
-        whatsapp,
-        category,
-        userId: currentUser.uid,
-        userPic: currentUser.photoURL || "https://via.placeholder.com/50",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      skillForm.reset();
-      skillForm.style.display = "none";
-    };
+  const name = document.getElementById("name").value;
+  const skill = document.getElementById("skill").value;
+  const location = document.getElementById("location").value;
+  const whatsapp = document.getElementById("whatsapp").value;
+  const category = document.getElementById("category").value;
+
+  try {
+    await db.collection("skills").add({
+      name,
+      skill,
+      location,
+      whatsapp,
+      category,
+      userId: currentUser.uid,
+      userPic: currentUser.photoURL || "",
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("skill-form").reset();
+    skillForm.style.display = "none";
+    alert("✅ Skill saved successfully!");
+  } catch (error) {
+    console.error("Error saving skill:", error);
+    alert("❌ Failed to save skill: " + error.message);
+  }
+};
 
     addCategoryBtn.onclick = async () => {
       if (!currentUser || currentUser.uid !== adminUID) return;
@@ -352,3 +362,4 @@
   </script>
 </body>
 </html>
+
