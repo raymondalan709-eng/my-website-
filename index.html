@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <link rel="icon" href="1000040429.jpg" type="image/jpg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Open Graph for social previews -->
   <meta property="og:title" content="SL Skills Hub">
@@ -41,18 +40,16 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      vertical-align: middle;
     }
-    #user-info span {
-      margin-right: 10px;
-      font-weight: bold;
+    #buttons {
+      margin-top: 5px;
     }
     #buttons button {
       background-color: #2196F3;
       color: white;
       border: none;
       padding: 8px 12px;
-      margin: 5px;
+      margin: 5px 0;
       border-radius: 4px;
       cursor: pointer;
     }
@@ -62,14 +59,12 @@
     #searchBar {
       padding: 8px;
       width: 60%;
-      max-width: 400px;
       margin-top: 10px;
     }
     #skill-form {
       display: none;
       margin: 20px auto;
-      width: 90%;
-      max-width: 300px;
+      width: 300px;
       text-align: center;
     }
     #skill-form input, #skill-form select {
@@ -104,34 +99,7 @@
     .skill-actions button:hover {
       background-color: #1976D2;
     }
-    /* Share buttons row */
-    .share-buttons {
-      margin: 15px auto;
-      text-align: center;
-    }
-    .share-buttons a {
-      display: inline-block;
-      margin: 5px;
-      padding: 8px 12px;
-      border-radius: 4px;
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .whatsapp { background-color: #25D366; }
-    .facebook { background-color: #1877F2; }
-    .twitter { background-color: #1DA1F2; }
-    .share-buttons a i {
-      margin-right: 6px;
-    }
-    /* Mobile responsiveness */
-    @media (max-width: 600px) {
-      #searchBar { width: 90%; }
-      .skill-card { width: 95%; }
-      #user-info { text-align: center; }
-    }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div id="user-info">
@@ -159,19 +127,6 @@
     </div>
   </header>
 
-  <!-- Share buttons row -->
-  <div class="share-buttons">
-    <a class="whatsapp" href="https://api.whatsapp.com/send?text=Check%20out%20SL%20Skills%20Hub%20https://raymondalan709-eng.github.io/my-website-/" target="_blank">
-      <i class="fab fa-whatsapp"></i> WhatsApp
-    </a>
-    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://raymondalan709-eng.github.io/my-website-/" target="_blank">
-      <i class="fab fa-facebook-f"></i> Facebook
-    </a>
-    <a class="twitter" href="https://twitter.com/intent/tweet?url=https://raymondalan709-eng.github.io/my-website-/" target="_blank">
-      <i class="fab fa-twitter"></i> Twitter
-    </a>
-  </div>
-
   <div id="skill-form">
     <input type="text" id="name" placeholder="Your Name" required>
     <input type="text" id="skill" placeholder="Your Skill" required>
@@ -184,19 +139,20 @@
   <div id="skills-list"></div>
 
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-  authDomain: "sl-skills-hub.firebaseapp.com",
-  projectId: "sl-skills-hub",
-  storageBucket: "sl-skills-hub.firebasestorage.app",
-  messagingSenderId: "125049368940",
-  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-};
+      apiKey: "YOUR-API-KEY",
+      authDomain: "YOUR-PROJECT.firebaseapp.com",
+      projectId: "YOUR-PROJECT-ID",
+      storageBucket: "YOUR-PROJECT.appspot.com",
+      messagingSenderId: "SENDER-ID",
+      appId: "APP-ID"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -219,7 +175,7 @@
 
     loginBtn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(err => alert(err.message));
+      auth.signInWithPopup(provider);
     };
 
     logoutBtn.onclick = () => auth.signOut();
@@ -229,9 +185,14 @@
         currentUser = user;
         loginBtn.style.display = "none";
         logoutBtn.style.display = "inline-block";
-        userPic.src = user.photoURL || "https://via.placeholder.com/40";
+        userPic.src = user.photoURL || "";
         userName.textContent = user.displayName;
-        adminCategoryDiv.style.display = user.uid === adminUID ? "block" : "none";
+
+        if (user.uid === adminUID) {
+          adminCategoryDiv.style.display = "block";
+        } else {
+          adminCategoryDiv.style.display = "none";
+        }
       } else {
         currentUser = null;
         loginBtn.style.display = "inline-block";
@@ -246,37 +207,28 @@
       skillForm.style.display = skillForm.style.display === "none" ? "block" : "none";
     };
 
- <!-- Inside saveSkillBtn.onclick -->
-saveSkillBtn.onclick = async () => {
-  if (!currentUser) return alert("Please login first");
+    saveSkillBtn.onclick = async () => {
+      if (!currentUser) return alert("Please login first");
+      const name = document.getElementById("name").value;
+      const skill = document.getElementById("skill").value;
+      const location = document.getElementById("location").value;
+      const whatsapp = document.getElementById("whatsapp").value;
+      const category = document.getElementById("category").value;
 
-  const name = document.getElementById("name").value;
-  const skill = document.getElementById("skill").value;
-  const location = document.getElementById("location").value;
-  const whatsapp = document.getElementById("whatsapp").value;
-  const category = document.getElementById("category").value;
+      await db.collection("skills").add({
+        name,
+        skill,
+        location,
+        whatsapp,
+        category,
+        uid: currentUser.uid, // ✅ fixed to match Firestore rules
+        userPic: currentUser.photoURL,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      skillForm.reset();
+      skillForm.style.display = "none";
+    };
 
-  if (!name || !skill || !location || !whatsapp || !category) {
-    return alert("Please fill all fields");
-  }
-
-  await db.collection("skills").add({
-      // 🔥 changed from userId → uid
-    name,
-    skill,
-    location,
-    whatsapp,
-    category,
-    uid:currentuser.uid,
-    userPic: currentUser.photoURL || "",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  skillForm.reset();
-  skillForm.style.display = "none";
-};
-
-     
     addCategoryBtn.onclick = async () => {
       if (!currentUser || currentUser.uid !== adminUID) return;
       const newCat = document.getElementById("newCategory").value;
@@ -294,6 +246,7 @@ saveSkillBtn.onclick = async () => {
         const option1 = document.createElement("option");
         option1.value = cat; option1.textContent = cat;
         categoryDropdown.appendChild(option1);
+
         const option2 = document.createElement("option");
         option2.value = cat; option2.textContent = cat;
         categoryFilter.appendChild(option2);
@@ -308,15 +261,14 @@ saveSkillBtn.onclick = async () => {
         card.className = "skill-card";
         const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "";
         card.innerHTML = `
-          <img src="${data.userPic || 'https://via.placeholder.com/50'}" alt="">
+          <img src="${data.userPic || ''}" alt="">
           <h3>${data.name}</h3>
           <p><strong>Skill:</strong> ${data.skill}</p>
           <p><strong>Location:</strong> ${data.location}</p>
-          <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+          <p><strong>WhatsApp:</strong> ${data.whatsapp}</p>
           <p><em>Posted on: ${date}</em></p>
         `;
-       if (currentUser && currentUser.uid === data.uid) 
- {
+        if (currentUser && currentUser.uid === data.uid) {
           const actions = document.createElement("div");
           actions.className = "skill-actions";
           const editBtn = document.createElement("button");
@@ -362,7 +314,3 @@ saveSkillBtn.onclick = async () => {
   </script>
 </body>
 </html>
-
-
-
-
