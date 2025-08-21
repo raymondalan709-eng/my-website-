@@ -246,11 +246,9 @@
       skillForm.style.display = skillForm.style.display === "none" ? "block" : "none";
     };
 
-  saveSkillBtn.onclick = async () => {
-  if (!currentUser) {
-    alert("Please login first");
-    return;
-  }
+ <!-- Inside saveSkillBtn.onclick -->
+saveSkillBtn.onclick = async () => {
+  if (!currentUser) return alert("Please login first");
 
   const name = document.getElementById("name").value;
   const skill = document.getElementById("skill").value;
@@ -258,26 +256,26 @@
   const whatsapp = document.getElementById("whatsapp").value;
   const category = document.getElementById("category").value;
 
-  try {
-    await db.collection("skills").add({
-      name,
-      skill,
-      location,
-      whatsapp,
-      category,
-      userId: currentUser.uid,
-      userPic: currentUser.photoURL || "",
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    document.getElementById("skill-form").reset();
-    skillForm.style.display = "none";
-    alert("✅ Skill saved successfully!");
-  } catch (error) {
-    console.error("Error saving skill:", error);
-    alert("❌ Failed to save skill: " + error.message);
+  if (!name || !skill || !location || !whatsapp || !category) {
+    return alert("Please fill all fields");
   }
+
+  await db.collection("skills").add({
+    uid: currentUser.uid,   // 🔥 changed from userId → uid
+    name,
+    skill,
+    location,
+    whatsapp,
+    category,
+    userPic: currentUser.photoURL || "",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  skillForm.reset();
+  skillForm.style.display = "none";
 };
 
+     
     addCategoryBtn.onclick = async () => {
       if (!currentUser || currentUser.uid !== adminUID) return;
       const newCat = document.getElementById("newCategory").value;
@@ -316,7 +314,8 @@
           <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
           <p><em>Posted on: ${date}</em></p>
         `;
-        if (currentUser && currentUser.uid === data.userId) {
+       if (currentUser && currentUser.uid === data.uid) 
+ {
           const actions = document.createElement("div");
           actions.className = "skill-actions";
           const editBtn = document.createElement("button");
@@ -362,4 +361,5 @@
   </script>
 </body>
 </html>
+
 
