@@ -13,193 +13,41 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #fff;
-    }
-    header {
-      background-color: #2196F3;
-      color: white;
-      padding: 15px 10px;
-      text-align: center;
-    }
-    header h1 {
-      margin: 5px 0;
-    }
-    header h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    #user-info {
-      text-align: left;
-      padding: 10px;
-    }
-    #user-info img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-    }
-    #buttons {
-      margin-top: 5px;
-    }
-    #buttons button {
-      background-color: #2196F3;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      margin: 5px 0;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #buttons button:hover {
-      background-color: #1976D2;
-    }
-    #searchBar {
-      padding: 12px;
-      width: 85%;
-      max-width: 500px;
-      font-size: 16px;
-      margin-top: 12px;
-      border-radius: 6px;
-      border: none;
-    }
-    #show-form {
-      padding: 12px 18px;
-      font-size: 16px;
-      border-radius: 6px;
-      margin-top: 12px;
-    }
-    #skill-form {
-      display: none;
-      margin: 20px auto;
-      width: 90%;       
-      max-width: 400px; 
-      text-align: center;
-    }
-    #skill-form input, #skill-form select {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      font-size: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    #skill-form button {
-      padding: 12px;
-      width: 100%;
-      border-radius: 6px;
-      font-size: 15px;
-      cursor: pointer;
-      background-color: #2196F3;
-      color: white;
-      border: none;
-    }
-    .skill-card {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      margin: 10px auto;
-      padding: 12px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-    }
-    .skill-card:hover {
-      transform: scale(1.02);
-    }
-    .skill-card img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: block;
-      margin: 0 auto;
-    }
-    .skill-actions button {
-      background-color: #2196F3;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      margin: 6px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .skill-actions button:hover {
-      background-color: #1976D2;
-    }
+    body {font-family: Arial, sans-serif;margin:0;background:#fff;}
+    header {background:#2196F3;color:white;padding:15px 10px;text-align:center;}
+    header h1 {margin:5px 0;}
+    header h2 {margin:0;font-size:18px;font-weight:bold;}
+    #user-info {text-align:left;padding:10px;}
+    #user-info img {width:40px;height:40px;border-radius:50%;}
+    #buttons {margin-top:5px;}
+    #buttons button {background:#2196F3;color:white;border:none;padding:8px 12px;margin:5px 0;border-radius:4px;cursor:pointer;}
+    #buttons button:hover {background:#1976D2;}
+    #searchBar {padding:12px;width:85%;max-width:500px;font-size:16px;margin-top:12px;border-radius:6px;border:none;}
+    #show-form {padding:12px 18px;font-size:16px;border-radius:6px;margin-top:12px;}
+    #skill-form {display:none;margin:20px auto;width:90%;max-width:400px;text-align:center;}
+    #skill-form input,#skill-form select {display:block;width:100%;padding:12px;margin:8px 0;font-size:15px;border-radius:6px;border:1px solid #ccc;}
+    #skill-form button {padding:12px;width:100%;border-radius:6px;font-size:15px;}
+    .skill-card {border:1px solid #ddd;border-radius:6px;margin:10px auto;padding:12px;width:90%;max-width:400px;box-shadow:2px 2px 5px rgba(0,0,0,0.1);transition:transform 0.2s ease;}
+    .skill-card:hover {transform:scale(1.02);}
+    .skill-card img {width:60px;height:60px;border-radius:50%;display:block;margin:0 auto;}
+    .skill-actions button {background:#2196F3;color:white;border:none;padding:6px 12px;margin:6px;border-radius:4px;cursor:pointer;}
+    .skill-actions button:hover {background:#1976D2;}
 
-    /* Toast Notification */
-    #toast {
-      visibility: hidden;
-      min-width: 200px;
-      margin-left: -100px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 4px;
-      padding: 12px;
-      position: fixed;
-      z-index: 1001;
-      left: 50%;
-      bottom: 30px;
-      font-size: 15px;
-    }
-    #toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-    @keyframes fadein {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 30px; opacity: 1; }
-    }
-    @keyframes fadeout {
-      from { bottom: 30px; opacity: 1; }
-      to { bottom: 0; opacity: 0; }
-    }
+    /* Toast */
+    #toast {visibility:hidden;min-width:200px;margin-left:-100px;background:#333;color:#fff;text-align:center;border-radius:6px;padding:12px;position:fixed;z-index:2000;left:50%;bottom:30px;font-size:16px;}
+    #toast.show {visibility:visible;animation:fadein 0.5s, fadeout 0.5s 2.5s;}
+    @keyframes fadein {from{bottom:0;opacity:0;} to{bottom:30px;opacity:1;}}
+    @keyframes fadeout {from{bottom:30px;opacity:1;} to{bottom:0;opacity:0;}}
 
     /* Floating Share Button */
-    #share-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      background-color: #2196F3;
-      color: white;
-      font-size: 26px;
-      border: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
-      z-index: 1000;
-    }
-    #share-btn:hover {
-      background-color: #1976D2;
-    }
+    #share-btn {position:fixed;bottom:20px;right:20px;width:55px;height:55px;border-radius:50%;background:white;color:#2196F3;font-size:26px;border:none;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:2px 2px 6px rgba(0,0,0,0.3);z-index:1000;}
+    #share-btn:hover {background:#f0f0f0;}
 
     /* 📱 Mobile Responsive */
-    @media (max-width: 600px) {
-      #searchBar {
-        width: 95%;
-        font-size: 18px;
-        padding: 14px;
-      }
-      #show-form {
-        width: 95%;
-        font-size: 18px;
-        padding: 14px;
-      }
-      .skill-card {
-        width: 95%;
-      }
-      #skill-form {
-        width: 95%;
-      }
+    @media (max-width:600px){
+      #searchBar{width:95%;font-size:18px;padding:14px;}
+      #show-form{width:95%;font-size:18px;padding:14px;}
+      .skill-card{width:95%;}
     }
   </style>
 </head>
@@ -240,6 +88,8 @@
 
   <div id="skills-list"></div>
   <div id="toast"></div>
+
+  <!-- Floating Share Button -->
   <button id="share-btn">📤</button>
 
   <!-- Firebase -->
@@ -248,6 +98,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <script>
+    // ✅ Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
       authDomain: "sl-skills-hub.firebaseapp.com",
@@ -256,192 +107,140 @@
       messagingSenderId: "125049368940",
       appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let currentUser = null;
-    const adminUID = "I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
+    let currentUser=null;
+    const adminUID="I5WY1FJzNibUDOCzCBdGWPtX9Nj1";
 
-    const loginBtn = document.getElementById("login");
-    const logoutBtn = document.getElementById("logout");
-    const userPic = document.getElementById("user-pic");
-    const userName = document.getElementById("user-name");
-    const showFormBtn = document.getElementById("show-form");
-    const skillForm = document.getElementById("skill-form");
-    const saveSkillBtn = document.getElementById("saveSkill");
-    const skillsList = document.getElementById("skills-list");
-    const categoryDropdown = document.getElementById("category");
-    const categoryFilter = document.getElementById("categoryFilter");
-    const adminCategoryDiv = document.getElementById("admin-category");
-    const addCategoryBtn = document.getElementById("addCategory");
+    const loginBtn=document.getElementById("login");
+    const logoutBtn=document.getElementById("logout");
+    const userPic=document.getElementById("user-pic");
+    const userName=document.getElementById("user-name");
+    const showFormBtn=document.getElementById("show-form");
+    const skillForm=document.getElementById("skill-form");
+    const saveSkillBtn=document.getElementById("saveSkill");
+    const skillsList=document.getElementById("skills-list");
+    const categoryDropdown=document.getElementById("category");
+    const categoryFilter=document.getElementById("categoryFilter");
+    const adminCategoryDiv=document.getElementById("admin-category");
+    const addCategoryBtn=document.getElementById("addCategory");
+    const toast=document.getElementById("toast");
 
-    function showToast(message){
-      const toast = document.getElementById("toast");
-      toast.textContent = message;
-      toast.className = "show";
-      setTimeout(()=>{toast.className = toast.className.replace("show","");},3000);
+    function showToast(msg){
+      toast.textContent=msg;
+      toast.className="show";
+      setTimeout(()=>{toast.className=toast.className.replace("show","");},3000);
     }
 
-    loginBtn.onclick = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider);
-    };
+    loginBtn.onclick=()=>{const provider=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(provider);};
+    logoutBtn.onclick=()=>auth.signOut();
 
-    logoutBtn.onclick = () => auth.signOut();
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        userPic.src = user.photoURL;
-        userName.textContent = user.displayName;
-
-        if (user.uid === adminUID) adminCategoryDiv.style.display = "block";
-        else adminCategoryDiv.style.display = "none";
-
-        loadSkills();
-      } else {
-        currentUser = null;
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
-        userPic.src = "";
-        userName.textContent = "";
-        adminCategoryDiv.style.display = "none";
+    auth.onAuthStateChanged(user=>{
+      if(user){
+        currentUser=user;
+        loginBtn.style.display="none";logoutBtn.style.display="inline-block";
+        userPic.src=user.photoURL;userName.textContent=user.displayName;
+        adminCategoryDiv.style.display=(user.uid===adminUID)?"block":"none";
+      }else{
+        currentUser=null;
+        loginBtn.style.display="inline-block";logoutBtn.style.display="none";
+        userPic.src="";userName.textContent="";adminCategoryDiv.style.display="none";
       }
     });
 
-    showFormBtn.onclick = () => {
-      skillForm.style.display = skillForm.style.display === "none" ? "block" : "none";
-    };
+    showFormBtn.onclick=()=>{skillForm.style.display=(skillForm.style.display==="none")?"block":"none";};
 
-    saveSkillBtn.onclick = async () => {
-      if (!currentUser) return showToast("❌ Please login first!");
-      const name = document.getElementById("name").value;
-      const skill = document.getElementById("skill").value;
-      const location = document.getElementById("location").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const category = document.getElementById("category").value;
-      if(!name || !skill || !location || !whatsapp) return showToast("❌ Fill all fields!");
-      await db.collection("skills").add({
-        name, skill, location, whatsapp, category,
-        userId: currentUser.uid,
-        userPic: currentUser.photoURL,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      skillForm.reset();
-      skillForm.style.display = "none";
-      showToast("✅ Skill added!");
-    };
+    let editingId=null;
+    const saveSkillHandler=async()=>{
+      if(!currentUser)return alert("Please login first");
+      const name=document.getElementById("name").value;
+      const skill=document.getElementById("skill").value;
+      const location=document.getElementById("location").value;
+      const whatsapp=document.getElementById("whatsapp").value;
+      const category=document.getElementById("category").value;
 
-    addCategoryBtn.onclick = async () => {
-      if (!currentUser || currentUser.uid !== adminUID) return;
-      const newCat = document.getElementById("newCategory").value;
-      if (newCat) {
-        await db.collection("categories").add({ name: newCat });
-        document.getElementById("newCategory").value = "";
-        showToast("✅ Category added!");
+      if(editingId){
+        await db.collection("skills").doc(editingId).update({name,skill,location,whatsapp,category});
+        showToast("✏️ Skill updated!");
+        editingId=null;
+      }else{
+        await db.collection("skills").add({
+          name,skill,location,whatsapp,category,
+          userId:currentUser.uid,userPic:currentUser.photoURL,
+          timestamp:firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast("✅ Skill saved!");
       }
+      skillForm.reset();skillForm.style.display="none";
+    };
+    saveSkillBtn.onclick=saveSkillHandler;
+
+    addCategoryBtn.onclick=async()=>{
+      if(!currentUser||currentUser.uid!==adminUID)return;
+      const newCat=document.getElementById("newCategory").value;
+      if(newCat){await db.collection("categories").add({name:newCat});document.getElementById("newCategory").value="";}
     };
 
-    db.collection("categories").onSnapshot(snapshot => {
-      categoryDropdown.innerHTML = "";
-      categoryFilter.innerHTML = '<option value="">All Categories</option>';
-      snapshot.forEach(doc => {
-        const cat = doc.data().name;
-        const option1 = document.createElement("option");
-        option1.value = cat; option1.textContent = cat;
-        categoryDropdown.appendChild(option1);
-        const option2 = document.createElement("option");
-        option2.value = cat; option2.textContent = cat;
-        categoryFilter.appendChild(option2);
+    db.collection("categories").onSnapshot(snapshot=>{
+      categoryDropdown.innerHTML="";categoryFilter.innerHTML='<option value="">All Categories</option>';
+      snapshot.forEach(doc=>{
+        const cat=doc.data().name;
+        const option1=document.createElement("option");option1.value=cat;option1.textContent=cat;categoryDropdown.appendChild(option1);
+        const option2=document.createElement("option");option2.value=cat;option2.textContent=cat;categoryFilter.appendChild(option2);
       });
     });
 
     function loadSkills(){
-      db.collection("skills").orderBy("timestamp","desc").get().then(snapshot=>{
-        skillsList.innerHTML = "";
+      db.collection("skills").orderBy("timestamp","desc").onSnapshot(snapshot=>{
+        skillsList.innerHTML="";
         snapshot.forEach(doc=>{
-          const data = doc.data();
-          const card = document.createElement("div");
-          card.className="skill-card";
-          const date = data.timestamp?data.timestamp.toDate().toLocaleString():"";
+          const data=doc.data();
+          const card=document.createElement("div");card.className="skill-card";
+          const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
           card.innerHTML=`
             <img src="${data.userPic||''}" alt="">
             <h3>${data.name}</h3>
-            <p><strong>Skill:</strong> ${data.skill}</p>
-            <p><strong>Location:</strong> ${data.location}</p>
-            <p><strong>WhatsApp:</strong> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
-            <p><em>Posted on: ${date}</em></p>
-          `;
-          const saveSkillHandler = saveSkillBtn.onclick;
-         editBtn.onclick = () => {
-  document.getElementById("name").value = data.name;
-  document.getElementById("skill").value = data.skill;
-  document.getElementById("location").value = data.location;
-  document.getElementById("whatsapp").value = data.whatsapp;
-  document.getElementById("category").value = data.category;
+            <p><b>Skill:</b> ${data.skill}</p>
+            <p><b>Location:</b> ${data.location}</p>
+            <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+            <p><em>Posted on: ${date}</em></p>`;
+          if(currentUser&&(currentUser.uid===data.userId)){
+            const actions=document.createElement("div");actions.className="skill-actions";
+            const editBtn=document.createElement("button");editBtn.textContent="Edit";
+            const delBtn=document.createElement("button");delBtn.textContent="Delete";
+            actions.appendChild(editBtn);actions.appendChild(delBtn);card.appendChild(actions);
 
-  skillForm.style.display = "block";
-
-  saveSkillBtn.onclick = async () => {
-    const updatedName = document.getElementById("name").value;
-    const updatedSkill = document.getElementById("skill").value;
-    const updatedLocation = document.getElementById("location").value;
-    const updatedWhatsapp = document.getElementById("whatsapp").value;
-    const updatedCategory = document.getElementById("category").value;
-
-    await db.collection("skills").doc(doc.id).update({
-      name: updatedName,
-      skill: updatedSkill,
-      location: updatedLocation,
-      whatsapp: updatedWhatsapp,
-      category: updatedCategory
-    });
-
-    skillForm.reset();
-    skillForm.style.display = "none";
-    showToast("✏️ Skill updated!");
-    loadSkills();
-
-    saveSkillBtn.onclick = saveSkillHandler; // restore original Save Skill behavior
-  };
-};
-
-            delBtn.onclick=async()=>{
-              if(confirm("Delete this skill?")){
-                await db.collection("skills").doc(doc.id).delete();
-                showToast("❌ Skill deleted!");
-                loadSkills();
-              }
+            editBtn.onclick=()=>{
+              document.getElementById("name").value=data.name;
+              document.getElementById("skill").value=data.skill;
+              document.getElementById("location").value=data.location;
+              document.getElementById("whatsapp").value=data.whatsapp;
+              document.getElementById("category").value=data.category;
+              skillForm.style.display="block";editingId=doc.id;
             };
+            delBtn.onclick=()=>{if(confirm("Delete this skill?")){db.collection("skills").doc(doc.id).delete();showToast("🗑️ Skill deleted!");}};
           }
           skillsList.appendChild(card);
         });
       });
     }
+    loadSkills();
 
     document.getElementById("searchBar").addEventListener("input",e=>{
       const search=e.target.value.toLowerCase();
-      Array.from(skillsList.children).forEach(card=>{
-        const text=card.textContent.toLowerCase();
-        card.style.display=text.includes(search)?"block":"none";
-      });
+      Array.from(skillsList.children).forEach(card=>{const text=card.textContent.toLowerCase();card.style.display=text.includes(search)?"block":"none";});
     });
-
     categoryFilter.addEventListener("change",e=>{
       const filter=e.target.value.toLowerCase();
-      Array.from(skillsList.children).forEach(card=>{
-        const text=card.textContent.toLowerCase();
-        card.style.display=filter===""||text.includes(filter)?"block":"none";
-      });
+      Array.from(skillsList.children).forEach(card=>{const text=card.textContent.toLowerCase();card.style.display=(filter===""||text.includes(filter))?"block":"none";});
     });
 
-    // Local clickable share button
-    document.getElementById("share-btn").onclick=()=>{
-      alert("Share SL Skills Hub link: https://raymondalan709-eng.github.io/my-website-/");
+    document.getElementById("share-btn").onclick=async()=>{
+      const shareData={title:"SL Skills Hub",text:"Check out SL Skills Hub – Find talented people near you!",url:window.location.href};
+      if(navigator.share){try{await navigator.share(shareData);}catch(err){console.log("Share canceled",err);}}
+      else{navigator.clipboard.writeText(window.location.href);showToast("🔗 Link copied!");}
     };
   </script>
 </body>
