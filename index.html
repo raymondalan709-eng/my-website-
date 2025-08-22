@@ -104,7 +104,7 @@
       apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
       authDomain: "sl-skills-hub.firebaseapp.com",
       projectId: "sl-skills-hub",
-      storageBucket: "sl-skills-hub.firebasestorage.app",
+      storageBucket: "sl-skills-hub.appspot.com",   
       messagingSenderId: "125049368940",
       appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
     };
@@ -271,22 +271,6 @@
   });
 }
 
-            editBtn.onclick=()=>{
-              document.getElementById("name").value=data.name;
-              document.getElementById("skill").value=data.skill;
-              document.getElementById("location").value=data.location;
-              document.getElementById("whatsapp").value=data.whatsapp;
-              document.getElementById("category").value=data.category;
-              skillForm.style.display="block";editingId=doc.id;
-            };
-            delBtn.onclick=()=>{if(confirm("Delete this skill?")){db.collection("skills").doc(doc.id).delete();showToast("🗑️ Skill deleted!");}};
-          }
-          skillsList.appendChild(card);
-        });
-      });
-    }
-    loadSkills();
-
     document.getElementById("searchBar").addEventListener("input",e=>{
       const search=e.target.value.toLowerCase();
       Array.from(skillsList.children).forEach(card=>{const text=card.textContent.toLowerCase();card.style.display=text.includes(search)?"block":"none";});
@@ -304,5 +288,3 @@
   </script>
 </body>
 </html>
-
-
