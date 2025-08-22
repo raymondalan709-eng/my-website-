@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SL Skills Hub</title>
   <link rel="icon" href="1000040429.jpg" type="image/jpg">
 
@@ -167,10 +168,15 @@
         editingId=null;
       }else{
         await db.collection("skills").add({
-          name,skill,location,whatsapp,category,
-          userId:currentUser.uid,userPic:currentUser.photoURL,
-          timestamp:firebase.firestore.FieldValue.serverTimestamp()
-        });
+  name,
+  skill,
+  location,
+  whatsapp,
+  category,
+  uid: currentUser.uid,              // must be "uid", not "userId"
+  userPic: currentUser.photoURL,
+  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+});
         showToast("✅ Skill saved!");
       }
       skillForm.reset();skillForm.style.display="none";
@@ -245,3 +251,4 @@
   </script>
 </body>
 </html>
+
