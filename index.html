@@ -198,25 +198,78 @@
       });
     });
 
-    function loadSkills(){
-      db.collection("skills").orderBy("timestamp","desc").onSnapshot(snapshot=>{
-        skillsList.innerHTML="";
-        snapshot.forEach(doc=>{
-          const data=doc.data();
-          const card=document.createElement("div");card.className="skill-card";
-          const date=data.timestamp?data.timestamp.toDate().toLocaleString():"";
-          card.innerHTML=`
-            <img src="${data.userPic||''}" alt="">
-            <h3>${data.name}</h3>
-            <p><b>Skill:</b> ${data.skill}</p>
-            <p><b>Location:</b> ${data.location}</p>
-            <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
-            <p><em>Posted on: ${date}</em></p>`;
-          if(currentUser&&(currentUser.uid===data.userId)){
-            const actions=document.createElement("div");actions.className="skill-actions";
-            const editBtn=document.createElement("button");editBtn.textContent="Edit";
-            const delBtn=document.createElement("button");delBtn.textContent="Delete";
-            actions.appendChild(editBtn);actions.appendChild(delBtn);card.appendChild(actions);
+   function loadSkills() {
+  db.collection("skills").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    skillsList.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const card = document.createElement("div");
+      card.className = "skill-card";
+
+      card.innerHTML = `
+        <img src="${data.userPic}" class="profile-pic">
+        <h3>${data.name}</h3>
+        <p><b>Skill:</b> ${data.skill}</p>
+        <p><b>Location:</b> ${data.location}</p>
+        <p><b>WhatsApp:</b> <a href="https://wa.me/${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+        <p><b>Category:</b> ${data.category}</p>
+      `;
+
+      // 👇 ADD THIS BLOCK here
+      if (currentUser && currentUser.uid === data.uid) {
+        const actions = document.createElement("div");
+        actions.className = "skill-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        card.appendChild(actions);
+
+        // Edit logic
+        editBtn.onclick = () => {
+          document.getElementById("name").value = data.name;
+          document.getElementById("skill").value = data.skill;
+          document.getElementById("location").value = data.location;
+          document.getElementById("whatsapp").value = data.whatsapp;
+          document.getElementById("category").value = data.category;
+
+          skillForm.style.display = "block";
+
+          const saveSkillHandler = saveSkillBtn.onclick;
+          saveSkillBtn.onclick = async () => {
+            await db.collection("skills").doc(doc.id).update({
+              name: document.getElementById("name").value,
+              skill: document.getElementById("skill").value,
+              location: document.getElementById("location").value,
+              whatsapp: document.getElementById("whatsapp").value,
+              category: document.getElementById("category").value
+            });
+            skillForm.reset();
+            skillForm.style.display = "none";
+            showToast("✏️ Skill updated!");
+            loadSkills();
+            saveSkillBtn.onclick = saveSkillHandler;
+          };
+        };
+
+        // Delete logic
+        delBtn.onclick = async () => {
+          await db.collection("skills").doc(doc.id).delete();
+          showToast("❌ Skill deleted!");
+          loadSkills();
+        };
+      }
+
+      // finally append card to the list
+      skillsList.appendChild(card);
+    });
+  });
+}
 
             editBtn.onclick=()=>{
               document.getElementById("name").value=data.name;
@@ -251,4 +304,5 @@
   </script>
 </body>
 </html>
+
 
