@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>SL Skills Hub</title>
   <link rel="icon" href="1000040429.jpg" type="image/jpg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Open Graph for social previews -->
   <meta property="og:title" content="SL Skills Hub">
@@ -22,7 +21,7 @@
     header {
       background-color: #2196F3;
       color: white;
-      padding: 10px;
+      padding: 15px 10px;
       text-align: center;
     }
     header h1 {
@@ -33,8 +32,6 @@
       font-size: 18px;
       font-weight: bold;
     }
-
-    /* User Info */
     #user-info {
       text-align: left;
       padding: 10px;
@@ -59,88 +56,112 @@
     #buttons button:hover {
       background-color: #1976D2;
     }
-
-    /* Search + Add + Share section */
-    #top-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
     #searchBar {
-      padding: 10px;
-      flex: 1;
-      min-width: 200px;
-      max-width: 400px;
-    }
-    #show-form, #shareSite {
-      background-color: #2196F3;
-      color: white;
+      padding: 12px;
+      width: 85%;
+      max-width: 500px;
+      font-size: 16px;
+      margin-top: 12px;
+      border-radius: 6px;
       border: none;
-      padding: 10px 14px;
-      border-radius: 4px;
-      cursor: pointer;
     }
-    #show-form:hover, #shareSite:hover {
-      background-color: #1976D2;
+    #show-form {
+      padding: 12px 18px;
+      font-size: 16px;
+      border-radius: 6px;
+      margin-top: 12px;
     }
-
-    /* Skill form */
     #skill-form {
       display: none;
       margin: 20px auto;
-      width: 90%;
-      max-width: 400px;
+      width: 90%;       
+      max-width: 400px; 
       text-align: center;
     }
     #skill-form input, #skill-form select {
       display: block;
       width: 100%;
-      padding: 8px;
+      padding: 12px;
       margin: 8px 0;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
-
-    /* Skill cards */
+    #skill-form button {
+      padding: 12px;
+      width: 100%;
+      border-radius: 6px;
+      font-size: 15px;
+    }
     .skill-card {
       border: 1px solid #ddd;
       border-radius: 6px;
       margin: 10px auto;
-      padding: 10px;
+      padding: 12px;
       width: 90%;
       max-width: 400px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
+      transition: transform 0.2s ease;
     }
     .skill-card:hover {
       transform: scale(1.02);
     }
     .skill-card img {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
+      display: block;
+      margin: 0 auto;
     }
     .skill-actions button {
       background-color: #2196F3;
       color: white;
       border: none;
-      padding: 5px 10px;
-      margin: 5px;
+      padding: 6px 12px;
+      margin: 6px;
       border-radius: 4px;
       cursor: pointer;
     }
     .skill-actions button:hover {
       background-color: #1976D2;
     }
+    /* Floating Share Button */
+    #share-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background-color: #2196F3;
+      color: white;
+      font-size: 26px;
+      border: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+    #share-btn:hover {
+      background-color: #1976D2;
+    }
 
-    /* Mobile responsiveness */
+    /* 📱 Mobile Responsive */
     @media (max-width: 600px) {
-      #top-actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
       #searchBar {
-        width: 100%;
+        width: 95%;
+        font-size: 18px;
+        padding: 14px;
+      }
+      #show-form {
+        width: 95%;
+        font-size: 18px;
+        padding: 14px;
+      }
+      .skill-card {
+        width: 95%;
       }
     }
   </style>
@@ -158,13 +179,8 @@
   <header>
     <h1>SL Skills Hub</h1>
     <h2>Find talented people near you</h2>
-
-    <div id="top-actions">
-      <input type="text" id="searchBar" placeholder="Search skills...">
-      <button id="show-form">Add a Skill</button>
-      <button id="shareSite">Share</button>
-    </div>
-
+    <input type="text" id="searchBar" placeholder="Search skills...">
+    <button id="show-form">Add a Skill</button>
     <div id="category-section" style="margin-top:10px;">
       <select id="categoryFilter">
         <option value="">All Categories</option>
@@ -187,22 +203,26 @@
 
   <div id="skills-list"></div>
 
+  <!-- Floating Share Button -->
+  <button id="share-btn">📤</button>
+
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <script>
-    // ✅ Firebase config (replace with yours)
+    // ✅ Your Firebase config
     const firebaseConfig = {
-  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
-  authDomain: "sl-skills-hub.firebaseapp.com",
-  projectId: "sl-skills-hub",
-  storageBucket: "sl-skills-hub.firebasestorage.app",
-  messagingSenderId: "125049368940",
-  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
-};
-    const app = firebase.initializeApp(firebaseConfig);
+      apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+      authDomain: "sl-skills-hub.firebaseapp.com",
+      projectId: "sl-skills-hub",
+      storageBucket: "sl-skills-hub.firebasestorage.app",
+      messagingSenderId: "125049368940",
+      appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+    };
+
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
@@ -362,15 +382,22 @@
     });
 
     // ✅ Share button
-    document.getElementById("shareSite").onclick = () => {
+    document.getElementById("share-btn").onclick = async () => {
+      const shareData = {
+        title: "SL Skills Hub",
+        text: "Check out SL Skills Hub – Find talented people near you!",
+        url: window.location.href
+      };
+
       if (navigator.share) {
-        navigator.share({
-          title: "SL Skills Hub",
-          text: "Check out this amazing skills hub!",
-          url: window.location.href
-        });
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          console.log("Share canceled", err);
+        }
       } else {
-        alert("Sharing not supported. Copy this link: " + window.location.href);
+        navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
       }
     };
   </script>
