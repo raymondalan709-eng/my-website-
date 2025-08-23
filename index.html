@@ -154,33 +154,40 @@
     showFormBtn.onclick=()=>{skillForm.style.display=(skillForm.style.display==="none")?"block":"none";};
 
     let editingId=null;
-    const saveSkillHandler=async()=>{
-      if(!currentUser)return alert("Please login first");
-      const name=document.getElementById("name").value;
-      const skill=document.getElementById("skill").value;
-      const location=document.getElementById("location").value;
-      const whatsapp=document.getElementById("whatsapp").value;
-      const category=document.getElementById("category").value;
+const saveSkillHandler = async () => {
+  if (!currentUser) return alert("Please login first");
 
-      if(editingId){
-        await db.collection("skills").doc(editingId).update({name,skill,location,whatsapp,category});
-        showToast("✏️ Skill updated!");
-        editingId=null;
-      }else{
-        await db.collection("skills").add({
-  name,
-  skill,
-  location,
-  whatsapp,
-  category,
-  uid: currentUser.uid,              // must be "uid", not "userId"
-  userPic: currentUser.photoURL,
-  timestamp: firebase.firestore.FieldValue.serverTimestamp()
-});
-        showToast("✅ Skill saved!");
-      }
-      skillForm.reset();skillForm.style.display="none";
-    };
+  const name = document.getElementById("name").value;
+  const skill = document.getElementById("skill").value;
+  const location = document.getElementById("location").value;
+  const whatsapp = document.getElementById("whatsapp").value;
+  const category = document.getElementById("category").value;
+
+  try {
+    if (editingId) {
+      await db.collection("skills").doc(editingId).update({ name, skill, location, whatsapp, category });
+      showToast("✏️ Skill updated!");
+      editingId = null;
+    } else {
+      await db.collection("skills").add({
+        name,
+        skill,
+        location,
+        whatsapp,
+        category,
+        uid: currentUser.uid,
+        userPic: currentUser.photoURL,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast("✅ Skill saved!");
+    }
+    skillForm.reset();
+    skillForm.style.display = "none";
+  } catch (error) {
+    console.error("❌ Failed to save skill:", error);
+    showToast("❌ Error: " + error.message);
+  }
+};
     saveSkillBtn.onclick=saveSkillHandler;
 
     addCategoryBtn.onclick=async()=>{
@@ -288,3 +295,4 @@
   </script>
 </body>
 </html>
+
