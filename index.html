@@ -298,7 +298,6 @@ function startEdit(id, data) {
   document.getElementById('location').value = data.location || '';
   // show normalized whatsapp as digits or original
   document.getElementById('whatsapp').value = (data.whatsapp || '').replace(/^https?:\/\/wa\.me\//,'');
-  document.getElementById('picture').value = data.picture || data.posterPhoto || '';
   formWrapper.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -332,3 +331,4 @@ loadSkills();
 </script>
 </body>
 </html>
+
