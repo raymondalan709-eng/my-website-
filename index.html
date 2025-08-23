@@ -163,12 +163,11 @@ const saveSkillHandler = async () => {
   const location = document.getElementById("location").value;
   const whatsapp = document.getElementById("whatsapp").value;
   const category = document.getElementById("category").value;
-
-  try {
-    if (editingId) {
-      await db.collection("skills").doc(editingId).update({
-        name, skill, location, whatsapp, category
-      });
+if (editingId) {
+  await db.collection("skills").doc(editingId).update({
+    name, skill, location, whatsapp, category,
+    uid: currentUser.uid   // ✅ add this line
+  });
       showToast("✏️ Skill updated!");
       editingId = null;
     } else {
@@ -241,39 +240,24 @@ saveSkillBtn.onclick = saveSkillHandler;
         actions.appendChild(delBtn);
         card.appendChild(actions);
 
-        // Edit logic
-        editBtn.onclick = () => {
-          document.getElementById("name").value = data.name;
-          document.getElementById("skill").value = data.skill;
-          document.getElementById("location").value = data.location;
-          document.getElementById("whatsapp").value = data.whatsapp;
-          document.getElementById("category").value = data.category;
+       // Edit logic
+editBtn.onclick = () => {
+  document.getElementById("name").value = data.name;
+  document.getElementById("skill").value = data.skill;
+  document.getElementById("location").value = data.location;
+  document.getElementById("whatsapp").value = data.whatsapp;
+  document.getElementById("category").value = data.category;
 
-          skillForm.style.display = "block";
+  skillForm.style.display = "block";
+  editingId = doc.id; // ✅ tell saveSkillHandler which document to update
+};
 
-          const saveSkillHandler = saveSkillBtn.onclick;
-          saveSkillBtn.onclick = async () => {
-            await db.collection("skills").doc(doc.id).update({
-              name: document.getElementById("name").value,
-              skill: document.getElementById("skill").value,
-              location: document.getElementById("location").value,
-              whatsapp: document.getElementById("whatsapp").value,
-              category: document.getElementById("category").value
-            });
-            skillForm.reset();
-            skillForm.style.display = "none";
-            showToast("✏️ Skill updated!");
-            loadSkills();
-            saveSkillBtn.onclick = saveSkillHandler;
-          };
-        };
-
-        // Delete logic
-        delBtn.onclick = async () => {
-          await db.collection("skills").doc(doc.id).delete();
-          showToast("❌ Skill deleted!");
-          loadSkills();
-        };
+      // Delete logic
+delBtn.onclick = async () => {
+  await db.collection("skills").doc(doc.id).delete();
+  showToast("❌ Skill deleted!");
+  // ❌ remove loadSkills(), snapshot will auto-refresh
+}; 
       }
 
       // finally append card to the list
@@ -299,6 +283,7 @@ saveSkillBtn.onclick = saveSkillHandler;
   </script>
 </body>
 </html>
+
 
 
 
