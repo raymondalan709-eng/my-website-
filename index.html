@@ -154,6 +154,7 @@
     showFormBtn.onclick=()=>{skillForm.style.display=(skillForm.style.display==="none")?"block":"none";};
 
     let editingId=null;
+// ✅ NEW BLOCK – use this one
 const saveSkillHandler = async () => {
   if (!currentUser) return alert("Please login first");
 
@@ -165,7 +166,9 @@ const saveSkillHandler = async () => {
 
   try {
     if (editingId) {
-      await db.collection("skills").doc(editingId).update({ name, skill, location, whatsapp, category });
+      await db.collection("skills").doc(editingId).update({
+        name, skill, location, whatsapp, category
+      });
       showToast("✏️ Skill updated!");
       editingId = null;
     } else {
@@ -175,14 +178,20 @@ const saveSkillHandler = async () => {
         location,
         whatsapp,
         category,
-        uid: currentUser.uid,
+        uid: currentUser.uid,   // ✅ matches Firestore rules
         userPic: currentUser.photoURL,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
       showToast("✅ Skill saved!");
     }
-    skillForm.reset();
-    skillForm.style.display = "none";
+  } catch (error) {
+    console.error("Error saving skill:", error);
+    showToast("⚠️ Failed to save skill: " + error.message);
+  }
+
+  skillForm.reset();
+  skillForm.style.display = "none";
+};
   } catch (error) {
     console.error("❌ Failed to save skill:", error);
     showToast("❌ Error: " + error.message);
@@ -295,4 +304,5 @@ const saveSkillHandler = async () => {
   </script>
 </body>
 </html>
+
 
