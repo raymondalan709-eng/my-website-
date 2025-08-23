@@ -178,26 +178,21 @@ const saveSkillHandler = async () => {
         location,
         whatsapp,
         category,
-        uid: currentUser.uid,   // ✅ matches Firestore rules
+        uid: currentUser.uid,
         userPic: currentUser.photoURL,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
       showToast("✅ Skill saved!");
     }
   } catch (error) {
-    console.error("Error saving skill:", error);
-    showToast("⚠️ Failed to save skill: " + error.message);
+    console.error("❌ Failed to save skill:", error);
+    showToast("❌ Error: " + error.message);
   }
 
   skillForm.reset();
   skillForm.style.display = "none";
 };
-  } catch (error) {
-    console.error("❌ Failed to save skill:", error);
-    showToast("❌ Error: " + error.message);
-  }
-};
-    saveSkillBtn.onclick=saveSkillHandler;
+saveSkillBtn.onclick = saveSkillHandler;
 
     addCategoryBtn.onclick=async()=>{
       if(!currentUser||currentUser.uid!==adminUID)return;
@@ -304,5 +299,6 @@ const saveSkillHandler = async () => {
   </script>
 </body>
 </html>
+
 
 
