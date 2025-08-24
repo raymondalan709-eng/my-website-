@@ -47,11 +47,13 @@
 <body>
   <header>
     <div id="userBox">
-      <img id="userPhoto" src="" alt="profile" style="display:none" />
-      <div id="userName" class="name" style="display:none"></div>
-      <button id="loginBtn">Login with Google</button>
-      <button id="logoutBtn" style="display:none">Logout</button>
-    </div>
+    <div id="authSection" style="position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:10px;">
+  <img id="userPhoto" src="" alt="profile" style="width:40px; height:40px; border-radius:50%; display:none;">
+  <span id="userName" style="color:white; font-weight:bold; display:none;"></span>
+  <button id="loginBtn">Login</button>
+  <button id="logoutBtn" style="display:none;">Logout</button>
+</div>
+ 
     <h1>SL Skill Hub</h1>
     <div class="intro">Find talented people near you</div>
     <div class="header-controls">
@@ -285,3 +287,4 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
