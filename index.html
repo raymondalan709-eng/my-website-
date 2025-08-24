@@ -1,215 +1,245 @@
-<!DOCTYPE html>  <html lang="en">    
-<head>    
-  <meta charset="utf-8" />    
-  <meta name="viewport" content="width=device-width,initial-scale=1" />    
-  <title>SL Skills Hub</title>        <!-- Firebase compat builds -->      <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>      <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>      <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>      <style>    
-    :root{--blue:#007BFF;--white:#fff}    
-    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;margin:0;background:#f3f4f6}    
-    header{background:var(--blue);color:var(--white);padding:18px 12px;position:relative}    
-    header h1{margin:0;font-size:34px;text-align:center}    
-    header .intro{margin-top:8px;text-align:center;font-weight:700;font-size:18px;color:rgba(255,255,255,0.95)}    
-    #userBox{position:absolute;left:14px;top:12px;text-align:left;color:#fff}    
-    #userBox img{width:44px;height:44px;border-radius:50%;display:block;margin-bottom:6px}    
-    #userBox .name{font-weight:700;margin-bottom:6px}    
-    #userBox button{display:block;background:#fff;color:var(--blue);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-bottom:6px}    
-    .header-controls{display:flex;gap:10px;justify-content:center;margin-top:12px}    
-    .header-controls input[type="search"]{padding:10px;border-radius:8px;border:0;width:280px;max-width:70vw}    
-    .header-controls button{padding:10px 16px;border-radius:8px;border:0;background:#fff;color:var(--blue);font-weight:700;cursor:pointer}    
-    #formWrapper{max-width:520px;margin:20px auto;display:none}    
-    form.skill-form{background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}    
-    .skill-form input, .skill-form select{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd;box-sizing:border-box}    
-    .skill-form .row{display:flex;gap:10px}    
-    .skill-form .row input{flex:1}    
-    .skill-form button{background:var(--blue);color:#fff;border:0;padding:10px 14px;border-radius:6px;cursor:pointer;font-weight:700}    
-    #skillsArea{padding:18px 12px 60px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center}    
-    .card{width:320px;background:#fff;border-radius:8px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05);border:1px solid #eee}    
-    .card .top{display:flex;gap:12px;align-items:center}    
-    .card img{width:56px;height:56px;border-radius:50%;object-fit:cover}    
-    .card h3{margin:0;color:var(--blue)}    
-    .card p{margin:6px 0;color:#333}    
-    .card .small{font-size:13px;color:#666}    
-    .card .actions{margin-top:10px}    
-    .card .actions button{margin-right:8px;padding:6px 10px;border-radius:6px;border:0;cursor:pointer}    
-    .btn-edit{background:orange;color:#fff}    
-    .btn-delete{background:#e53935;color:#fff}    
-    @media (max-width:520px){ .header-controls input[type="search"]{width:180px} .card{width:90%} }    
-  </style>    </head>    
-<body>    
-  <header>    
-    <div id="userBox">    
-      <img id="userPhoto" src="" alt="profile" style="display:none" />    
-      <div id="userName" class="name" style="display:none"></div>    
-      <button id="loginBtn">Login with Google</button>    
-      <button id="logoutBtn" style="display:none">Logout</button>    
-    </div>    
-    <h1>SL Skills Hub</h1>    
-    <div class="intro">Find talented people near you</div>    <div class="header-controls">    
-  <button id="openAddBtn">Add Skill</button>    
-  <button id="addCategoryBtn" style="display:none">Add Category</button>    
-  <button id="shareBtn">Share</button>    
-  <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />    
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SL Skill Hub</title>
 
-  </header>      <div id="formWrapper">    
-    <form id="skillForm" class="skill-form">    
-      <input type="hidden" id="skillId" value="">    
-      <input id="name" placeholder="Your name" required />    
-      <input id="skill" placeholder="Your skill" required />    
-      <input id="location" placeholder="Location (eg: Freetown)" required />    
-      <input id="whatsapp" placeholder="WhatsApp number (eg: +2327... or 07...)" required />    
-      <select id="categorySelect" required>  
-        <option value="">Select category</option>  
-      </select>  
-      <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px">    
-        <button type="submit" id="saveBtn">Save</button>    
-      </div>    
-    </form>    
-  </div>      <main id="skillsArea"></main>    <script>  
-const firebaseConfig = {  
-  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",  
-  authDomain: "sl-skills-hub.firebaseapp.com",  
-  projectId: "sl-skills-hub",  
-  storageBucket: "sl-skills-hub.appspot.com",     
-  messagingSenderId: "125049368940",  
-  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"  
-};  
-firebase.initializeApp(firebaseConfig);  
-const auth = firebase.auth();  
-const db = firebase.firestore();  
-let currentUser = null;  
-  
-// --- Helpers ---  
-function normalizeWhatsApp(input){if(!input)return"";input=input.trim();if(input.startsWith("https://wa.me/")||input.startsWith("http://wa.me/"))return input;let digits=input.replace(/\D/g,"");if(digits.length&&digits[0]==="0")digits="232"+digits.slice(1);if(!digits.startsWith("232")){if(digits.length<=9)digits="232"+digits;}return"https://wa.me/"+digits;}  
-function formatDate(ts){if(!ts)return"Date not available";try{if(ts.toDate)return ts.toDate().toLocaleString();const d=new Date(ts);return isNaN(d)?String(ts):d.toLocaleString();}catch(e){return String(ts);}}  
-  
-// --- Auth ---  
-const loginBtn = document.getElementById('loginBtn');  
-const logoutBtn = document.getElementById('logoutBtn');  
-const userPhoto = document.getElementById('userPhoto');  
-const userName = document.getElementById('userName');  
-const openAddBtn = document.getElementById('openAddBtn');  
-const searchInput = document.getElementById('searchInput');  
-const addCategoryBtn = document.getElementById('addCategoryBtn');  
-const categorySelect = document.getElementById('categorySelect');  
-const shareBtn = document.getElementById('shareBtn');  
-  
-loginBtn.addEventListener('click', ()=>{  
-  const provider=new firebase.auth.GoogleAuthProvider();  
-  firebase.auth().signInWithPopup(provider).catch(err=>{console.error(err); alert("Login failed: "+(err.message||err.code));});  
-});  
-logoutBtn.addEventListener('click', ()=>auth.signOut());  
-  
-// --- Auth state & admin/category load ---  
-auth.onAuthStateChanged(user=>{  
-  currentUser=user;  
-  if(user){  
-    loginBtn.style.display='none';  
-    logoutBtn.style.display='inline-block';  
-    userPhoto.src=user.photoURL||"";  
-    userPhoto.style.display=user.photoURL?'block':'none';  
-    userName.textContent=user.displayName||user.email;  
-    userName.style.display='block';  
-    // admin button  
-    addCategoryBtn.style.display = (user.uid==='I5WY1FJzNibUDOCzCBdGWPtX9Nj1')?'inline-block':'none';  
-    // load categories  
-    db.collection('categories').orderBy('createdAt','asc').get().then(snap=>{  
-      categorySelect.innerHTML='<option value="">Select category</option>';  
-      snap.forEach(doc=>{  
-        const opt=document.createElement('option');  
-        opt.value=doc.data().name;  
-        opt.textContent=doc.data().name;  
-        categorySelect.appendChild(opt);  
-      });  
-    });  
-  } else {  
-    loginBtn.style.display='inline-block';  
-    logoutBtn.style.display='none';  
-    userPhoto.style.display='none';  
-    userName.style.display='none';  
-    addCategoryBtn.style.display='none';  
-  }  
-});  
-  
-// --- Add Category button ---  
-addCategoryBtn.addEventListener('click', async ()=>{  
-  const name=prompt("Enter new category name:");  
-  if(!name)return;  
-  try{  
-    await db.collection('categories').add({name, createdAt: firebase.firestore.FieldValue.serverTimestamp()});  
-    alert("Category added!");  
-  }catch(err){alert("Failed: "+(err.message||err.code));}  
-});  
-  
-// --- Share button ---  
-shareBtn.addEventListener('click', ()=>{  
-  if(navigator.share){  
-    navigator.share({title    navigator.share({
-      title: "SL Skills Hub",
-      text: "Check out this amazing skills hub!",
-      url: window.location.href
-    }).catch(err => console.error("Share failed:", err));
+  <!-- Firebase compat builds -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root { --blue:#007BFF; --white:#fff; }
+    body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;margin:0;background:#f3f4f6; }
+    header { background:var(--blue);color:var(--white);padding:18px 12px;position:relative; }
+    header h1 { margin:0;font-size:34px;text-align:center; }
+    header .intro { margin-top:8px;text-align:center;font-weight:700;font-size:18px;color:rgba(255,255,255,0.95); }
+    #userBox { position:absolute;left:14px;top:12px;text-align:left;color:#fff; }
+    #userBox img { width:44px;height:44px;border-radius:50%;display:block;margin-bottom:6px; }
+    #userBox .name { font-weight:700;margin-bottom:6px; }
+    #userBox button { display:block;background:#fff;color:var(--blue);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-bottom:6px; }
+    .header-controls { display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap; }
+    .header-controls input[type="search"] { padding:10px;border-radius:8px;border:0;width:280px;max-width:70vw; }
+    .header-controls button { padding:10px 16px;border-radius:8px;border:0;background:#fff;color:var(--blue);font-weight:700;cursor:pointer; }
+    #formWrapper { max-width:520px;margin:20px auto;display:none; }
+    form.skill-form { background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    .skill-form input, .skill-form select { width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd;box-sizing:border-box; }
+    .skill-form .row { display:flex;gap:10px; }
+    .skill-form .row input { flex:1; }
+    .skill-form button { background:var(--blue);color:#fff;border:0;padding:10px 14px;border-radius:6px;cursor:pointer;font-weight:700; }
+    #skillsArea { padding:18px 12px 60px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center; }
+    .card { width:320px;background:#fff;border-radius:8px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05);border:1px solid #eee; }
+    .card .top { display:flex;gap:12px;align-items:center; }
+    .card img { width:56px;height:56px;border-radius:50%;object-fit:cover; }
+    .card h3 { margin:0;color:var(--blue); }
+    .card p { margin:6px 0;color:#333; }
+    .card .small { font-size:13px;color:#666; }
+    .card .actions { margin-top:10px; }
+    .card .actions button { margin-right:8px;padding:6px 10px;border-radius:6px;border:0;cursor:pointer; }
+    .btn-edit { background:orange;color:#fff; }
+    .btn-delete { background:#e53935;color:#fff; }
+    #shareBtn { position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,0.25); }
+    @media (max-width:520px){ .header-controls input[type="search"]{width:180px} .card{width:90%} }
+  </style>
+</head>
+<body>
+  <header>
+    <div id="userBox">
+      <img id="userPhoto" src="" alt="profile" style="display:none" />
+      <div id="userName" class="name" style="display:none"></div>
+      <button id="loginBtn">Login with Google</button>
+      <button id="logoutBtn" style="display:none">Logout</button>
+    </div>
+    <h1>SL Skill Hub</h1>
+    <div class="intro">Find talented people near you</div>
+    <div class="header-controls">
+      <button id="openAddBtn">Add Skill</button>
+      <button id="addCategoryBtn" style="display:none">Add Category</button>
+      <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
+    </div>
+  </header>
+
+  <!-- Add Skill form -->
+  <div id="formWrapper">
+    <form id="skillForm" class="skill-form">
+      <input type="hidden" id="skillId" value="">
+      <input id="name" placeholder="Your name" required />
+      <input id="skill" placeholder="Your skill" required />
+      <input id="location" placeholder="Location (eg: Freetown)" required />
+      <input id="whatsapp" placeholder="WhatsApp number (eg: +2327... or 07...)" required />
+      <select id="categorySelect" required>
+        <option value="">Select category</option>
+      </select>
+      <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px">
+        <button type="submit" id="saveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Skills list -->
+  <main id="skillsArea"></main>
+
+  <!-- Floating share button -->
+  <button id="shareBtn">⤴</button>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBWy9ffEDL3OugOpRbHrvDjGbQ3fkPGU4Y",
+  authDomain: "sl-skills-hub.firebaseapp.com",
+  projectId: "sl-skills-hub",
+  storageBucket: "sl-skills-hub.appspot.com",
+  messagingSenderId: "125049368940",
+  appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+
+// Helpers
+function normalizeWhatsApp(input){
+  if(!input) return "";
+  input=input.trim();
+  if(input.startsWith("https://wa.me/")||input.startsWith("http://wa.me/")) return input;
+  let digits=input.replace(/\D/g,"");
+  if(digits.length && digits[0]==="0") digits="232"+digits.slice(1);
+  if(!digits.startsWith("232")){ if(digits.length<=9) digits="232"+digits; }
+  return "https://wa.me/"+digits;
+}
+function formatDate(ts){
+  if(!ts) return "Date not available";
+  try{ if(ts.toDate) return ts.toDate().toLocaleString();
+    const d=new Date(ts);
+    return isNaN(d)?String(ts):d.toLocaleString();
+  }catch(e){ return String(ts);}
+}
+
+// DOM
+const loginBtn=document.getElementById('loginBtn');
+const logoutBtn=document.getElementById('logoutBtn');
+const userPhoto=document.getElementById('userPhoto');
+const userName=document.getElementById('userName');
+const openAddBtn=document.getElementById('openAddBtn');
+const searchInput=document.getElementById('searchInput');
+const addCategoryBtn=document.getElementById('addCategoryBtn');
+const categorySelect=document.getElementById('categorySelect');
+const shareBtn=document.getElementById('shareBtn');
+
+// Auth
+loginBtn.addEventListener('click', ()=>{
+  const provider=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .catch(err=>{console.error(err); alert("Login failed: "+(err.message||err.code));});
+});
+logoutBtn.addEventListener('click', ()=>auth.signOut());
+
+auth.onAuthStateChanged(user=>{
+  currentUser=user;
+  if(user){
+    loginBtn.style.display='none';
+    logoutBtn.style.display='inline-block';
+    userPhoto.src=user.photoURL||"";
+    userPhoto.style.display=user.photoURL?'block':'none';
+    userName.textContent=user.displayName||user.email;
+    userName.style.display='block';
+    // admin only category
+    addCategoryBtn.style.display=(user.uid==='I5WY1FJzNibUDOCzCBdGWPtX9Nj1')?'inline-block':'none';
+    // load categories
+    db.collection('categories').orderBy('createdAt','asc').get().then(snap=>{
+      categorySelect.innerHTML='<option value="">Select category</option>';
+      snap.forEach(doc=>{
+        const opt=document.createElement('option');
+        opt.value=doc.data().name;
+        opt.textContent=doc.data().name;
+        categorySelect.appendChild(opt);
+      });
+    });
   } else {
-    alert("Sharing not supported. Copy this link: " + window.location.href);
+    loginBtn.style.display='inline-block';
+    logoutBtn.style.display='none';
+    userPhoto.style.display='none';
+    userName.style.display='none';
+    addCategoryBtn.style.display='none';
+  }
+  loadSkills();
+});
+
+// Add Category
+addCategoryBtn.addEventListener('click', async ()=>{
+  const name=prompt("Enter new category name:");
+  if(!name) return;
+  try{
+    await db.collection('categories').add({name, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    alert("Category added!");
+  }catch(err){alert("Failed: "+(err.message||err.code));}
+});
+
+// Share
+shareBtn.addEventListener('click', ()=>{
+  if(navigator.share){
+    navigator.share({
+      title: "SL Skill Hub",
+      text: "Find talented people near you on SL Skill Hub!",
+      url: window.location.href
+    }).catch(err=>console.error("Share failed:", err));
+  } else {
+    alert("Copy this link to share: "+window.location.href);
   }
 });
 
-// --- Show Add Skill form ---
-const formWrapper = document.getElementById('formWrapper');
-openAddBtn.addEventListener('click', () => {
-  if (!currentUser) { alert("Please login first."); return; }
-  formWrapper.style.display = 'block';
+// Show form
+const formWrapper=document.getElementById('formWrapper');
+openAddBtn.addEventListener('click', ()=>{
+  if(!currentUser){ alert("Please login first."); return; }
+  formWrapper.style.display='block';
   document.getElementById('skillForm').reset();
-  document.getElementById('skillId').value = '';
+  document.getElementById('skillId').value='';
 });
 
-// --- Save skill ---
-document.getElementById('skillForm').addEventListener('submit', async e => {
+// Save skill
+document.getElementById('skillForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  if (!currentUser) { alert("Login required!"); return; }
-
-  const id = document.getElementById('skillId').value || undefined;
-  const skillData = {
-    uid: currentUser.uid,           // <-- must be 'uid'
-    name: document.getElementById('name').value.trim(),
-    skill: document.getElementById('skill').value.trim(),
-    location: document.getElementById('location').value.trim(),
-    whatsapp: normalizeWhatsApp(document.getElementById('whatsapp').value),
-    category: document.getElementById('categorySelect').value,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    photoURL: currentUser.photoURL || "",
+  if(!currentUser){ alert("Login required!"); return; }
+  const id=document.getElementById('skillId').value||undefined;
+  const skillData={
+    uid:currentUser.uid,
+    name:document.getElementById('name').value.trim(),
+    skill:document.getElementById('skill').value.trim(),
+    location:document.getElementById('location').value.trim(),
+    whatsapp:normalizeWhatsApp(document.getElementById('whatsapp').value),
+    category:document.getElementById('categorySelect').value,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    photoURL:currentUser.photoURL||"",
   };
-
-  try {
-    if (id) {
+  try{
+    if(id){
       await db.collection('skills').doc(id).update(skillData);
       alert("Skill updated!");
-    } else {
+    }else{
       await db.collection('skills').add(skillData);
       alert("Skill added!");
     }
     document.getElementById('skillForm').reset();
-    document.getElementById('formWrapper').style.display = 'none';
-    loadSkills(); // reload the skill cards
-  } catch (err) {
-    alert("Failed: " + (err.message || err.code));
-    console.error(err);
-  }
+    formWrapper.style.display='none';
+    loadSkills();
+  }catch(err){ alert("Failed: "+(err.message||err.code)); console.error(err);}
 });
 
-// --- Load Skills ---
-const skillsArea = document.getElementById('skillsArea');
-async function loadSkills() {
-  skillsArea.innerHTML = '';
-  let query = db.collection('skills').orderBy('createdAt','desc');
-  const search = searchInput.value.trim().toLowerCase();
-  const snapshot = await query.get();
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    if (search && !(data.name.toLowerCase().includes(search) || data.skill.toLowerCase().includes(search) || data.location.toLowerCase().includes(search))) return;
-
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
+// Load skills
+const skillsArea=document.getElementById('skillsArea');
+async function loadSkills(){
+  skillsArea.innerHTML='';
+  let query=db.collection('skills').orderBy('createdAt','desc');
+  const search=searchInput.value.trim().toLowerCase();
+  const snapshot=await query.get();
+  snapshot.forEach(doc=>{
+    const data=doc.data();
+    if(search && !(data.name.toLowerCase().includes(search)||data.skill.toLowerCase().includes(search)||data.location.toLowerCase().includes(search))) return;
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
       <div class="top">
         <img src="${data.photoURL||''}" alt="profile" />
         <h3>${data.name}</h3>
@@ -220,25 +250,25 @@ async function loadSkills() {
       <p class="small"><strong>Category:</strong> ${data.category} | <strong>Posted:</strong> ${formatDate(data.createdAt)}</p>
       <div class="actions"></div>
     `;
-    const actions = card.querySelector('.actions');
-    if (currentUser && currentUser.uid === data.uid) {
-      const editBtn = document.createElement('button');
-      editBtn.textContent = 'Edit';
-      editBtn.className = 'btn-edit';
-      editBtn.onclick = () => {
-        formWrapper.style.display = 'block';
-        document.getElementById('skillId').value = doc.id;
-        document.getElementById('name').value = data.name;
-        document.getElementById('skill').value = data.skill;
-        document.getElementById('location').value = data.location;
-        document.getElementById('whatsapp').value = data.whatsapp.replace("https://wa.me/", "");
-        document.getElementById('categorySelect').value = data.category;
+    const actions=card.querySelector('.actions');
+    if(currentUser && currentUser.uid===data.uid){
+      const editBtn=document.createElement('button');
+      editBtn.textContent='Edit';
+      editBtn.className='btn-edit';
+      editBtn.onclick=()=>{
+        formWrapper.style.display='block';
+        document.getElementById('skillId').value=doc.id;
+        document.getElementById('name').value=data.name;
+        document.getElementById('skill').value=data.skill;
+        document.getElementById('location').value=data.location;
+        document.getElementById('whatsapp').value=data.whatsapp.replace("https://wa.me/","");
+        document.getElementById('categorySelect').value=data.category;
       };
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'Delete';
-      delBtn.className = 'btn-delete';
-      delBtn.onclick = async () => {
-        if (confirm("Are you sure to delete this skill?")) {
+      const delBtn=document.createElement('button');
+      delBtn.textContent='Delete';
+      delBtn.className='btn-delete';
+      delBtn.onclick=async()=>{
+        if(confirm("Are you sure to delete this skill?")){
           await db.collection('skills').doc(doc.id).delete();
           loadSkills();
         }
@@ -246,18 +276,12 @@ async function loadSkills() {
       actions.appendChild(editBtn);
       actions.appendChild(delBtn);
     }
-
     skillsArea.appendChild(card);
   });
 }
 
-// --- Search ---
+// Search
 searchInput.addEventListener('input', loadSkills);
-
-// --- Initial load ---
-auth.onAuthStateChanged(() => loadSkills());
-
 </script>
 </body>
 </html>
-
