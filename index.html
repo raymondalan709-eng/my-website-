@@ -45,22 +45,22 @@
   </style>
 </head>
 <body>
+  <!-- Google Login Section (top left corner, small and neat) -->
+  <div id="authSection" 
+       style="position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:8px; z-index:1000;">
+    <img id="userPhoto" src="" alt="profile" 
+         style="width:32px; height:32px; border-radius:50%; display:none;">
+    <span id="userName" style="color:white; font-size:14px; display:none;"></span>
+    <button id="loginBtn">Login</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
+  </div>
+
   <header>
-    <div id="userBox">
-    <div id="authSection" style="position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:10px;">
-  <img id="userPhoto" src="" alt="profile" style="width:40px; height:40px; border-radius:50%; display:none;">
-  <span id="userName" style="color:white; font-weight:bold; display:none;"></span>
-  <button id="loginBtn">Login</button>
-  <button id="logoutBtn" style="display:none;">Logout</button>
-</div>
- 
     <h1>SL Skill Hub</h1>
-    <div class="intro">Find talented people near you</div>
-    <div class="header-controls">
-      <button id="openAddBtn">Add Skill</button>
-      <button id="addCategoryBtn" style="display:none">Add Category</button>
-      <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
-    </div>
+    <p>Find talented people near you</p>
+    <button id="addSkillBtn">Add Skill</button>
+    <button id="addCategoryBtn" style="display:none;">Add Category</button>
+    <input type="text" id="searchInput" placeholder="Search by name, skill or location">
   </header>
 
   <!-- Add Skill form -->
@@ -287,4 +287,5 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
