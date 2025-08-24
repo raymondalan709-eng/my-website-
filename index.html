@@ -62,10 +62,10 @@
     <div class="intro">Find talented people near you</div>
 
     <div class="header-controls">
-      <button id="openAddBtn">Add Skill</button>
-      <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
-    </div>
-  </header>
+  <button id="openAddBtn">Add Skill</button>
+  <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
+  <button id="addCategoryBtn" style="display:none">Add Category</button>
+</div>
 
   <!-- Add / Edit form (we reuse same form for add & edit) -->
   <div id="formWrapper">
@@ -75,7 +75,6 @@
       <input id="skill" placeholder="Your skill" required />
       <input id="location" placeholder="Location (eg: Freetown)" required />
       <input id="whatsapp" placeholder="WhatsApp number (eg: +2327... or 07...)" required />
-      <input id="picture" placeholder="Picture URL (leave blank to use your Google photo)" />
       <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px">
         <button type="submit" id="saveBtn">Save</button>
       </div>
@@ -153,20 +152,43 @@ auth.onAuthStateChanged(user => {
     userPhoto.style.display = user.photoURL ? 'block' : 'none';
     userName.textContent = user.displayName || user.email;
     userName.style.display = 'block';
+        // Show category button only for admin
+    if (user.uid === "I5WY1FJzNibUDOCzCBdGWPtX9Nj1") {
+      addCategoryBtn.style.display = 'inline-block';
+    } else {
+      addCategoryBtn.style.display = 'none';
+    }
+
     // prefill picture input with google photo for convenience
-    document.getElementById('picture').value = user.photoURL || "";
   } else {
     loginBtn.style.display = 'inline-block';
     logoutBtn.style.display = 'none';
     userPhoto.style.display = 'none';
     userName.style.display = 'none';
-    document.getElementById('picture').value = "";
+   addCategoryBtn.style.display = 'none';
   }
 });
 
 /* ------------ Add/Edit form logic ------------ */
 const formWrapper = document.getElementById('formWrapper');
 const openAddBtn = document.getElementById('openAddBtn');
+const addCategoryBtn = document.getElementById('addCategoryBtn');
+
+addCategoryBtn.addEventListener('click', async () => {
+  const name = prompt("Enter new category name:");
+  if (!name) return;
+  try {
+    await db.collection('categories').add({
+      name,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Category added!");
+  } catch (err) {
+    alert("Failed: " + (err.message || err.code));
+  }
+});
+  
+const searchInput = document.getElementById('searchInput');
 const skillForm = document.getElementById('skillForm');
 const saveBtn = document.getElementById('saveBtn');
 
@@ -175,7 +197,6 @@ openAddBtn.addEventListener('click', () => {
   document.getElementById('skillId').value = "";
   skillForm.reset();
   // set picture default to current user's photo
-  document.getElementById('picture').value = currentUser ? (currentUser.photoURL || "") : "";
   formWrapper.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
@@ -189,7 +210,7 @@ skillForm.addEventListener('submit', async (e) => {
   const skill = document.getElementById('skill').value.trim();
   const location = document.getElementById('location').value.trim();
   const whatsappRaw = document.getElementById('whatsapp').value.trim();
-  const pictureUrl = document.getElementById('picture').value.trim() || currentUser.photoURL || "";
+ const pictureUrl = currentUser.photoURL || "";
 
   if (!name || !skill || !location || !whatsappRaw) {
     return alert("Please fill all fields.");
@@ -229,7 +250,7 @@ function renderCard(doc) {
   const id = doc.id;
   const card = document.createElement('div');
   card.className = 'card';
-  const picture = data.picture || data.posterPhoto || "";
+  const picture = data.posterPhoto || "";
   const dateStr = formatDate(data.createdAt || data.createdAtTimestamp || data.createdAtString || data.createdAt);
   card.innerHTML = `
     <div class="top">
@@ -331,4 +352,5 @@ loadSkills();
 </script>
 </body>
 </html>
+
 
