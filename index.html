@@ -162,42 +162,37 @@ openAddBtn.addEventListener('click', () => {
   document.getElementById('skillId').value = '';
 });
 
-// --- Save Skill ---
-const skillForm = document.getElementById('skillForm');
-skillForm.addEventListener('submit', async (e) => {
+// --- Save skill ---
+document.getElementById('skillForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if (!currentUser) { alert("Please login first."); return; }
+  if (!currentUser) { alert("Login required!"); return; }
 
-  const id = document.getElementById('skillId').value;
-  const name = document.getElementById('name').value.trim();
-  const skill = document.getElementById('skill').value.trim();
-  const location = document.getElementById('location').value.trim();
-  const whatsapp = normalizeWhatsApp(document.getElementById('whatsapp').value.trim());
-  const category = document.getElementById('categorySelect').value;
-
-  if (!name || !skill || !location || !whatsapp || !category) { alert("All fields required"); return; }
-
-  const data = {
-    name, skill, location, whatsapp, category,
-    uid: currentUser.uid,
+  const id = document.getElementById('skillId').value || undefined;
+  const skillData = {
+    uid: currentUser.uid,           // <-- must be 'uid'
+    name: document.getElementById('name').value.trim(),
+    skill: document.getElementById('skill').value.trim(),
+    location: document.getElementById('location').value.trim(),
+    whatsapp: normalizeWhatsApp(document.getElementById('whatsapp').value),
+    category: document.getElementById('categorySelect').value,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     photoURL: currentUser.photoURL || "",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
   try {
     if (id) {
-      await db.collection('skills').doc(id).update(data);
+      await db.collection('skills').doc(id).update(skillData);
       alert("Skill updated!");
     } else {
-      await db.collection('skills').add(data);
+      await db.collection('skills').add(skillData);
       alert("Skill added!");
     }
-    skillForm.reset();
-    formWrapper.style.display = 'none';
-    loadSkills();
+    document.getElementById('skillForm').reset();
+    document.getElementById('formWrapper').style.display = 'none';
+    loadSkills(); // reload the skill cards
   } catch (err) {
+    alert("Failed: " + (err.message || err.code));
     console.error(err);
-    alert("Failed to save skill: " + (err.message || err.code));
   }
 });
 
@@ -265,3 +260,4 @@ auth.onAuthStateChanged(() => loadSkills());
 </script>
 </body>
 </html>
+
