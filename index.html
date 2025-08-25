@@ -42,7 +42,30 @@
     .btn-delete { background:#e53935;color:#fff; }
     #shareBtn { position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,0.25); }
     @media (max-width:520px){ .header-controls input[type="search"]{width:180px} .card{width:90%} }
+       @media (max-width:520px){ 
+      .header-controls input[type="search"]{width:180px} 
+      .card{width:90%} 
+    }
+
+    /* Make Google login box smaller on mobile */
+    @media (max-width:520px) {
+      #userBox img {
+        width:28px;
+        height:28px;
+        margin-bottom:4px;
+      }
+      #userBox .name {
+        font-size:12px;
+        margin-bottom:4px;
+      }
+      #userBox button {
+        padding:4px 6px;
+        font-size:12px;
+        margin-bottom:4px;
+      }
+    }
   </style>
+
 </head>
 <body>
   <header>
@@ -285,3 +308,4 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
