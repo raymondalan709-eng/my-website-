@@ -320,7 +320,7 @@ async function openProfile(uid) {
   profileContent.innerHTML="<p>Loading profile...</p>";
 
   // fetch user skills
-  const snap=await db.collection("skills").where("uid","==",uid).orderBy("createdAt","desc").get();
+  const snap=await db.collection("skills").where("uid","==",uid).get();
 
   if(snap.empty){
     profileContent.innerHTML="<p>No skills found for this user.</p>";
@@ -360,6 +360,7 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
