@@ -270,19 +270,18 @@ async function loadSkills(){
     if(search && !(data.name.toLowerCase().includes(search)||data.skill.toLowerCase().includes(search)||data.location.toLowerCase().includes(search))) return;
     const card=document.createElement('div');
     card.className='card';
-   card.innerHTML=`
-  <div class="top" style="cursor:pointer;" onclick="openProfile('${data.uid}')">
-    <img src="${data.photoURL||''}" alt="profile" />
-    <h3>${data.name}</h3>
-  </div>
-  ...
-`;
+       card.innerHTML=`
+      <div class="top" style="cursor:pointer;" onclick="openProfile('${data.uid}')">
+        <img src="${data.photoURL||''}" alt="profile" />
+        <h3>${data.name}</h3>
+      </div>
       <p><strong>Skill:</strong> ${data.skill}</p>
       <p><strong>Location:</strong> ${data.location}</p>
       <p><strong>WhatsApp:</strong> <a href="${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
       <p class="small"><strong>Category:</strong> ${data.category} | <strong>Posted:</strong> ${formatDate(data.createdAt)}</p>
       <div class="actions"></div>
     `;
+
     const actions=card.querySelector('.actions');
     if(currentUser && currentUser.uid===data.uid){
       const editBtn=document.createElement('button');
@@ -361,5 +360,6 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
