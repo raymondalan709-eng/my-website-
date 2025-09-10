@@ -103,6 +103,14 @@
 
   <!-- Skills list -->
   <main id="skillsArea"></main>
+  
+<!-- User Profile view -->
+<div id="profileView" style="display:none; padding:20px; max-width:600px; margin:auto;">
+  <button onclick="closeProfile()" style="margin-bottom:10px;background:#007BFF;color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;">
+    ← Back
+  </button>
+  <div id="profileContent"></div>
+</div>
 
   <!-- Floating share button -->
   <button id="shareBtn">⤴</button>
@@ -262,11 +270,13 @@ async function loadSkills(){
     if(search && !(data.name.toLowerCase().includes(search)||data.skill.toLowerCase().includes(search)||data.location.toLowerCase().includes(search))) return;
     const card=document.createElement('div');
     card.className='card';
-    card.innerHTML=`
-      <div class="top">
-        <img src="${data.photoURL||''}" alt="profile" />
-        <h3>${data.name}</h3>
-      </div>
+   card.innerHTML=`
+  <div class="top" style="cursor:pointer;" onclick="openProfile('${data.uid}')">
+    <img src="${data.photoURL||''}" alt="profile" />
+    <h3>${data.name}</h3>
+  </div>
+  ...
+`;
       <p><strong>Skill:</strong> ${data.skill}</p>
       <p><strong>Location:</strong> ${data.location}</p>
       <p><strong>WhatsApp:</strong> <a href="${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
@@ -302,10 +312,54 @@ async function loadSkills(){
     skillsArea.appendChild(card);
   });
 }
+async function openProfile(uid) {
+  // hide skills list
+  document.getElementById("skillsArea").style.display="none";
+  document.getElementById("profileView").style.display="block";
+
+  const profileContent=document.getElementById("profileContent");
+  profileContent.innerHTML="<p>Loading profile...</p>";
+
+  // fetch user skills
+  const snap=await db.collection("skills").where("uid","==",uid).orderBy("createdAt","desc").get();
+
+  if(snap.empty){
+    profileContent.innerHTML="<p>No skills found for this user.</p>";
+    return;
+  }
+
+  const first=snap.docs[0].data();
+  profileContent.innerHTML=`
+    <div style="text-align:center;">
+      <img src="${first.photoURL||''}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" />
+      <h2>${first.name}</h2>
+      <p><strong>Contact:</strong> <a href="${first.whatsapp}" target="_blank">${first.whatsapp}</a></p>
+      <hr/>
+      <h3>Skills by ${first.name}</h3>
+    </div>
+  `;
+
+  snap.forEach(doc=>{
+    const d=doc.data();
+    profileContent.innerHTML+=`
+      <div style="background:#fff;padding:12px;margin:10px 0;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+        <p><strong>${d.skill}</strong> (${d.category})</p>
+        <p>📍 ${d.location}</p>
+        <p class="small">Posted: ${formatDate(d.createdAt)}</p>
+      </div>
+    `;
+  });
+}
+
+function closeProfile(){
+  document.getElementById("profileView").style.display="none";
+  document.getElementById("skillsArea").style.display="flex";
+}
 
 // Search
 searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
