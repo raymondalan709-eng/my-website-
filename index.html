@@ -177,16 +177,18 @@ auth.onAuthStateChanged(user=>{
     userName.style.display='block';
     // admin only category
     addCategoryBtn.style.display=(user.uid==='I5WY1FJzNibUDOCzCBdGWPtX9Nj1')?'inline-block':'none';
-    // load categories
-    db.collection('categories').orderBy('createdAt','asc').get().then(snap=>{
-      categorySelect.innerHTML='<option value="">Select category</option>';
-      snap.forEach(doc=>{
-        const opt=document.createElement('option');
-        opt.value=doc.data().name;
-        opt.textContent=doc.data().name;
-        categorySelect.appendChild(opt);
-      });
+    // real-time categories update
+db.collection('categories').orderBy('createdAt','asc')
+  .onSnapshot(snap => {
+    categorySelect.innerHTML = '<option value="">Select category</option>';
+    snap.forEach(doc => {
+      const opt = document.createElement('option');
+      opt.value = doc.data().name;
+      opt.textContent = doc.data().name;
+      categorySelect.appendChild(opt);
     });
+  });
+    
   } else {
     loginBtn.style.display='inline-block';
     logoutBtn.style.display='none';
@@ -360,6 +362,7 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
