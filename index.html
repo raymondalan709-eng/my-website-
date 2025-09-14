@@ -78,10 +78,13 @@
     <h1>SL Skill Hub</h1>
     <div class="intro">Find talented people near you</div>
     <div class="header-controls">
-      <button id="openAddBtn">Add Skill</button>
-      <button id="addCategoryBtn" style="display:none">Add Category</button>
-      <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
-    </div>
+  <button id="openAddBtn">Add Skill</button>
+  <button id="addCategoryBtn" style="display:none">Add Category</button>
+  <input id="searchInput" type="search" placeholder="Search by name, skill or location…" />
+  <select id="filterCategory">
+    <option value="">All categories</option>
+  </select>
+</div>
   </header>
 
   <!-- Add Skill form -->
@@ -157,6 +160,18 @@ const searchInput=document.getElementById('searchInput');
 const addCategoryBtn=document.getElementById('addCategoryBtn');
 const categorySelect=document.getElementById('categorySelect');
 const shareBtn=document.getElementById('shareBtn');
+  const filterCategory = document.getElementById('filterCategory');
+
+db.collection('categories').orderBy('createdAt','asc')
+  .onSnapshot(snap => {
+    filterCategory.innerHTML = '<option value="">All categories</option>';
+    snap.forEach(doc => {
+      const opt = document.createElement('option');
+      opt.value = doc.data().name;
+      opt.textContent = doc.data().name;
+      filterCategory.appendChild(opt);
+    });
+  });
 
 // Auth
 loginBtn.addEventListener('click', ()=>{
@@ -264,15 +279,28 @@ document.getElementById('skillForm').addEventListener('submit', async e=>{
 const skillsArea=document.getElementById('skillsArea');
 async function loadSkills(){
   skillsArea.innerHTML='';
+  const search = searchInput.value.trim().toLowerCase();
+  const selectedCategory = filterCategory.value;
   let query=db.collection('skills').orderBy('createdAt','desc');
-  const search=searchInput.value.trim().toLowerCase();
   const snapshot=await query.get();
-  snapshot.forEach(doc=>{
-    const data=doc.data();
-    if(search && !(data.name.toLowerCase().includes(search)||data.skill.toLowerCase().includes(search)||data.location.toLowerCase().includes(search))) return;
-    const card=document.createElement('div');
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+
+    // Text search
+    if(search && !(
+      data.name.toLowerCase().includes(search) ||
+      data.skill.toLowerCase().includes(search) ||
+      data.location.toLowerCase().includes(search)
+    )) return;
+
+    // Category filter
+    if(selectedCategory && data.category !== selectedCategory) return;
+
+    // Create the card inside the loop
+    const card = document.createElement('div');
     card.className='card';
-       card.innerHTML=`
+    card.innerHTML=`
       <div class="top" style="cursor:pointer;" onclick="openProfile('${data.uid}')">
         <img src="${data.photoURL||''}" alt="profile" />
         <h3>${data.name}</h3>
@@ -310,6 +338,7 @@ async function loadSkills(){
       actions.appendChild(editBtn);
       actions.appendChild(delBtn);
     }
+
     skillsArea.appendChild(card);
   });
 }
@@ -362,6 +391,7 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
