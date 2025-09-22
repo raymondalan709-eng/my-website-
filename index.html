@@ -6,9 +6,10 @@
   <title>SL Skill Hub</title>
 
   <!-- Firebase compat builds -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
   <style>
     :root { --blue:#007BFF; --white:#fff; }
@@ -253,16 +254,25 @@ openAddBtn.addEventListener('click', ()=>{
   e.preventDefault();
   if (!currentUser) return alert("Please login first");
   
-  const id = document.getElementById('skillId').value;
-  const fileInput = document.getElementById('photoUpload');
-  let photoURL = currentUser.photoURL || "";
+const id = document.getElementById('skillId').value;
+const fileInput = document.getElementById('photoUpload');
+let photoURL = currentUser.photoURL || "";
 
-  if(fileInput.files[0]){
-    const file = fileInput.files[0];
-    const storageRef = storage.ref().child(`skill_photos/${currentUser.uid}_${Date.now()}_${file.name}`);
-    const snapshot = await storageRef.put(file);
-    photoURL = await snapshot.ref.getDownloadURL();
+// If editing, fetch existing photoURL
+if (id) {
+  const existingDoc = await db.collection('skills').doc(id).get();
+  if (existingDoc.exists) {
+    photoURL = existingDoc.data().photoURL || photoURL;
   }
+}
+
+// If a new file is uploaded, replace the old photoURL
+if (fileInput.files[0]) {
+  const file = fileInput.files[0];
+  const storageRef = storage.ref().child(`skill_photos/${currentUser.uid}_${Date.now()}_${file.name}`);
+  const snapshot = await storageRef.put(file);
+  photoURL = await snapshot.ref.getDownloadURL();
+}
 
   const skillData = {
     uid: currentUser.uid,
@@ -409,11 +419,3 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
