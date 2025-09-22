@@ -98,6 +98,7 @@
       <select id="categorySelect" required>
         <option value="">Select category</option>
       </select>
+      <input type="file" id="photoUpload" accept="image/*" />
       <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px">
         <button type="submit" id="saveBtn">Save</button>
       </div>
@@ -128,6 +129,7 @@ const firebaseConfig = {
   appId: "1:125049368940:web:76d4a47aa9eb7c43914349"
 };
 firebase.initializeApp(firebaseConfig);
+const storage = firebase.storage();
 const auth = firebase.auth();
 const db = firebase.firestore();
 let currentUser = null;
@@ -247,20 +249,32 @@ openAddBtn.addEventListener('click', ()=>{
 });
 
 // Save skill
-document.getElementById('skillForm').addEventListener('submit', async e=>{
+ document.getElementById('skillForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if(!currentUser){ alert("Login required!"); return; }
-  const id=document.getElementById('skillId').value||undefined;
-  const skillData={
-    uid:currentUser.uid,
-    name:document.getElementById('name').value.trim(),
-    skill:document.getElementById('skill').value.trim(),
-    location:document.getElementById('location').value.trim(),
-    whatsapp:normalizeWhatsApp(document.getElementById('whatsapp').value),
-    category:document.getElementById('categorySelect').value,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-    photoURL:currentUser.photoURL||"",
+  if (!currentUser) return alert("Please login first");
+  
+  const id = document.getElementById('skillId').value;
+  const fileInput = document.getElementById('photoUpload');
+  let photoURL = currentUser.photoURL || "";
+
+  if(fileInput.files[0]){
+    const file = fileInput.files[0];
+    const storageRef = storage.ref().child(`skill_photos/${currentUser.uid}_${Date.now()}_${file.name}`);
+    const snapshot = await storageRef.put(file);
+    photoURL = await snapshot.ref.getDownloadURL();
+  }
+
+  const skillData = {
+    uid: currentUser.uid,
+    name: document.getElementById('name').value.trim(),
+    skill: document.getElementById('skill').value.trim(),
+    location: document.getElementById('location').value.trim(),
+    whatsapp: normalizeWhatsApp(document.getElementById('whatsapp').value),
+    category: document.getElementById('categorySelect').value,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    photoURL: photoURL
   };
+
   try{
     if(id){
       await db.collection('skills').doc(id).update(skillData);
@@ -272,7 +286,10 @@ document.getElementById('skillForm').addEventListener('submit', async e=>{
     document.getElementById('skillForm').reset();
     formWrapper.style.display='none';
     loadSkills();
-  }catch(err){ alert("Failed: "+(err.message||err.code)); console.error(err);}
+  }catch(err){
+    alert("Failed: "+(err.message||err.code));
+    console.error(err);
+  }
 });
 
 // Load skills
@@ -325,6 +342,7 @@ async function loadSkills(){
         document.getElementById('location').value=data.location;
         document.getElementById('whatsapp').value=data.whatsapp.replace("https://wa.me/","");
         document.getElementById('categorySelect').value=data.category;
+        document.getElementById('photoUpload').value = "";
       };
       const delBtn=document.createElement('button');
       delBtn.textContent='Delete';
@@ -391,6 +409,7 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
