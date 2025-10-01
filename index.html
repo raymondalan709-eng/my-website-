@@ -100,6 +100,10 @@
         <option value="">Select category</option>
       </select>
       <input type="file" id="photoUpload" accept="image/*" />
+      <img id="photoPreview" 
+     src="" 
+     alt="Preview" 
+     style="width:80px;height:80px;border-radius:50%;object-fit:cover;display:none;margin-top:10px;" />
       <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:8px">
         <button type="submit" id="saveBtn">Save</button>
       </div>
@@ -163,7 +167,28 @@ const searchInput=document.getElementById('searchInput');
 const addCategoryBtn=document.getElementById('addCategoryBtn');
 const categorySelect=document.getElementById('categorySelect');
 const shareBtn=document.getElementById('shareBtn');
-  const filterCategory = document.getElementById('filterCategory');
+const filterCategory = document.getElementById('filterCategory');
+```)  
+
+👉 Add this code under it:  
+
+```js
+// Preview chosen photo in round circle
+const photoUpload = document.getElementById('photoUpload');
+const photoPreview = document.getElementById('photoPreview');
+
+photoUpload.addEventListener('change', (e)=>{
+  if(e.target.files && e.target.files[0]){
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      photoPreview.src = ev.target.result;
+      photoPreview.style.display = 'block';
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  } else {
+    photoPreview.style.display = 'none';
+  }
+});
 
 db.collection('categories').orderBy('createdAt','asc')
   .onSnapshot(snap => {
@@ -345,15 +370,24 @@ async function loadSkills(){
       editBtn.textContent='Edit';
       editBtn.className='btn-edit';
       editBtn.onclick=()=>{
-        formWrapper.style.display='block';
-        document.getElementById('skillId').value=doc.id;
-        document.getElementById('name').value=data.name;
-        document.getElementById('skill').value=data.skill;
-        document.getElementById('location').value=data.location;
-        document.getElementById('whatsapp').value=data.whatsapp.replace("https://wa.me/","");
-        document.getElementById('categorySelect').value=data.category;
-        document.getElementById('photoUpload').value = "";
-      };
+  formWrapper.style.display='block';
+  document.getElementById('skillId').value=doc.id;
+  document.getElementById('name').value=data.name;
+  document.getElementById('skill').value=data.skill;
+  document.getElementById('location').value=data.location;
+  document.getElementById('whatsapp').value=data.whatsapp.replace("https://wa.me/","");
+  document.getElementById('categorySelect').value=data.category;
+  document.getElementById('photoUpload').value = "";
+
+  // Show existing photo in preview
+  if(data.photoURL){
+    photoPreview.src = data.photoURL;
+    photoPreview.style.display = 'block';
+  } else {
+    photoPreview.style.display = 'none';
+  }
+};
+
       const delBtn=document.createElement('button');
       delBtn.textContent='Delete';
       delBtn.className='btn-delete';
@@ -419,3 +453,4 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
