@@ -91,6 +91,8 @@
   <!-- Add Skill form -->
   <div id="formWrapper">
     <form id="skillForm" class="skill-form">
+      <label for="skillPhoto">Profile Photo:</label>
+<input type="file" id="photoUpload" accept="image/*">
       <input type="hidden" id="skillId" value="">
       <input id="name" placeholder="Your name" required />
       <input id="skill" placeholder="Your skill" required />
@@ -99,7 +101,6 @@
       <select id="categorySelect" required>
         <option value="">Select category</option>
       </select>
-      <input type="file" id="photoUpload" accept="image/*" />
       <img id="photoPreview" 
      src="" 
      alt="Preview" 
@@ -137,6 +138,25 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 const auth = firebase.auth();
 const db = firebase.firestore();
+  // Get references for photo input and preview
+// Handle skill photo preview (round circle)
+const photoUpload = document.getElementById('photoUpload');
+const photoPreview = document.getElementById('photoPreview');
+
+photoUpload.addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      photoPreview.src = ev.target.result;
+      photoPreview.style.display = 'block';
+      photoPreview.style.borderRadius = '50%';
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  } else {
+    photoPreview.style.display = 'none';
+  }
+});
+
 let currentUser = null;
 
 // Helpers
@@ -174,10 +194,7 @@ const filterCategory = document.getElementById('filterCategory');
 
 ```js
 // Preview chosen photo in round circle
-const photoUpload = document.getElementById('photoUpload');
-const photoPreview = document.getElementById('photoPreview');
 
-photoUpload.addEventListener('change', (e)=>{
   if(e.target.files && e.target.files[0]){
     const reader = new FileReader();
     reader.onload = (ev)=>{
@@ -203,10 +220,25 @@ db.collection('categories').orderBy('createdAt','asc')
 
 // Auth
 loginBtn.addEventListener('click', ()=>{
-  const provider=new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider)
-    .catch(err=>{console.error(err); alert("Login failed: "+(err.message||err.code));});
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(result => {
+      currentUser = result.user;
+      userPhoto.src = currentUser.photoURL || "";
+      userPhoto.style.display = currentUser.photoURL ? "block" : "none";
+      userName.textContent = currentUser.displayName || currentUser.email;
+      userName.style.display = "block";
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      alert("Welcome " + currentUser.displayName);
+      loadSkills();
+    })
+    .catch(error => {
+      console.error(error);
+      alert("Login failed: " + error.message);
+    });
 });
+
 logoutBtn.addEventListener('click', ()=>auth.signOut());
 
 auth.onAuthStateChanged(user=>{
@@ -453,4 +485,5 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
