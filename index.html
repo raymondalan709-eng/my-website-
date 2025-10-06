@@ -477,12 +477,50 @@ function closeProfile(){
   document.getElementById("profileView").style.display="none";
   document.getElementById("skillsArea").style.display="flex";
 }
+// === DEBUG MODE SCRIPT ===
+function logDebug(message, error = null) {
+  console.log("🔍 DEBUG:", message);
+  if (error) console.error(error);
+}
+
+window.addEventListener("error", (event) => {
+  console.error("⚠️ Global Error:", event.message);
+  alert("Something went wrong: " + event.message);
+});
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    logDebug("User logged in: " + user.displayName);
+  } else {
+    logDebug("No user logged in");
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  logDebug("✅ Page fully loaded and ready");
+  
+  // Check buttons
+  const loginBtn = document.getElementById("login");
+  const logoutBtn = document.getElementById("logout");
+  const addSkillBtn = document.getElementById("addSkillBtn");
+
+  if (!loginBtn) alert("❌ Login button not found");
+  if (!logoutBtn) alert("❌ Logout button not found");
+  if (!addSkillBtn) alert("❌ Add Skill button not found");
+
+  [loginBtn, logoutBtn, addSkillBtn].forEach(btn => {
+    if (btn) {
+      btn.addEventListener("click", () => logDebug(btn.id + " button clicked"));
+    }
+  });
+});
 
 // Search
 searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
