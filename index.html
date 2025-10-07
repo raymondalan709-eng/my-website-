@@ -514,12 +514,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+  // Search
+searchInput.addEventListener('input', loadSkills);
+  
+// ---- DEBUG CLICK TEST ----
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ Page loaded");
+
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const addSkillBtn = document.getElementById("openAddBtn");
+
+  console.log("Found buttons:", {
+    login: !!loginBtn,
+    logout: !!logoutBtn,
+    addSkill: !!addSkillBtn
+  });
+
+  [loginBtn, logoutBtn, addSkillBtn].forEach(btn => {
+    if (btn) {
+      btn.addEventListener("click", () => {
+        alert(btn.id + " button clicked!");
+        console.log(btn.id + " button clicked!");
+      });
+    }
+  });
+});
 
 // Search
 searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
