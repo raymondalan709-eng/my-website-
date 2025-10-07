@@ -498,11 +498,11 @@ firebase.auth().onAuthStateChanged(user => {
 
 document.addEventListener("DOMContentLoaded", () => {
   logDebug("✅ Page fully loaded and ready");
-  
-  // Check buttons
-  const loginBtn = document.getElementById("login");
-  const logoutBtn = document.getElementById("logout");
-  const addSkillBtn = document.getElementById("addSkillBtn");
+
+  // Check real buttons by their actual IDs
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const addSkillBtn = document.getElementById("openAddBtn");
 
   if (!loginBtn) alert("❌ Login button not found");
   if (!logoutBtn) alert("❌ Logout button not found");
@@ -520,6 +520,7 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
