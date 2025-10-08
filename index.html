@@ -189,23 +189,6 @@ const categorySelect=document.getElementById('categorySelect');
 const shareBtn=document.getElementById('shareBtn');
 const filterCategory = document.getElementById('filterCategory');
 
-// Preview chosen photo in round circle
-  const photoUpload = document.getElementById('photoUpload');
-const photoPreview = document.getElementById('photoPreview');
-
-photoUpload.addEventListener('change', (e) => {
-  if (e.target.files && e.target.files[0]) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      photoPreview.src = ev.target.result;
-      photoPreview.style.display = 'block';
-    };
-    reader.readAsDataURL(e.target.files[0]);
-  } else {
-    photoPreview.style.display = 'none';
-  }
-});
-
 db.collection('categories').orderBy('createdAt','asc')
   .onSnapshot(snap => {
     filterCategory.innerHTML = '<option value="">All categories</option>';
@@ -547,6 +530,7 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
+
 
 
 
