@@ -12,18 +12,43 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
   <style>
-    :root { --blue:#007BFF; --white:#fff; }
-    body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;margin:0;background:#f3f4f6; }
-    header { background:var(--blue);color:var(--white);padding:18px 12px;position:relative; }
+   :root {
+  --header-color: #123249;   /* dark blue header */
+  --button-color: #447794;   /* lighter blue buttons */
+  --bg-color: #E9B48A;       /* soft beige background */
+  --text-color: #061222;     /* dark text */
+  --card-bg: #fff;           /* card background stays white */
+}
+   body {
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+} 
+header {
+  background: var(--header-color);
+  color: var(--card-bg);
+  padding: 18px 12px;
+  position: relative;
+}
     header h1 { margin:0;font-size:34px;text-align:center; }
     header .intro { margin-top:8px;text-align:center;font-weight:700;font-size:18px;color:rgba(255,255,255,0.95); }
     #userBox { position:absolute;left:14px;top:12px;text-align:left;color:#fff; }
     #userBox img { width:44px;height:44px;border-radius:50%;display:block;margin-bottom:6px; }
     #userBox .name { font-weight:700;margin-bottom:6px; }
     #userBox button { display:block;background:#fff;color:var(--blue);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-bottom:6px; }
-    .header-controls { display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap; }
-    .header-controls input[type="search"] { padding:10px;border-radius:8px;border:0;width:280px;max-width:70vw; }
-    .header-controls button { padding:10px 16px;border-radius:8px;border:0;background:#fff;color:var(--blue);font-weight:700;cursor:pointer; }
+.header-controls button { 
+  padding:10px 16px; border-radius:8px; border:0;
+  background: var(--button-color); color: var(--card-bg); font-weight:700; cursor:pointer; 
+}
+.skill-form button { 
+  background: var(--button-color); color: var(--card-bg); border:0; padding:10px 14px; border-radius:6px; cursor:pointer; font-weight:700; 
+}
+#shareBtn { 
+  position:fixed; bottom:20px; right:20px; width:56px; height:56px; border-radius:50%;
+  background: var(--button-color); border:none; color: var(--card-bg); font-size:26px; cursor:pointer;
+  box-shadow:0 6px 12px rgba(0,0,0,0.25); 
+}
     #formWrapper { max-width:520px;margin:20px auto;display:none; }
     form.skill-form { background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06); }
     .skill-form input, .skill-form select { width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd;box-sizing:border-box; }
@@ -31,7 +56,7 @@
     .skill-form .row input { flex:1; }
     .skill-form button { background:var(--blue);color:#fff;border:0;padding:10px 14px;border-radius:6px;cursor:pointer;font-weight:700; }
     #skillsArea { padding:18px 12px 60px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center; }
-    .card { width:320px;background:#fff;border-radius:8px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05);border:1px solid #eee; }
+    .card { width:320px; background: var(--card-bg); border-radius:8px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,0.05); border:1px solid #eee; }
     .card .top { display:flex;gap:12px;align-items:center; }
     .card img { width:56px;height:56px;border-radius:50%;object-fit:cover; }
     .card h3 { margin:0;color:var(--blue); }
@@ -530,14 +555,3 @@ searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
