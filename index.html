@@ -6,10 +6,10 @@
   <title>SL Skill Hub</title>
 
   <!-- Firebase compat builds -->
- <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js "></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js "></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js "></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js "></script>
 
   <style>
    :root {
@@ -56,7 +56,8 @@ header {
     .skill-form .row input { flex:1; }
     .skill-form button { background:var(--blue);color:#fff;border:0;padding:10px 14px;border-radius:6px;cursor:pointer;font-weight:700; }
     #skillsArea { padding:18px 12px 60px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center; }
-    .card { width:320px; background: var(--card-bg); border-radius:8px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,0.05); border:1px solid #eee; }
+    .card { width:320px; background: var(--card-bg); border-radius:8px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,0.05); border:1px solid #eee; cursor: pointer; transition: transform 0.2s; }
+    .card:hover { transform: translateY(-2px); }
     .card .top { display:flex;gap:12px;align-items:center; }
     .card img { width:56px;height:56px;border-radius:50%;object-fit:cover; }
     .card h3 { margin:0;color:var(--blue); }
@@ -89,6 +90,77 @@ header {
         font-size:12px;
         margin-bottom:4px;
       }
+    }
+    
+    /* Profile View Styles */
+    #profileView {
+      display: none;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+      margin-top: 20px;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .profile-header img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .profile-info h2 {
+      margin: 0 0 10px 0;
+      color: var(--header-color);
+      font-size: 28px;
+    }
+    .profile-info p {
+      margin: 5px 0;
+      font-size: 16px;
+      color: var(--text-color);
+    }
+    .profile-skills {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .profile-skill-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .profile-skill-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--header-color);
+      font-size: 18px;
+    }
+    .profile-skill-card p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+    .back-btn {
+      background: var(--button-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .back-btn:hover {
+      opacity: 0.9;
     }
   </style>
 
@@ -140,10 +212,8 @@ header {
   <main id="skillsArea"></main>
   
 <!-- User Profile view -->
-<div id="profileView" style="display:none; padding:20px; max-width:600px; margin:auto;">
-  <button onclick="closeProfile()" style="margin-bottom:10px;background:#007BFF;color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;">
-    ← Back
-  </button>
+<div id="profileView" style="display:none;">
+  <button onclick="closeProfile()" class="back-btn">← Back to Skills</button>
   <div id="profileContent"></div>
 </div>
 
@@ -214,16 +284,25 @@ const categorySelect=document.getElementById('categorySelect');
 const shareBtn=document.getElementById('shareBtn');
 const filterCategory = document.getElementById('filterCategory');
 
-db.collection('categories').orderBy('createdAt','asc')
-  .onSnapshot(snap => {
-    filterCategory.innerHTML = '<option value="">All categories</option>';
-    snap.forEach(doc => {
-      const opt = document.createElement('option');
-      opt.value = doc.data().name;
-      opt.textContent = doc.data().name;
-      filterCategory.appendChild(opt);
+// Load categories
+function loadCategories() {
+  db.collection('categories').orderBy('createdAt','asc')
+    .onSnapshot(snap => {
+      categorySelect.innerHTML = '<option value="">Select category</option>';
+      filterCategory.innerHTML = '<option value="">All categories</option>';
+      snap.forEach(doc => {
+        const opt = document.createElement('option');
+        opt.value = doc.data().name;
+        opt.textContent = doc.data().name;
+        categorySelect.appendChild(opt);
+        
+        const filterOpt = document.createElement('option');
+        filterOpt.value = doc.data().name;
+        filterOpt.textContent = doc.data().name;
+        filterCategory.appendChild(filterOpt);
+      });
     });
-  });
+}
 
 // Auth
 loginBtn.addEventListener('click', ()=>{
@@ -257,20 +336,8 @@ auth.onAuthStateChanged(user=>{
     userPhoto.style.display=user.photoURL?'block':'none';
     userName.textContent=user.displayName||user.email;
     userName.style.display='block';
-    // admin only category
     addCategoryBtn.style.display=(user.uid==='I5WY1FJzNibUDOCzCBdGWPtX9Nj1')?'inline-block':'none';
-    // real-time categories update
-db.collection('categories').orderBy('createdAt','asc')
-  .onSnapshot(snap => {
-    categorySelect.innerHTML = '<option value="">Select category</option>';
-    snap.forEach(doc => {
-      const opt = document.createElement('option');
-      opt.value = doc.data().name;
-      opt.textContent = doc.data().name;
-      categorySelect.appendChild(opt);
-    });
-  });
-    
+    loadCategories();
   } else {
     loginBtn.style.display='inline-block';
     logoutBtn.style.display='none';
@@ -391,15 +458,18 @@ async function loadSkills(){
     // Create the card inside the loop
     const card = document.createElement('div');
     card.className='card';
+    card.onclick = () => openProfile(data.uid);
     card.innerHTML=`
-      <div class="top" style="cursor:pointer;" onclick="openProfile('${data.uid}')">
+      <div class="top">
         <img src="${data.photoURL||''}" alt="profile" />
-        <h3>${data.name}</h3>
+        <div>
+          <h3>${data.name}</h3>
+          <p><strong>Skill:</strong> ${data.skill}</p>
+          <p><strong>Location:</strong> ${data.location}</p>
+          <p><strong>WhatsApp:</strong> <a href="${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
+          <p class="small"><strong>Category:</strong> ${data.category} | <strong>Posted:</strong> ${formatDate(data.createdAt)}</p>
+        </div>
       </div>
-      <p><strong>Skill:</strong> ${data.skill}</p>
-      <p><strong>Location:</strong> ${data.location}</p>
-      <p><strong>WhatsApp:</strong> <a href="${data.whatsapp}" target="_blank">${data.whatsapp}</a></p>
-      <p class="small"><strong>Category:</strong> ${data.category} | <strong>Posted:</strong> ${formatDate(data.createdAt)}</p>
       <div class="actions"></div>
     `;
 
@@ -408,29 +478,31 @@ async function loadSkills(){
       const editBtn=document.createElement('button');
       editBtn.textContent='Edit';
       editBtn.className='btn-edit';
-      editBtn.onclick=()=>{
-  formWrapper.style.display='block';
-  document.getElementById('skillId').value=doc.id;
-  document.getElementById('name').value=data.name;
-  document.getElementById('skill').value=data.skill;
-  document.getElementById('location').value=data.location;
-  document.getElementById('whatsapp').value=data.whatsapp.replace("https://wa.me/","");
-  document.getElementById('categorySelect').value=data.category;
-  document.getElementById('photoUpload').value = "";
+      editBtn.onclick=(e) => {
+        e.stopPropagation();
+        formWrapper.style.display='block';
+        document.getElementById('skillId').value=doc.id;
+        document.getElementById('name').value=data.name;
+        document.getElementById('skill').value=data.skill;
+        document.getElementById('location').value=data.location;
+        document.getElementById('whatsapp').value=data.whatsapp.replace("https://wa.me/","");
+        document.getElementById('categorySelect').value=data.category;
+        document.getElementById('photoUpload').value = "";
 
-  // Show existing photo in preview
-  if(data.photoURL){
-    photoPreview.src = data.photoURL;
-    photoPreview.style.display = 'block';
-  } else {
-    photoPreview.style.display = 'none';
-  }
-};
-
+        // Show existing photo in preview
+        if(data.photoURL){
+          photoPreview.src = data.photoURL;
+          photoPreview.style.display = 'block';
+        } else {
+          photoPreview.style.display = 'none';
+        }
+      };
+      
       const delBtn=document.createElement('button');
       delBtn.textContent='Delete';
       delBtn.className='btn-delete';
-      delBtn.onclick=async()=>{
+      delBtn.onclick=async(e)=>{
+        e.stopPropagation();
         if(confirm("Are you sure to delete this skill?")){
           await db.collection('skills').doc(doc.id).delete();
           loadSkills();
@@ -443,49 +515,69 @@ async function loadSkills(){
     skillsArea.appendChild(card);
   });
 }
+
+// Profile View Functions
 async function openProfile(uid) {
-  // hide skills list
+  // Hide skills list and show profile view
   document.getElementById("skillsArea").style.display="none";
   document.getElementById("profileView").style.display="block";
-
+  
   const profileContent=document.getElementById("profileContent");
-  profileContent.innerHTML="<p>Loading profile...</p>";
-
-  // fetch user skills
-  const snap=await db.collection("skills").where("uid","==",uid).orderBy("createdAt","desc").get();
-
-  if(snap.empty){
-    profileContent.innerHTML="<p>No skills found for this user.</p>";
-    return;
-  }
-
-  const first=snap.docs[0].data();
-  profileContent.innerHTML=`
-    <div style="text-align:center;">
-      <img src="${first.photoURL||''}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" />
-      <h2>${first.name}</h2>
-      <p><strong>Contact:</strong> <a href="${first.whatsapp}" target="_blank">${first.whatsapp}</a></p>
-      <hr/>
-      <h3>Skills by ${first.name}</h3>
-    </div>
-  `;
-
-  snap.forEach(doc=>{
-    const d=doc.data();
-    profileContent.innerHTML+=`
-      <div style="background:#fff;padding:12px;margin:10px 0;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-        <p><strong>${d.skill}</strong> (${d.category})</p>
-        <p>📍 ${d.location}</p>
-        <p class="small">Posted: ${formatDate(d.createdAt)}</p>
+  profileContent.innerHTML="<p style='text-align:center;'>Loading profile...</p>";
+  
+  try {
+    // Fetch all skills by this user
+    const snap=await db.collection("skills").where("uid","==",uid).orderBy("createdAt","desc").get();
+    
+    if(snap.empty){
+      profileContent.innerHTML="<p>No skills found for this user.</p>";
+      return;
+    }
+    
+    // Get user info from first skill
+    const firstSkill=snap.docs[0].data();
+    
+    // Build profile header
+    let profileHTML=`
+      <div class="profile-header">
+        <img src="${firstSkill.photoURL||''}" alt="${firstSkill.name}" />
+        <div class="profile-info">
+          <h2>${firstSkill.name}</h2>
+          <p><strong>Contact:</strong> <a href="${firstSkill.whatsapp}" target="_blank">${firstSkill.whatsapp}</a></p>
+          <p><strong>Total Skills:</strong> ${snap.size}</p>
+        </div>
       </div>
+      <h3>Skills by ${firstSkill.name}</h3>
+      <div class="profile-skills">
     `;
-  });
+    
+    // Add each skill
+    snap.forEach(doc=>{
+      const skill=doc.data();
+      profileHTML+=`
+        <div class="profile-skill-card">
+          <h4>${skill.skill}</h4>
+          <p><strong>Category:</strong> ${skill.category}</p>
+          <p><strong>Location:</strong> ${skill.location}</p>
+          <p><strong>Posted:</strong> ${formatDate(skill.createdAt)}</p>
+        </div>
+      `;
+    });
+    
+    profileHTML+='</div>';
+    profileContent.innerHTML=profileHTML;
+    
+  } catch (error) {
+    console.error("Error loading profile:", error);
+    profileContent.innerHTML="<p>Error loading profile. Please try again.</p>";
+  }
 }
 
 function closeProfile(){
   document.getElementById("profileView").style.display="none";
   document.getElementById("skillsArea").style.display="flex";
 }
+
 // === DEBUG MODE SCRIPT ===
 function logDebug(message, error = null) {
   console.log("🔍 DEBUG:", message);
@@ -523,9 +615,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-  // Search
+
+// Search functionality
 searchInput.addEventListener('input', loadSkills);
-  
+filterCategory.addEventListener('change', loadSkills);
+
 // ---- DEBUG CLICK TEST ----
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ Page loaded");
@@ -549,9 +643,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-// Search
-searchInput.addEventListener('input', loadSkills);
 </script>
 </body>
 </html>
